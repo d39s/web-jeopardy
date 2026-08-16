@@ -41,6 +41,8 @@ export function SetupPage() {
   const [starting, setStarting] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
   const [deductOnWrong, setDeductOnWrong] = useState(true);
+  // null koppelt die Veto-Zeit an die Bedenkzeit; der eigene Regler folgt.
+  const [vetoSeconds] = useState<number | null>(null);
 
   /**
    * Der geteilte Link wird genau einmal beim ersten Rendern ausgewertet. Danach
@@ -140,7 +142,14 @@ export function SetupPage() {
 
     const normalized = normalizeTeams(teams);
     saveLastTeams(normalized);
-    dispatch({ type: 'game/start', definition, teams: normalized, timerSeconds, deductOnWrong });
+    dispatch({
+      type: 'game/start',
+      definition,
+      teams: normalized,
+      timerSeconds,
+      vetoSeconds,
+      deductOnWrong,
+    });
     void navigate('/game');
   };
 

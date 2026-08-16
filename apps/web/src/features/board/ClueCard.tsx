@@ -1,4 +1,4 @@
-import type { CategoryColor, ClueOutcome, ClueResult } from '@jeopardy/game-core';
+import type { CategoryColor, ClueSummary } from '@jeopardy/game-core';
 import { cardClasses } from '../../components/ui/Card';
 import { de } from '../../i18n/de';
 import { cn } from '../../lib/cn';
@@ -13,43 +13,24 @@ export interface ClueCardProps {
    * Ausgang der gespielten Frage; null, solange sie nicht gewertet ist. Die
    * Markierung kommt zum Grauton hinzu, sie ersetzt ihn nicht.
    */
-  result?: ClueResult | null;
+  result?: ClueSummary | null;
   /** Im Übungsmodus sagt der Teamname nichts aus und entfällt auf der Karte. */
   showTeamName?: boolean;
   onOpen: () => void;
 }
 
-/** Farbe je Ausgang – sie trägt die Aussage nie allein, siehe Zeichen und Text. */
-const outcomeColors: Record<ClueOutcome, string> = {
-  correct: 'text-positive',
-  wrong: 'text-negative',
-  unanswered: 'text-text-muted',
-};
-
-/** Ohne Wertung bleibt die Karte zeichenlos neutral; der Text darunter genügt. */
-const outcomeMarks: Record<ClueOutcome, string | null> = {
-  correct: de.board.resultMarkCorrect,
-  wrong: de.board.resultMarkWrong,
-  unanswered: null,
-};
-
 /** Der Ausgang im Klartext – ergänzt das Vorlesen der Karte. */
-function outcomeLabel(result: ClueResult): string {
-  const amount = Math.abs(result.delta);
-  if (result.outcome === 'correct' && result.team) {
-    return de.board.resultCorrect(result.team.name, amount);
-  }
-  if (result.outcome === 'wrong' && result.team) {
-    return de.board.resultWrong(result.team.name, amount);
-  }
-  return de.board.resultUnanswered;
+function outcomeLabel(result: ClueSummary): string {
+  return result.winner
+    ? de.board.resultCorrect(result.winner.name, result.points)
+    : de.board.resultNobodyLong(result.points);
 }
 
 function cardLabel(
   categoryName: string,
   points: number,
   scored: boolean,
-  result: ClueResult | null,
+  result: ClueSummary | null,
 ): string {
   if (!scored) return de.board.cardLabel(categoryName, points);
 
@@ -58,14 +39,17 @@ function cardLabel(
 }
 
 /**
- * Zweite Zeile der Karte: das Team, das die Frage für sich entschieden hat,
- * bzw. der Hinweis auf die fehlende Wertung. Bleibt bewusst kurz, damit das
- * Spielfeld auf dem Beamer weiterhin ohne Scrollen in einen Bildschirm passt.
+ * Zweite Zeile der Karte: das Team, das die Frage für sich entschieden hat –
+ * bei mehreren Beteiligten ergänzt um deren Anzahl. Bleibt bewusst kurz, damit
+ * das Spielfeld auf dem Beamer ohne Scrollen in einen Bildschirm passt.
  */
-function cardCaption(result: ClueResult | null, showTeamName: boolean): string | null {
+function cardCaption(result: ClueSummary | null, showTeamName: boolean): string | null {
   if (!result) return null;
-  if (result.outcome === 'unanswered') return de.board.resultUnansweredShort;
-  return showTeamName && result.team ? result.team.name : null;
+  if (!showTeamName) return null;
+
+  const teamCount = result.losers.length + (result.winner ? 1 : 0);
+  const name = result.winner ? result.winner.name : de.board.resultNobody;
+  return teamCount > 1 ? `${name} · ${de.board.resultTeamCount(teamCount)}` : name;
 }
 
 export function ClueCard({
@@ -77,8 +61,13 @@ export function ClueCard({
   showTeamName = true,
   onOpen,
 }: ClueCardProps) {
-  const outcomeColor = result ? outcomeColors[result.outcome] : null;
-  const mark = result ? outcomeMarks[result.outcome] : null;
+  // Farbe trägt die Aussage nie allein – Zeichen und Text kommen hinzu.
+  const outcomeColor = result ? (result.winner ? 'text-positive' : 'text-negative') : null;
+  const mark = result
+    ? result.winner
+      ? de.board.resultMarkCorrect
+      : de.board.resultMarkWrong
+    : null;
   const caption = cardCaption(result, showTeamName);
 
   return (
@@ -103,7 +92,7 @@ export function ClueCard({
             {mark}
           </span>
         ) : null}
-        <span className={cn(outcomeColor, result?.outcome === 'wrong' && 'line-through')}>
+        <span className={cn(outcomeColor, result && !result.winner && 'line-through')}>
           {points}
         </span>
       </span>

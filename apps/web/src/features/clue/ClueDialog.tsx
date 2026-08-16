@@ -1,10 +1,16 @@
-import { resolveCategoryColor, selectOpenClue } from '@jeopardy/game-core';
+import {
+  resolveCategoryColor,
+  selectAnsweringTeams,
+  selectOpenClue,
+  selectVetoCandidates,
+} from '@jeopardy/game-core';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
 import { ClueTimer } from './ClueTimer';
-import { ScoreButtons } from './ScoreButtons';
+import { SettleButtons } from './SettleButtons';
+import { VetoButtons } from './VetoButtons';
 
 const TITLE_ID = 'frage-dialog-titel';
 
@@ -12,6 +18,8 @@ export function ClueDialog() {
   const state = useGameState();
   const dispatch = useDispatch();
   const open = selectOpenClue(state);
+  const candidates = selectVetoCandidates(state);
+  const participants = selectAnsweringTeams(state);
 
   const categoryIndex = open
     ? (state.definition?.categories.findIndex((entry) => entry.id === open.category.id) ?? 0)
@@ -39,13 +47,9 @@ export function ClueDialog() {
             {open.clue.question}
           </p>
 
-          {/* Zeigt sich nur, solange eine Bedenkzeit läuft – siehe ClueTimer. */}
-          <ClueTimer />
-
           {/*
-            Musterlösung und Punktebuttons entstehen erst nach dem Aufdecken –
-            vorher sind sie nicht im DOM und können nicht versehentlich sichtbar
-            werden.
+            Musterlösung und Wertung entstehen erst nach dem Aufdecken – vorher
+            sind sie nicht im DOM und können nicht versehentlich sichtbar werden.
           */}
           {state.answerRevealed ? (
             <div className="flex flex-col gap-6">
@@ -61,28 +65,44 @@ export function ClueDialog() {
                 ) : null}
               </section>
 
-              <ScoreButtons
-                teams={state.teams}
-                onAward={(teamId, correct) =>
+              <SettleButtons
+                participants={participants}
+                points={open.clue.points}
+                deductOnWrong={state.deductOnWrong}
+                onSettle={(winnerTeamId) =>
                   dispatch({
-                    type: 'score/award',
+                    type: 'score/settle',
                     clueId: open.clue.id,
-                    teamId,
-                    correct,
+                    winnerTeamId,
                     at: Date.now(),
                   })
                 }
               />
             </div>
           ) : (
-            <div className="flex justify-center">
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => dispatch({ type: 'clue/revealAnswer' })}
-              >
-                {de.clue.revealAnswer}
-              </Button>
+            <div className="flex flex-col gap-4">
+              <ClueTimer />
+
+              {participants.length > 1 ? (
+                <p className="text-center text-sm text-text-muted">
+                  {de.clue.participants(participants.map((team) => team.name).join(' · '))}
+                </p>
+              ) : null}
+
+              <VetoButtons
+                candidates={candidates}
+                onVeto={(teamId) => dispatch({ type: 'clue/veto', teamId, at: Date.now() })}
+              />
+
+              <div className="flex justify-center">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => dispatch({ type: 'clue/revealAnswer' })}
+                >
+                  {candidates.length > 0 ? de.clue.noVeto : de.clue.revealAnswer}
+                </Button>
+              </div>
             </div>
           )}
 

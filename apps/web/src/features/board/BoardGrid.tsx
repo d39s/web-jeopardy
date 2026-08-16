@@ -1,6 +1,6 @@
 import {
   resolveCategoryColor,
-  selectClueResult,
+  selectClueSummary,
   selectIsClueScored,
   selectIsPracticeMode,
 } from '@jeopardy/game-core';
@@ -51,7 +51,7 @@ export function BoardGrid() {
               points={clue.points}
               color={resolveCategoryColor(category, index)}
               scored={selectIsClueScored(state, clue.id)}
-              result={selectClueResult(state, clue.id)}
+              result={selectClueSummary(state, clue.id)}
               showTeamName={showTeamName}
               onOpen={() => dispatch({ type: 'clue/open', clueId: clue.id, at: Date.now() })}
             />

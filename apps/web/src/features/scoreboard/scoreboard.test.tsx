@@ -1,27 +1,25 @@
-import {
-  createDefaultTeams,
-  gameReducer,
-  initialGameState,
-  sampleDefinition,
-} from '@jeopardy/game-core';
+import { sampleDefinition } from '@jeopardy/game-core';
 import type { GameState } from '@jeopardy/game-core';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { awardClue, renderWithGame, startedState } from '../../test/renderWithGame';
+import { openClue, playClue, renderWithGame, startedState } from '../../test/renderWithGame';
 import { ResultOverlay } from './ResultOverlay';
 import { Scoreboard } from './Scoreboard';
 
-/** Wertet alle 25 Karten – abwechselnd auf die vorhandenen Teams verteilt. */
+/**
+ * Spielt alle 25 Karten durch. Gewertet wird jeweils das Team, das die Frage
+ * reihum beginnt; jede dritte Frage endet ohne richtige Antwort.
+ */
 function finishedState(teamCount = 2): GameState {
   let state = startedState(teamCount);
   let index = 0;
 
   for (const category of sampleDefinition.categories) {
     for (const clue of category.clues) {
-      const team = state.teams[index % state.teams.length];
-      if (!team) throw new Error('Team fehlt.');
-      state = awardClue(state, clue.id, team.id, index % 3 !== 0);
+      const starter = state.teams[state.startingTeamIndex % state.teams.length];
+      if (!starter) throw new Error('Team fehlt.');
+      state = playClue(state, clue.id, index % 3 === 0 ? null : starter.id);
       index += 1;
     }
   }
@@ -30,7 +28,8 @@ function finishedState(teamCount = 2): GameState {
 
 describe('teamleiste', () => {
   it('zeigt jedes team mit punktestand', () => {
-    const state = awardClue(startedState(3), 'wissenschaft-300', 'team-b', true);
+    // Team B steigt per Veto ein und gewinnt die Frage.
+    const state = playClue(startedState(3), 'wissenschaft-300', 'team-b', ['team-b']);
     renderWithGame(<Scoreboard />, state);
 
     expect(screen.getByDisplayValue('Team A')).toBeInTheDocument();
@@ -62,19 +61,12 @@ describe('teamleiste', () => {
 });
 
 /**
- * Laufende Frage, bei der die Bedenkzeit des ersten Teams abgelaufen ist:
- * Der Zugriff liegt beim zweiten Team, die nächste Frage beginnt weiterhin
- * beim ersten – so wird sichtbar, welcher Selektor die Anzeige speist.
+ * Laufende Frage, bei der Team B per Veto übernommen hat: Der Zugriff liegt
+ * beim zweiten Team, die nächste Frage beginnt weiterhin beim ersten – so wird
+ * sichtbar, welcher Selektor die Anzeige speist.
  */
 function openClueState(): GameState {
-  const started = gameReducer(initialGameState, {
-    type: 'game/start',
-    definition: sampleDefinition,
-    teams: createDefaultTeams(2),
-    timerSeconds: 30,
-  });
-  const opened = gameReducer(started, { type: 'clue/open', clueId: 'wissenschaft-100', at: 0 });
-  return gameReducer(opened, { type: 'clue/timerExpired', at: 30_000 });
+  return openClue(startedState(2, undefined, { timerSeconds: 30 }), 'wissenschaft-100', ['team-b']);
 }
 
 /** Die einzige als „am Zug" markierte Kachel – schlägt fehl, wenn es mehr oder keine gibt. */
@@ -97,7 +89,7 @@ describe('am zug', () => {
   });
 
   it('rückt nach einer gewerteten frage zum nächsten team weiter', () => {
-    const state = awardClue(startedState(2), 'wissenschaft-100', 'team-a', true);
+    const state = playClue(startedState(2), 'wissenschaft-100', 'team-a');
     renderWithGame(<Scoreboard />, state);
 
     expect(screen.getByText('Nächste Frage beginnt bei Team B')).toBeInTheDocument();

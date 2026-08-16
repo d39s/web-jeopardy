@@ -88,8 +88,9 @@ export const de = {
     // Ausgang einer gespielten Karte
     resultCorrect: (team: string, points: number) => `${team} richtig, plus ${points} Punkte`,
     resultWrong: (team: string, points: number) => `${team} falsch, minus ${points} Punkte`,
-    resultUnanswered: 'Nicht beantwortet',
-    resultUnansweredShort: 'Ohne Wertung',
+    resultNobody: 'Niemand richtig',
+    resultNobodyLong: (points: number) => `Niemand richtig, ${points} Punkte`,
+    resultTeamCount: (count: number) => `${count} Teams`,
     /** Zeichen auf der Karte – Farbe allein darf den Ausgang nicht tragen. */
     resultMarkCorrect: '✓',
     resultMarkWrong: '✗',
@@ -105,18 +106,28 @@ export const de = {
     revealAnswer: 'Antwort anzeigen',
     answerHeading: 'Musterlösung',
     close: 'Schließen',
-    scoreCorrect: (teamName: string) => `${teamName} richtig`,
-    scoreWrong: (teamName: string) => `${teamName} falsch`,
     noteHeading: 'Hinweis für die Moderation',
+
+    // Veto-Runde
+    vetoButton: (teamName: string) => `Veto: ${teamName}`,
+    noVeto: 'Kein Veto – Antwort aufdecken',
+    participants: (names: string) => `Bereits dran: ${names}`,
+
+    // Wertung
+    settleHeading: 'Wer lag richtig?',
+    settleNobody: 'Keine richtige Antwort gegeben',
+    settleHintDeduct: (points: number) =>
+      `Die übrigen beteiligten Teams verlieren ${points} Punkte.`,
+    settleHintKeep: 'Die übrigen beteiligten Teams erhalten keine Punkte.',
 
     // Bedenkzeit
     timerLabel: (teamName: string) => `Bedenkzeit für ${teamName}`,
+    vetoTimerLabel: (teamName: string) => `Veto-Zeit für ${teamName}`,
+    timeUp: 'Zeit abgelaufen',
     timerRemaining: (seconds: number) => `noch ${seconds} Sekunden`,
     timerExpiredForTeam: (teamName: string) => `Zeit für ${teamName} abgelaufen`,
-    timerExpiredAll: 'Zeit abgelaufen – die Frage gilt als gespielt.',
     timerPause: 'Pause',
     timerResume: 'Weiter',
-    timerSkip: 'Nächstes Team',
   },
 
   result: {

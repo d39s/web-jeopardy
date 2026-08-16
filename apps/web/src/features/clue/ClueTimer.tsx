@@ -1,4 +1,4 @@
-import { selectActiveTeam } from '@jeopardy/game-core';
+import { effectiveVetoSeconds, selectActiveTeam, selectIsTimeUp } from '@jeopardy/game-core';
 import { useEffect, useState } from 'react';
 import { de } from '../../i18n/de';
 import { cn } from '../../lib/cn';
@@ -8,8 +8,6 @@ import { useDispatch, useGameState } from '../../state/GameProvider';
 const TICK_MS = 250;
 /** Ab hier wirkt die Anzeige dringlich (Farbe, Größe, dezenter Puls). */
 const URGENT_SECONDS = 5;
-/** Wie lange der Hinweis auf den Teamwechsel stehen bleibt. */
-const NOTICE_MS = 3000;
 
 /** Beamer-taugliche Ziffern: unter einer Minute nur Sekunden, darüber „m:ss". */
 function formatRemaining(seconds: number): string {
@@ -18,26 +16,31 @@ function formatRemaining(seconds: number): string {
 }
 
 /**
- * Countdown der Bedenkzeit im Frage-Popup.
+ * Countdown im Frage-Popup.
  *
  * Die Anzeige hält **keinen** eigenen Spielzustand: Die Frist steht als
  * `timerEndsAt` im Spielstand, hier läuft lediglich eine Uhr mit, die den
- * Abstand zur Frist darstellt. Ist die Zeit abgelaufen, wird
- * `clue/timerExpired` gemeldet – ob daraufhin das nächste Team an den Zug
- * kommt oder die Frage als gespielt gilt, entscheidet allein der Reducer.
+ * Abstand dazu darstellt. Läuft die Zeit ab, wird `clue/timerExpired` gemeldet –
+ * mehr passiert dann nicht: Wie es weitergeht, entscheidet die Moderation über
+ * die Veto-Auswahl.
  */
 export function ClueTimer() {
   const state = useGameState();
   const dispatch = useDispatch();
 
   const endsAt = state.timerEndsAt;
-  const teamName = selectActiveTeam(state)?.name ?? '';
+  const activeTeam = selectActiveTeam(state);
+  const teamName = activeTeam?.name ?? '';
+  // Das erste Team spielt die Bedenkzeit, jedes übernehmende die Veto-Zeit.
+  const label =
+    state.answeringTeamIds.length > 1
+      ? de.clue.vetoTimerLabel(teamName)
+      : de.clue.timerLabel(teamName);
 
   const [now, setNow] = useState(() => Date.now());
-  const [notice, setNotice] = useState<string | null>(null);
 
-  // Ein Takt je Frist: Bei jedem Teamwechsel startet der Reducer eine neue
-  // Frist, damit läuft auch der Takt frisch los und wird sauber aufgeräumt.
+  // Ein Takt je Frist: Bei jeder Übernahme startet der Reducer eine neue Frist,
+  // damit läuft auch der Takt frisch los und wird sauber aufgeräumt.
   useEffect(() => {
     if (endsAt === null) return;
 
@@ -50,27 +53,35 @@ export function ClueTimer() {
 
   useEffect(() => {
     if (!expired) return;
-
-    setNotice(de.clue.timerExpiredForTeam(teamName));
     dispatch({ type: 'clue/timerExpired', at: Date.now() });
-  }, [expired, teamName, dispatch]);
+  }, [expired, dispatch]);
 
-  // Der Hinweis begleitet nur den Wechsel und verschwindet danach wieder.
-  useEffect(() => {
-    if (notice === null) return;
+  // Ohne eingestellte Zeit gibt es keinen Countdown.
+  if (state.timerSeconds === null) return null;
 
-    const reset = setTimeout(() => setNotice(null), NOTICE_MS);
-    return () => clearTimeout(reset);
-  }, [notice]);
+  // Die Frist ist abgelaufen: Der Hinweis bleibt stehen, bis die Moderation
+  // entscheidet – von selbst geschieht nichts mehr.
+  if (endsAt === null) {
+    if (!selectIsTimeUp(state)) return null;
 
-  // Ohne eingestellte Bedenkzeit (oder nach dem Aufdecken der Antwort) ist
-  // kein Timer-Element im DOM.
-  if (state.timerSeconds === null || endsAt === null) return null;
+    return (
+      <section className="mx-auto flex w-full max-w-xl flex-col gap-1 rounded-card border border-negative/50 bg-surface-hi px-5 py-4 text-center">
+        <p className="text-sm uppercase tracking-wide text-text-muted sm:text-base">{label}</p>
+        <p className="text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-negative" aria-live="polite">
+          {de.clue.timeUp}
+        </p>
+      </section>
+    );
+  }
 
   const remainingMs = Math.max(0, endsAt - now);
   const seconds = Math.ceil(remainingMs / 1000);
   const urgent = seconds <= URGENT_SECONDS;
-  const share = Math.min(1, remainingMs / (state.timerSeconds * 1000));
+  // Der Balken misst gegen die Zeit, die diesem Team zusteht – für Übernahmen
+  // ist das die Veto-Zeit, sonst die Bedenkzeit.
+  const fullSeconds =
+    state.answeringTeamIds.length > 1 ? effectiveVetoSeconds(state) : state.timerSeconds;
+  const share = fullSeconds === null ? 1 : Math.min(1, remainingMs / (fullSeconds * 1000));
 
   return (
     <section
@@ -80,7 +91,7 @@ export function ClueTimer() {
       )}
     >
       <p className="text-center text-sm uppercase tracking-wide text-text-muted sm:text-base">
-        {de.clue.timerLabel(teamName)}
+        {label}
       </p>
 
       {/*
@@ -109,11 +120,6 @@ export function ClueTimer() {
           style={{ width: `${share * 100}%` }}
         />
       </div>
-
-      {/* Nur der Teamwechsel wird angesagt, nicht jede Sekunde. */}
-      <p className="min-h-6 text-center text-sm text-text-muted" aria-live="polite">
-        {notice ?? ''}
-      </p>
     </section>
   );
 }
