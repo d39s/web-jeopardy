@@ -41,6 +41,14 @@
       "category": "it",
       "difficulty": 1,
       "file": "it-grundlagen.json"
+    },
+    {
+      "id": "popkultur-fortgeschritten",
+      "title": "Popkultur – Fortgeschritten",
+      "description": "Kino der Neunziger, Musikgeschichte, Kultserien, Videospiele und deutsche Popkultur – für alle, die mehr als die Klassiker kennen.",
+      "category": "popkultur",
+      "difficulty": 2,
+      "file": "popkultur-fortgeschritten.json"
     }
   ]
 }
