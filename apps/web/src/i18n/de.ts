@@ -76,6 +76,9 @@ export const de = {
     resultWrong: (team: string, points: number) => `${team} falsch, minus ${points} Punkte`,
     resultUnanswered: 'Nicht beantwortet',
     resultUnansweredShort: 'Ohne Wertung',
+    /** Zeichen auf der Karte – Farbe allein darf den Ausgang nicht tragen. */
+    resultMarkCorrect: '✓',
+    resultMarkWrong: '✗',
 
     // Zugreihenfolge
     turnLabel: (name: string) => `${name} ist am Zug`,
