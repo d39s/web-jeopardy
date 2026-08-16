@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Test-Artefakte
+playwright-report/
+test-results/
+blob-report/
+
+# Editor / OS
+.DS_Store
+.idea/
+*.local
