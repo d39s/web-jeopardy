@@ -28,6 +28,24 @@ npm run dev          # http://localhost:5173
 | `npm run test:e2e`         | End-to-End-Tests (Playwright)                |
 | `npm run validate:content` | Prüft alle Fragensets in `content/topics`    |
 
+## Betrieb im Container
+
+```bash
+docker compose up --build     # http://localhost:8080
+```
+
+Das Image baut die Anwendung und liefert sie über nginx aus (rund 62 MB). Besonderheiten:
+
+- **Fragensets ohne neues Image:** `content/topics` ist als Volume eingebunden. Neue oder
+  geänderte JSON-Dateien wirken nach einem Neuladen der Seite, ein Rebuild ist nicht nötig.
+- **Verlaufsadressen:** unbekannte Pfade beantwortet `index.html`, `/game` funktioniert also
+  auch beim direkten Aufruf.
+- **Zwischenspeicher:** gehashte Dateien in `/assets` werden dauerhaft gecacht,
+  `index.html`, `/topics/*` und `/config.json` bewusst nicht.
+- **Laufzeitkonfiguration:** Der Einstiegspunkt schreibt `config.json` aus Umgebungsvariablen
+  (derzeit `JEOPARDY_WS_URL` als Platzhalter für den späteren Online-Modus), sodass dasselbe
+  Image in mehreren Umgebungen läuft.
+
 ## Projektstruktur
 
 ```

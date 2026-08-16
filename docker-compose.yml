@@ -1,0 +1,15 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: web-jeopardy:latest
+    ports:
+      - '8080:80'
+    volumes:
+      # Fragensets ohne neues Image ergänzen oder ändern.
+      - ./content/topics:/usr/share/nginx/html/topics:ro
+    environment:
+      # Platzhalter für den späteren Online-Modus (Phase 2).
+      JEOPARDY_WS_URL: ''
+    restart: unless-stopped
