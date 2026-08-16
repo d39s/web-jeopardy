@@ -7,7 +7,10 @@ export interface CategoryHeaderProps {
   color: CategoryColor;
 }
 
-/** Kategoriefarbe als Hintergrund, dunkle Schrift für ausreichenden Kontrast. */
+/**
+ * Kategoriefarbe als Hintergrund, dunkle Schrift für ausreichenden Kontrast.
+ * Lange Komposita wie "Nationalsozialismus" werden getrennt statt überzulaufen.
+ */
 export function CategoryHeader({ name, color }: CategoryHeaderProps) {
   return (
     <div
@@ -15,6 +18,7 @@ export function CategoryHeader({ name, color }: CategoryHeaderProps) {
         cardClasses,
         'flex items-center justify-center border-transparent px-2 py-3 text-center',
         'text-bg text-[clamp(0.9rem,1.6vw,1.4rem)] font-bold uppercase tracking-wide',
+        'hyphens-auto break-words',
       )}
       style={{ backgroundColor: color }}
     >

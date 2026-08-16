@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import {
+  chooseTopic,
   clueCard,
   revealAnswer,
   scoredClueCard,
@@ -25,6 +26,22 @@ test('spielfeld zeigt fünf kategorien und 25 karten', async ({ page }) => {
   for (const category of ['Erdkunde', 'Geschichte', 'Natur', 'Sprache', 'Zahlen']) {
     await expect(page.getByText(category, { exact: true })).toBeVisible();
   }
+});
+
+test('lange kategorienamen bleiben in ihrer spalte', async ({ page }) => {
+  await page.goto('/');
+  await chooseTopic(
+    page,
+    'Historische Persönlichkeiten',
+    'Historische Persönlichkeiten – Einstieg',
+  );
+  await page.getByRole('button', { name: 'Spiel starten' }).click();
+
+  // "Nationalsozialismus" ist breiter als eine Spalte und muss getrennt werden.
+  const kopf = page.getByText('Nationalsozialismus', { exact: true });
+  await expect(kopf).toBeVisible();
+  const laeuftUeber = await kopf.evaluate((el) => el.scrollWidth > el.clientWidth);
+  expect(laeuftUeber).toBe(false);
 });
 
 test('teamname lässt sich am spielfeld ändern und wirkt auf die punktebuttons', async ({

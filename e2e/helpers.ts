@@ -36,12 +36,17 @@ export async function chooseTopic(
   topic = category,
 ): Promise<void> {
   const kategorie = page.getByRole('button', { name: new RegExp(`^${category} `) });
-  if (await kategorie.isVisible().catch(() => false)) await kategorie.click();
-
   // Der barrierefreie Name beginnt mit dem Titel und nennt danach die
   // Schwierigkeit – so trifft die Suche genau ein Fragenset, auch wenn die
   // Kategorie mehrere Stufen enthält.
-  await page.getByRole('button', { name: new RegExp(`^${topic} Schwierigkeit`) }).click();
+  const fragenset = page.getByRole('button', { name: new RegExp(`^${topic} Schwierigkeit`) });
+
+  // Erst warten, bis die Themenliste steht: sonst greift die Sichtbarkeitsprüfung
+  // unter Last zu früh und die Kategoriestufe wird stillschweigend übersprungen.
+  await expect(kategorie.or(fragenset).first()).toBeVisible();
+  if (await kategorie.isVisible()) await kategorie.click();
+
+  await fragenset.click();
 }
 
 export function clueCard(page: Page, category: string, points: number) {
