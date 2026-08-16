@@ -42,8 +42,10 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 export interface ShareSectionProps {
-  /** Link zur aktuellen Einstellung; null, wenn ein eigenes Fragenset geladen ist. */
+  /** Link zur aktuellen Einstellung; null, solange sich nichts teilen lässt. */
   link: string | null;
+  /** Ein eigenes Fragenset ist geladen – das passt in keine Adresszeile. */
+  uploadWarning?: boolean;
   /** Der aufgerufene Link enthielt nichts Verwertbares. */
   invalidLink?: boolean;
 }
@@ -57,7 +59,11 @@ const copyMessages: Record<CopyState, string> = {
 };
 
 /** Teilen-Bereich der Startseite: zeigt den Link zur aktuellen Konfiguration. */
-export function ShareSection({ link, invalidLink = false }: ShareSectionProps) {
+export function ShareSection({
+  link,
+  uploadWarning = false,
+  invalidLink = false,
+}: ShareSectionProps) {
   const [copied, setCopied] = useState<CopyState>('idle');
 
   const copy = async () => {
@@ -76,10 +82,12 @@ export function ShareSection({ link, invalidLink = false }: ShareSectionProps) {
         </Card>
       ) : null}
 
-      {link === null ? (
+      {uploadWarning ? (
         <Card className="p-4">
           <p className="text-sm text-text-muted">{de.setup.shareUploadWarning}</p>
         </Card>
+      ) : link === null ? (
+        <p className="text-sm text-text-muted">{de.setup.startHint}</p>
       ) : (
         <Card className="flex flex-col gap-3 p-4">
           <div className="flex flex-wrap items-end gap-3">

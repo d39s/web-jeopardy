@@ -118,6 +118,21 @@ describe('spiel teilen', () => {
     );
   });
 
+  it('bietet ohne verfügbares thema keinen link an', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    renderWithGame(
+      <MemoryRouter>
+        <SetupPage />
+      </MemoryRouter>,
+      initialGameState,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(/Themenliste konnte nicht geladen werden/)).toBeInTheDocument(),
+    );
+    expect(screen.queryByRole('button', { name: 'Link kopieren' })).not.toBeInTheDocument();
+  });
+
   it('weist bei einem eigenen fragenset darauf hin, dass der link entfällt', async () => {
     await renderSetup();
     const file = new File([JSON.stringify(sampleDefinition)], 'thema.json', {

@@ -78,7 +78,7 @@ export function SetupPage() {
    * es keinen Link. Sonst spiegelt er immer die aktuell eingestellten Werte.
    */
   const shareLink =
-    uploaded !== null
+    uploaded !== null || selectedId === null
       ? null
       : buildShareLink(
           {
@@ -179,7 +179,11 @@ export function SetupPage() {
         onUpload={(file) => void handleUpload(file)}
       />
 
-      <ShareSection link={shareLink} invalidLink={sharedLink.status === 'invalid'} />
+      <ShareSection
+        link={shareLink}
+        uploadWarning={uploaded !== null}
+        invalidLink={sharedLink.status === 'invalid'}
+      />
 
       {sharedLink.status === 'ok' ? (
         <SharedConfigDialog
