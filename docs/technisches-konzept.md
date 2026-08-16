@@ -23,6 +23,7 @@ Begleitdokument: [Arbeitsplan & Subtasks](./arbeitsplan.md)
 13. [Qualitätssicherung & Teststrategie](#13-qualitätssicherung--teststrategie)
 14. [Nicht-funktionale Anforderungen](#14-nicht-funktionale-anforderungen)
 15. [Risiken](#15-risiken)
+16. [Erweiterungen aus Runde 2](#16-erweiterungen-aus-runde-2)
 
 ---
 
@@ -291,15 +292,28 @@ export interface GameState {
   events: ScoreEvent[]; // Single Source of Truth für alle Punkte
   openClueId: string | null;
   answerRevealed: boolean;
+  // ab Runde 2, siehe Kapitel 16
+  timerSeconds: number | null; // Bedenkzeit je Frage, null = ohne Timer
+  startingTeamIndex: number; // erster Zugriff auf die nächste Frage, wandert reihum
+  activeTeamIndex: number; // Team, das bei der offenen Frage am Zug ist
+  timerEndsAt: number | null; // Zeitpunkt (epoch ms), zu dem die Frist endet
+  deductOnWrong: boolean; // ob eine falsche Antwort Punkte kostet
 }
 
 // ---------- Actions (serialisierbar, multiplayer-tauglich) ----------
 export type GameAction =
-  | { type: 'game/start'; definition: GameDefinition; teams: Team[] }
+  | {
+      type: 'game/start';
+      definition: GameDefinition;
+      teams: Team[];
+      timerSeconds?: number | null; // ohne Angabe: ohne Timer
+      deductOnWrong?: boolean; // ohne Angabe: Abzug an
+    }
   | { type: 'team/rename'; teamId: string; name: string }
-  | { type: 'clue/open'; clueId: string }
+  | { type: 'clue/open'; clueId: string; at: number }
   | { type: 'clue/revealAnswer' }
   | { type: 'clue/close' }
+  | { type: 'clue/timerExpired'; at: number }
   | { type: 'score/award'; clueId: string; teamId: string; correct: boolean; at: number }
   | { type: 'game/reset' };
 
@@ -317,6 +331,15 @@ export function selectTeamStats(
   teamId: string,
 ): { correct: number; wrong: number };
 export function categoryColorAt(index: number): CategoryColor;
+
+// ab Runde 2
+export function selectClueResult(
+  state: GameState,
+  clueId: string,
+): { outcome: 'correct' | 'wrong' | 'unanswered'; team: Team | null; delta: number } | null;
+export function selectActiveTeam(state: GameState): Team | null;
+export function selectStartingTeam(state: GameState): Team | null;
+export function selectIsTimerRunning(state: GameState): boolean;
 
 // Teamverwaltung – erzeugt beliebig viele Teams mit Default-Namen 'Team A', 'Team B', …
 export function createDefaultTeams(count: number): Team[];
@@ -566,3 +589,76 @@ HEALTHCHECK CMD wget -qO- http://localhost/ || exit 1
 ---
 
 **Nächster Schritt:** [Arbeitsplan & Subtasks](./arbeitsplan.md) – Aufteilung in parallel bearbeitbare Pakete inkl. Commit- und Best-Practice-Regeln.
+
+---
+
+## 16. Erweiterungen aus Runde 2
+
+Fünf nachgereichte Anforderungen. Sie sind vollständig umgesetzt; dieses Kapitel hält die
+Entscheidungen fest, die dabei zu treffen waren.
+
+### 16.1 Bedenkzeit je Frage
+
+- **Einstellbar auf der Startseite:** aus, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300
+  Sekunden (`TIMER_OPTIONS`). Die Zeit gilt **je Frage und Team**.
+- **Frist statt Zähler:** Der Spielstand hält mit `timerEndsAt` einen Zeitpunkt, keinen
+  laufenden Zähler. Der Reducer bleibt dadurch rein, die Anzeige rechnet nur die Differenz
+  aus – und in Phase 2 sehen alle Beteiligten dieselbe Frist, ohne Uhren abzugleichen.
+- **Ablauf:** Verstreicht die Zeit, meldet die Oberfläche `clue/timerExpired`; der Reducer
+  gibt den Zugriff an das nächste Team und startet die Frist neu. Der Reducer prüft dabei,
+  ob die Frist wirklich verstrichen ist – sonst könnte eine doppelt oder verspätet gemeldete
+  Zeit ein Team seinen Zugriff kosten.
+- **Alle Teams durch:** Die Frage gilt als gespielt und wird **ohne Punkte** abgeschlossen
+  (Ausgang `unanswered`). Damit bleibt keine unbeantwortete Karte im Spielfeld hängen.
+- **„Antwort anzeigen" beendet die Bedenkzeit** – ab da geht es um die Wertung, nicht mehr
+  um das Nachdenken.
+
+### 16.2 Zugreihenfolge
+
+Der erste Zugriff wandert **nach jeder abgeschlossenen Frage reihum weiter**
+(`startingTeamIndex`), damit nicht immer dasselbe Team beginnt. Wer gerade an der Reihe ist,
+steht über dem Spielfeld: bei geöffneter Frage das Team mit Zugriff (`selectActiveTeam`),
+sonst das Team, das die nächste Frage beginnt (`selectStartingTeam`). Bei einem einzigen Team
+entfällt die Anzeige.
+
+### 16.3 Ausgang gespielter Karten
+
+Eine gespielte Karte bleibt grau und gesperrt – das ist unverändert bindend. **Zusätzlich**
+zeigt sie, wie die Frage ausging:
+
+| Ausgang           | Darstellung                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| richtig           | Häkchen und Punktzahl in Grün (`--color-positive`), darunter der Teamname              |
+| falsch            | Kreuz und Punktzahl durchgestrichen in Rot (`--color-negative`), darunter der Teamname |
+| nicht beantwortet | neutral, darunter „Ohne Wertung"                                                       |
+
+Farbe trägt die Aussage nie allein: Zeichen, Durchstreichung und Text kommen hinzu, und das
+`aria-label` der Karte nennt den Ausgang im Klartext. Der Teamname entfällt im Übungsmodus,
+weil er dort nichts unterscheidet.
+
+### 16.4 Konfiguration per Link
+
+- **Format:** `?thema=<id>&teams=<Name1,Name2>&timer=<sekunden>&abzug=<0|1>` – lesbar statt
+  Base64, notfalls von Hand tippbar. Teamnamen sind einzeln kodiert, ein Komma im Namen
+  kollidiert daher nicht mit dem Trennzeichen. Weggelassen wird, was dem Standard entspricht.
+- **Robust beim Lesen:** Unbekanntes Thema, unzulässige Bedenkzeit, zu viele oder leere
+  Teams, kaputte Prozentfolgen – all das wird verworfen oder begrenzt, nie zum Fehler.
+- **Interaktion beim Öffnen:** Ein Dialog zeigt Thema, Bedenkzeit und Regel und lässt die
+  **Teamnamen anpassen**, bevor die Werte auf die Startseite übernommen werden. Danach
+  verschwinden die Parameter aus der Adresszeile, damit ein Neuladen den Dialog nicht erneut
+  öffnet.
+- **Grenze:** Ein selbst hochgeladenes Fragenset passt nicht in eine Adresszeile. In dem Fall
+  erscheint statt des Links ein Hinweis, die Datei mitzugeben.
+
+### 16.5 Punktabzug abschaltbar
+
+`deductOnWrong` entscheidet, ob eine falsche Antwort die Punktzahl der Frage kostet oder den
+Stand unverändert lässt. Standard bleibt der Abzug. Der Ausgang der Frage bleibt in beiden
+Fällen „falsch" – nur das Delta ist dann 0. Die Klammerung bei null gilt unverändert.
+
+### 16.6 Auswirkung auf die Persistenz
+
+Der gespeicherte Spielstand hat neue Pflichtfelder. Ältere Einträge scheitern an der
+Schemaprüfung und werden verworfen – ein laufendes Spiel aus der Zeit davor lässt sich also
+nicht fortsetzen. Das ist bewusst so: Ein halb migrierter Spielstand wäre schlimmer als ein
+neu gestartetes Spiel.

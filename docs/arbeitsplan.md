@@ -17,6 +17,7 @@ Begleitdokument zum [Technischen Konzept](./technisches-konzept.md). Ziel dieses
 9. [Abnahmematrix gegen `details.md`](#9-abnahmematrix-gegen-detailsmd)
 10. [Backlog & Phase 2](#10-backlog--phase-2)
 11. [Umsetzungsstand](#11-umsetzungsstand)
+12. [Runde 2 – nachgereichte Features](#12-runde-2--nachgereichte-features)
 
 ---
 
@@ -345,3 +346,73 @@ Befund, Produktions-Build 100 kB gzip, Docker-Image rund 62 MB.
 
 **Bewusst nicht umgesetzt** (siehe Backlog): Mehrfachwertung, Wertung rückgängig,
 Moderator-Shortcuts, Medien in Fragen, Timer, Editor-Oberfläche.
+
+---
+
+## 12. Runde 2 – nachgereichte Features
+
+Fünf weitere Anforderungen, umgesetzt nach demselben Prinzip wie der MVP: **erst der
+gemeinsame Unterbau, dann parallele Pakete mit getrennter Dateihoheit.**
+
+### Ablauf
+
+1. **Unterbau (eine Person, vorab):** Spielmodell um Bedenkzeit, Zugreihenfolge, Ausgang
+   `unanswered` und Abzugsregel erweitert, dazu Selektoren, alle Texte und die
+   Timer-Auswahl. Das ist die Konfliktzone – sie gehört in eine Hand.
+2. **Vier Pakete gleichzeitig,** je eigener Branch und eigene Arbeitskopie unter
+   `.claude/worktrees/`, damit sich die Beteiligten nicht in dieselben Dateien schreiben.
+3. **Zusammenführen und Abnahme** durch die Person, die den Unterbau gebaut hat: Merge,
+   Gesamttests, End-to-End-Tests, optische Prüfung.
+
+### Pakete
+
+| ID     | Thema                                                                | Dateihoheit                         | Stand    |
+| ------ | -------------------------------------------------------------------- | ----------------------------------- | -------- |
+| **R1** | Bedenkzeit im Frage-Popup: Countdown, Teamwechsel, Ablaufmeldung     | `apps/web/src/features/clue/`       | erledigt |
+| **R2** | Konfiguration per Link: Kodieren, Teilen-Bereich, Dialog beim Öffnen | `apps/web/src/features/setup/`      | erledigt |
+| **R3** | Ausgang gespielter Karten im Spielfeld                               | `apps/web/src/features/board/`      | erledigt |
+| **R4** | Anzeige, welches Team am Zug ist                                     | `apps/web/src/features/scoreboard/` | erledigt |
+| **R5** | Abzugsregel einstellbar (Startseite, Link, Kern)                     | Kern und `features/setup/`          | erledigt |
+
+### Was beim Zusammenführen auffiel
+
+Alle vier Pakete ließen sich konfliktfrei mergen – die getrennte Dateihoheit hat getragen.
+Drei Dinge zeigten sich erst in der Integration und sind behoben:
+
+- Der neue Guard „Frist muss verstrichen sein" ließ Tests auffliegen, die den Ablauf mit
+  Platzhalter-Zeitstempeln erzeugten. Die Zeitstempel sind jetzt echt.
+- Das erweiterte `aria-label` gewerteter Karten enthält denselben Wortlaut wie die
+  Punktebuttons. Die End-to-End-Tests suchen Punktebuttons deshalb nur noch innerhalb des
+  Dialogs.
+- Der Teilen-Link musste um die Abzugsregel erweitert werden, sonst hätte er eine
+  Einstellung stillschweigend verloren.
+
+### Abnahmematrix Runde 2
+
+| #   | Anforderung                                                                       | Nachweis                                                                        |
+| --- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| R1a | Bedenkzeit auf der Startseite einstellbar, 10 s bis 5 min in sinnvollen Abständen | `TIMER_OPTIONS`, Auswahlfeld auf der Startseite                                 |
+| R1b | Zeit wird während der Frage angezeigt                                             | E2E `bedenkzeit läuft und gibt den zugriff an das nächste team weiter`          |
+| R1c | Nach Ablauf startet die Zeit für das nächste Team neu                             | derselbe Test, zusätzlich Reducer-Tests mit 1, 2 und 3 Teams                    |
+| R1d | Antwortet niemand, gilt die Frage als gespielt                                    | E2E `unbeantwortete frage gilt nach ablauf bei allen teams als gespielt`        |
+| R2a | Konfiguration als Link teilbar                                                    | Rundlauftests in `shareConfig.test.ts`, Teilen-Bereich auf der Startseite       |
+| R2b | Beim Öffnen eines geteilten Links lassen sich die Namen anpassen                  | E2E `geteilter link belegt thema, teams, bedenkzeit und regel vor`              |
+| R3a | Gespielte Karte zeigt, ob Punkte erzielt oder abgezogen wurden                    | E2E `gespielte karten zeigen ausgang und verantwortliches team`                 |
+| R3b | Bei mehreren Teams steht dabei, wer die Frage entschieden hat                     | derselbe Test; im Übungsmodus entfällt der Name (Komponententest)               |
+| R4  | Sichtbar, welches Team am Zug ist                                                 | E2E `anzeige des teams am zug wandert reihum weiter`                            |
+| R5  | Punktabzug bei falscher Antwort abschaltbar                                       | E2E `ohne abzugsregel bleibt der punktestand bei einer falschen antwort stehen` |
+
+### Prüfstand nach Runde 2
+
+190 Unit- und Komponententests, 17 End-to-End-Tests (darunter axe-Prüfungen ohne Verstöße),
+Lint und Typecheck ohne Befund, Produktions-Build 104 kB gzip.
+
+### Bewusst offen geblieben
+
+- **Pause für die Bedenkzeit:** Dafür bräuchte es eine eigene Action im Kern, sonst laufen
+  Anzeige, Persistenz und der spätere Online-Modus auseinander. Die Texte liegen bereit.
+- **Ein „Nächstes Team"-Knopf** für die Moderation wäre ein Einzeiler (dieselbe Action wie
+  beim Ablauf), war aber nicht gefordert.
+- **Gedämpfte Farben auf gewerteten Karten:** Grün und Rot liegen unter der Abdunklung, die
+  für graue Karten vorgeschrieben ist. Falls das auf dem Beamer zu blass wirkt, wäre eine
+  leicht höhere Deckkraft für gewertete Karten der kleinste Eingriff.
