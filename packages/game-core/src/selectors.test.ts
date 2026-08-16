@@ -6,6 +6,7 @@ import {
   selectActiveTeam,
   selectAnsweringTeams,
   selectClueCount,
+  selectClueReview,
   selectClueSummary,
   selectIsFinished,
   selectIsPracticeMode,
@@ -14,9 +15,12 @@ import {
   selectOpenClue,
   selectRanking,
   selectScore,
+  selectScoreProgress,
   selectScoredCount,
   selectStartingTeam,
+  selectStreak,
   selectTeamStats,
+  selectTeamStatistics,
   selectVetoCandidates,
 } from './selectors';
 import { createDefaultTeams } from './teams';
@@ -222,5 +226,118 @@ describe('kategoriefarben', () => {
     const category = sampleDefinition.categories[0];
     if (!category) throw new Error('Fixture unvollständig.');
     expect(resolveCategoryColor({ ...category, color: '#FFD166' }, 0)).toBe('#FFD166');
+  });
+});
+
+describe('serien', () => {
+  it('meldet erst ab drei gleichen ausgängen in folge', () => {
+    let state = play(startedGame(), 'wissenschaft-100', 'team-a');
+    state = play(state, 'wissenschaft-200', 'team-a', ['team-a']);
+    expect(selectStreak(state, 'team-a')).toBeNull();
+
+    state = play(state, 'wissenschaft-300', 'team-a', ['team-a']);
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'correct', length: 3 });
+  });
+
+  it('zählt auch falsche antworten in folge', () => {
+    let state = startedGame(2);
+    // Niemand liegt richtig; Team A ist jedes Mal beteiligt.
+    state = play(state, 'wissenschaft-100', null);
+    state = play(state, 'wissenschaft-200', null, ['team-a']);
+    state = play(state, 'wissenschaft-300', null);
+
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'wrong', length: 3 });
+  });
+
+  it('zählt nur eigene beteiligungen – fremde fragen unterbrechen nicht', () => {
+    let state = startedGame();
+    // Team A gewinnt seine drei Beteiligungen; dazwischen spielen B und C unter sich.
+    state = play(state, 'wissenschaft-100', 'team-a');
+    state = play(state, 'geografie-100', 'team-b');
+    state = play(state, 'musik-100', 'team-c');
+    state = play(state, 'wissenschaft-200', 'team-a', ['team-a']);
+    state = play(state, 'geografie-200', 'team-b');
+    state = play(state, 'musik-200', 'team-a', ['team-a']);
+
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'correct', length: 3 });
+  });
+
+  it('bricht die serie beim ersten abweichenden ausgang', () => {
+    let state = startedGame(2);
+    for (const clueId of ['wissenschaft-100', 'wissenschaft-200', 'wissenschaft-300']) {
+      state = play(state, clueId, 'team-a', ['team-a']);
+    }
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'correct', length: 3 });
+
+    state = play(state, 'wissenschaft-400', 'team-b', ['team-a']);
+    expect(selectStreak(state, 'team-a')).toBeNull();
+  });
+
+  it('kennt ohne beteiligung keine serie', () => {
+    expect(selectStreak(startedGame(), 'team-c')).toBeNull();
+  });
+});
+
+describe('auswertung', () => {
+  /** Drei gespielte Fragen mit Veto, verlorener Frage und Runde ohne Gewinner. */
+  function gespieltesSpiel(): GameState {
+    let state = play(startedGame(), 'wissenschaft-500', 'team-c', ['team-c']);
+    state = play(state, 'geografie-200', null, ['team-a']);
+    return play(state, 'musik-100', 'team-c');
+  }
+
+  it('gibt die fragen in spielreihenfolge mit lösung und beteiligten zurück', () => {
+    const review = selectClueReview(gespieltesSpiel());
+
+    expect(review.map((entry) => [entry.order, entry.clue.id])).toEqual([
+      [1, 'wissenschaft-500'],
+      [2, 'geografie-200'],
+      [3, 'musik-100'],
+    ]);
+
+    const erste = review[0];
+    expect(erste?.categoryName).toBe('Wissenschaft');
+    expect(erste?.clue.answer).toBe('Albert Einstein');
+    expect(erste?.winner?.id).toBe('team-c');
+    // Team A hat begonnen, Team C ist per Veto eingestiegen.
+    expect(erste?.participants.map((teil) => [teil.team.id, teil.viaVeto, teil.delta])).toEqual([
+      ['team-a', false, -500],
+      ['team-c', true, 500],
+    ]);
+  });
+
+  it('kennt fragen ohne gewinner', () => {
+    const zweite = selectClueReview(gespieltesSpiel())[1];
+
+    expect(zweite?.winner).toBeNull();
+    expect(zweite?.participants.every((teil) => teil.outcome === 'wrong')).toBe(true);
+  });
+
+  it('zählt richtige, falsche und per veto erspielte beteiligungen je team', () => {
+    const statistik = selectTeamStatistics(gespieltesSpiel());
+
+    expect(statistik.map((eintrag) => eintrag.team.id)).toEqual(['team-a', 'team-b', 'team-c']);
+    expect(statistik[0]).toMatchObject({ correct: 0, wrong: 2, vetos: 1, played: 2 });
+    expect(statistik[2]).toMatchObject({ correct: 2, wrong: 0, vetos: 1, played: 2, score: 600 });
+    // Team B hat die zweite Frage begonnen – beteiligt, aber ohne Veto.
+    expect(statistik[1]).toMatchObject({ correct: 0, wrong: 1, vetos: 0, played: 1, score: 0 });
+  });
+
+  it('liefert den punkteverlauf mit startwert und klammerung bei null', () => {
+    const verlauf = selectScoreProgress(gespieltesSpiel());
+
+    expect(verlauf.clueCount).toBe(3);
+    // Ein Wert mehr als Fragen: der Stand vor der ersten Frage.
+    expect(verlauf.series[0]?.scores).toEqual([0, 0, 0, 0]);
+    expect(verlauf.series[2]?.scores).toEqual([0, 500, 500, 600]);
+    expect(verlauf.max).toBe(600);
+  });
+
+  it('bleibt ohne gespielte frage leer', () => {
+    const leer = startedGame();
+
+    expect(selectClueReview(leer)).toEqual([]);
+    expect(selectScoreProgress(leer).clueCount).toBe(0);
+    expect(selectScoreProgress(leer).series[0]?.scores).toEqual([0]);
   });
 });

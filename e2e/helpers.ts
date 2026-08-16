@@ -99,6 +99,31 @@ export async function playClue(
 }
 
 /**
+ * Spielt das ganze Spielfeld durch. Gewertet wird jeweils das Team, das die
+ * Frage beginnt; jede dritte endet ohne richtige Antwort, damit die Auswertung
+ * beide Ausgänge kennt.
+ */
+export async function playAllClues(page: Page): Promise<void> {
+  // Gewertete Karten heißen „… – bereits gespielt" und passen hier nicht mehr.
+  const offeneKarte = page.getByRole('button', { name: /^[^,]+, \d+ Punkte$/ });
+
+  for (let index = 0; (await offeneKarte.count()) > 0; index += 1) {
+    await offeneKarte.first().click();
+    await revealAnswer(page);
+
+    const dialog = page.getByRole('dialog');
+    if (index % 3 === 2) {
+      await settleButton(page, 'Keine richtige Antwort gegeben').click();
+    } else {
+      await dialog
+        .getByRole('button', { name: /^Team [A-H]$/ })
+        .first()
+        .click();
+    }
+  }
+}
+
+/**
  * Stellt die Bedenkzeit über den Schieberegler ein. Die Stufen sind ungleich
  * verteilt, deshalb trägt der Regler den Index; Position 0 heißt „ohne Zeit".
  * Die Liste entspricht TIMER_OPTIONS aus @jeopardy/game-core.

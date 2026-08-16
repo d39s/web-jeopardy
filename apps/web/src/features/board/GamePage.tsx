@@ -1,3 +1,4 @@
+import { selectIsFinished } from '@jeopardy/game-core';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
@@ -35,6 +36,10 @@ export function GamePage() {
   const fullscreen = useFullscreen();
 
   const hasGame = state.definition !== null && state.phase !== 'setup';
+  const finished = selectIsFinished(state);
+  // Die Auswertung öffnet sich mit der letzten Wertung von selbst; wer sie
+  // schließt, kommt über den Knopf in der Kopfzeile zurück.
+  const [resultDismissed, setResultDismissed] = useState(false);
 
   // Ohne laufendes Spiel gehört der Nutzer auf die Startseite.
   useEffect(() => {
@@ -54,6 +59,11 @@ export function GamePage() {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{state.definition.title}</h1>
         <div className="flex gap-2">
+          {finished ? (
+            <Button variant="primary" onClick={() => setResultDismissed(false)}>
+              {de.board.showResult}
+            </Button>
+          ) : null}
           <Button onClick={fullscreen.toggle}>
             {fullscreen.active ? de.board.exitFullscreen : de.board.fullscreen}
           </Button>
@@ -65,7 +75,11 @@ export function GamePage() {
       <BoardGrid />
 
       <ClueDialog />
-      <ResultOverlay onNewGame={newGame} />
+      <ResultOverlay
+        open={finished && !resultDismissed}
+        onClose={() => setResultDismissed(true)}
+        onNewGame={newGame}
+      />
     </main>
   );
 }

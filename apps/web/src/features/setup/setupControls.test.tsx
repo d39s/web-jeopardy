@@ -99,30 +99,33 @@ describe('veto-zeit einstellen', () => {
 
 describe('spielregeln wählen', () => {
   it('markiert die aktive regel', () => {
-    render(<RulesSetup deductOnWrong onChange={vi.fn()} />);
+    render(<RulesSetup wrongPenalty="half" onChange={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: /Punkte werden abgezogen/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Halbe Punktzahl/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-    expect(screen.getByRole('button', { name: /Punktestand bleibt/ })).toHaveAttribute(
-      'aria-pressed',
-      'false',
-    );
+    for (const name of [/Volle Punktzahl/, /Punktestand bleibt/]) {
+      expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false');
+    }
   });
 
-  it('meldet die auswahl der anderen regel', async () => {
+  it('meldet die auswahl der anderen regeln', async () => {
     const onChange = vi.fn();
-    render(<RulesSetup deductOnWrong onChange={onChange} />);
+    render(<RulesSetup wrongPenalty="full" onChange={onChange} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /Halbe Punktzahl/ }));
+    expect(onChange).toHaveBeenCalledWith('half');
 
     await userEvent.click(screen.getByRole('button', { name: /Punktestand bleibt/ }));
-    expect(onChange).toHaveBeenCalledWith(false);
+    expect(onChange).toHaveBeenCalledWith('none');
   });
 
-  it('beschreibt beide regeln', () => {
-    render(<RulesSetup deductOnWrong={false} onChange={vi.fn()} />);
+  it('beschreibt alle drei regeln', () => {
+    render(<RulesSetup wrongPenalty="full" onChange={vi.fn()} />);
 
     expect(screen.getByText(/fällt nie unter null/)).toBeInTheDocument();
+    expect(screen.getByText(/kostet 150 Punkte/)).toBeInTheDocument();
     expect(screen.getByText(/ändert den Punktestand nicht/)).toBeInTheDocument();
   });
 });

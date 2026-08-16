@@ -297,7 +297,7 @@ export interface GameState {
   startingTeamIndex: number; // erster Zugriff auf die nächste Frage, wandert reihum
   activeTeamIndex: number; // Team, das bei der offenen Frage am Zug ist
   timerEndsAt: number | null; // Zeitpunkt (epoch ms), zu dem die Frist endet
-  deductOnWrong: boolean; // ob eine falsche Antwort Punkte kostet
+  wrongPenalty: WrongPenalty; // 'full' | 'half' | 'none' – was eine falsche Antwort kostet
 }
 
 // ---------- Actions (serialisierbar, multiplayer-tauglich) ----------
@@ -307,7 +307,7 @@ export type GameAction =
       definition: GameDefinition;
       teams: Team[];
       timerSeconds?: number | null; // ohne Angabe: ohne Timer
-      deductOnWrong?: boolean; // ohne Angabe: Abzug an
+      wrongPenalty?: WrongPenalty; // ohne Angabe: volle Punktzahl
     }
   | { type: 'team/rename'; teamId: string; name: string }
   | { type: 'clue/open'; clueId: string; at: number }
@@ -645,7 +645,7 @@ weil er dort nichts unterscheidet.
 
 ### 16.4 Konfiguration per Link
 
-- **Format:** `?thema=<id>&teams=<Name1,Name2>&timer=<sekunden>&abzug=<0|1>` – lesbar statt
+- **Format:** `?thema=<id>&teams=<Name1,Name2>&timer=<sekunden>&abzug=<halb|0>` – lesbar statt
   Base64, notfalls von Hand tippbar. Teamnamen sind einzeln kodiert, ein Komma im Namen
   kollidiert daher nicht mit dem Trennzeichen. Weggelassen wird, was dem Standard entspricht.
 - **Robust beim Lesen:** Unbekanntes Thema, unzulässige Bedenkzeit, zu viele oder leere
@@ -657,13 +657,15 @@ weil er dort nichts unterscheidet.
 - **Grenze:** Ein selbst hochgeladenes Fragenset passt nicht in eine Adresszeile. In dem Fall
   erscheint statt des Links ein Hinweis, die Datei mitzugeben.
 
-### 16.5 Punktabzug abschaltbar
+### 16.5 Abzug bei falscher Antwort
 
-`deductOnWrong` entscheidet, ob eine falsche Antwort die Punktzahl der Frage kostet oder den
-Stand unverändert lässt. Standard bleibt der Abzug. Die Auswahl erfolgt über zwei Karten in
-derselben Optik wie die Themenauswahl – eine Einstellung mit zwei benannten Möglichkeiten
-liest sich besser als ein Häkchen, dessen Gegenteil man sich denken muss. Der Ausgang der Frage bleibt in beiden
-Fällen „falsch" – nur das Delta ist dann 0. Die Klammerung bei null gilt unverändert.
+`wrongPenalty` entscheidet, was eine falsche Antwort kostet: `full` die Punktzahl der Frage,
+`half` die Hälfte davon, `none` gar nichts. Standard bleibt der volle Abzug. Die Auswahl
+erfolgt über drei Karten in derselben Optik wie die Themenauswahl – benannte Möglichkeiten
+lesen sich besser als ein Häkchen, dessen Gegenteil man sich denken muss. Der Ausgang der
+Frage bleibt in allen Fällen „falsch" – nur das Delta unterscheidet sich. Die halbe Stufe
+wird gerundet, damit auch ungerade Punktwerte eines eigenen Fragensets ganze Punkte ergeben.
+Die Klammerung bei null gilt unverändert.
 
 ### 16.6 Auswirkung auf die Persistenz
 
@@ -671,3 +673,65 @@ Der gespeicherte Spielstand hat neue Pflichtfelder. Ältere Einträge scheitern 
 Schemaprüfung und werden verworfen – ein laufendes Spiel aus der Zeit davor lässt sich also
 nicht fortsetzen. Das ist bewusst so: Ein halb migrierter Spielstand wäre schlimmer als ein
 neu gestartetes Spiel.
+
+## 17. Erweiterungen aus Runde 3
+
+### 17.1 Auswertung am Spielende
+
+Mit der letzten Wertung öffnet sich die Auswertung von selbst. Sie liegt in einem Dialog mit
+vier Reitern, damit jeder Abschnitt ohne Scrollen auf einen Beamer passt:
+
+| Reiter    | Inhalt                                                                      |
+| --------- | --------------------------------------------------------------------------- |
+| Endstand  | Ranking wie bisher, im Übungsmodus die Trefferquote                         |
+| Statistik | Richtige, falsche und per Veto erspielte Beteiligungen sowie Punkte je Team |
+| Verlauf   | Punkteverlauf über alle Fragen als Liniendiagramm                           |
+| Fragen    | Alle gespielten Fragen mit Musterlösung, Gewinner und Beteiligten           |
+
+Wer den Dialog schließt, kommt über den Knopf **Auswertung** in der Kopfzeile zurück; er
+erscheint dort erst, wenn das Spiel beendet ist. Die Reiter folgen dem ARIA-Muster
+(`tablist`/`tab`/`tabpanel`) mit Pfeiltasten, Pos1 und Ende.
+
+Grundlage sind drei neue Selektoren in `game-core`:
+
+- `selectClueReview` – alle gewerteten Fragen in Spielreihenfolge samt Beteiligten,
+- `selectTeamStatistics` – Kennzahlen je Team,
+- `selectScoreProgress` – Punktestand nach jeder Frage, mit derselben schrittweisen
+  Klammerung bei null wie `selectScore`.
+
+Damit der Rückblick sagen kann, **wer per Veto eingestiegen ist**, trägt jede Wertung das
+Feld `viaVeto`. Es ließe sich zwar aus der Reihenfolge der Wertungen ableiten – das erste
+beteiligte Team hat die Frage begonnen –, aber eine implizite Reihenfolge ist eine schlechte
+Grundlage für eine Anzeige.
+
+Das Diagramm ist handgezeichnetes SVG statt einer Diagrammbibliothek: Für fünf Linien lohnt
+kein zusätzliches Paket im Bundle. Ab dem sechsten Team wiederholt sich die Kategoriepalette,
+deshalb unterscheidet dann zusätzlich die Strichart. Die Legende steht über dem Diagramm und
+nennt Namen und Endstand – die Farbe allein trägt die Zuordnung nicht.
+
+Der Moderationshinweis einer Frage (`note`) bleibt auch im Rückblick unsichtbar. Er richtet
+sich an die Moderation während des Spiels.
+
+### 17.2 Serien am Teamnamen
+
+Ab drei richtigen Antworten in Folge steht 🔥 mit der Länge hinter dem Teamnamen, ab drei
+falschen 🧊. Gezählt werden **nur eigene Beteiligungen**: Fragen, die andere Teams unter sich
+ausmachen, unterbrechen die Serie nicht. Bei sechs oder acht Teams käme sonst kaum jemand auf
+drei in Folge, und die Anzeige wäre nutzlos.
+
+Die Zeichen sind für Screenreader ausgeblendet – ein Emoji wird je nach Vorlesesoftware als
+„Feuer" gesprochen, was über die Serie nichts aussagt. Daneben steht der Sinn im Klartext.
+
+Damit der Teamname bei acht Teams lesbar bleibt, ist die Teamkachel ein Container-Query-
+Kontext: Der Punktestand schrumpft in schmalen Kacheln mit.
+
+### 17.3 Funkeln der letzten Karten
+
+Sind höchstens acht Fragen offen, umgibt die verbliebenen Karten ein weicher Schein in ihrer
+Kategoriefarbe (`--animate-funkeln`). Der Takt ist je Karte um 180 ms versetzt, damit das
+Spielfeld nicht im Gleichschritt blinkt.
+
+Beide Stufen der Animation tragen gleich viele Schatten. Nur dann blendet der Browser weich
+über – bei unterschiedlich langen Schattenlisten springt der Wert bei 50 %, und aus dem
+Funkeln wird ein Blinken. Bei `prefers-reduced-motion` greift die bestehende Regel in
+`global.css`.

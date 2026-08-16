@@ -1,9 +1,10 @@
 import { MAX_TEAMS_UI, MAX_TEAM_NAME_LENGTH, TIMER_OPTIONS } from '@jeopardy/game-core';
+import type { WrongPenalty } from '@jeopardy/game-core';
 
 /**
  * Spielkonfiguration als lesbarer Link.
  *
- * Format: `?thema=<themen-id>&teams=<Name1,Name2>&timer=<sekunden>&vetozeit=<sekunden>&abzug=<0|1>`
+ * Format: `?thema=<themen-id>&teams=<Name1,Name2>&timer=<sekunden>&vetozeit=<sekunden>&abzug=<halb|0>`
  *
  * Bewusst kein Base64: Der Link bleibt lesbar und lässt sich notfalls von Hand
  * tippen. Die Teamnamen werden einzeln URL-kodiert und mit einem echten Komma
@@ -46,8 +47,8 @@ export interface SharedConfig {
   timerSeconds: number | null;
   /** Veto-Zeit in Sekunden; null koppelt sie an die Bedenkzeit. */
   vetoSeconds: number | null;
-  /** Ob eine falsche Antwort Punkte kostet. */
-  deductOnWrong: boolean;
+  /** Was eine falsche Antwort kostet. */
+  wrongPenalty: WrongPenalty;
 }
 
 export type ShareParseResult =
@@ -112,11 +113,17 @@ function parseTeamNames(raw: string | null): string[] {
     .slice(0, MAX_TEAMS_UI);
 }
 
-/** Fehlt der Parameter oder ist er unlesbar, gilt der Standard: Abzug an. */
-function parseDeduct(raw: string | null): boolean {
-  if (raw === null) return true;
+/**
+ * Abzugsregel aus dem Link. Fehlt der Parameter oder ist er unlesbar, gilt der
+ * Standard: volle Punktzahl. `abzug=0` bleibt aus früheren Links gültig und
+ * bedeutet weiterhin „kostet nichts".
+ */
+function parsePenalty(raw: string | null): WrongPenalty {
+  if (raw === null) return 'full';
   const decoded = decodeComponent(raw)?.trim().toLowerCase() ?? '';
-  return !['0', 'false', 'nein', 'aus'].includes(decoded);
+  if (['0', 'false', 'nein', 'aus', 'keiner'].includes(decoded)) return 'none';
+  if (['halb', 'half', '0.5'].includes(decoded)) return 'half';
+  return 'full';
 }
 
 /**
@@ -159,8 +166,10 @@ export function buildShareQuery(config: SharedConfig): string {
     parts.push(`${SHARE_PARAM_VETO}=${config.vetoSeconds}`);
   }
 
-  // Nur die abweichende Regel steht im Link; Abzug ist der Standard.
-  if (!config.deductOnWrong) {
+  // Nur die abweichende Regel steht im Link; der volle Abzug ist der Standard.
+  if (config.wrongPenalty === 'half') {
+    parts.push(`${SHARE_PARAM_DEDUCT}=halb`);
+  } else if (config.wrongPenalty === 'none') {
     parts.push(`${SHARE_PARAM_DEDUCT}=0`);
   }
 
@@ -201,7 +210,7 @@ export function parseShareParams(search: string): ShareParseResult {
     teamNames: parseTeamNames(rawTeams),
     timerSeconds: parseTimerOption(rawTimer),
     vetoSeconds: parseTimerOption(rawVeto),
-    deductOnWrong: parseDeduct(rawDeduct),
+    wrongPenalty: parsePenalty(rawDeduct),
   };
 
   if (config.topicId === null && config.teamNames.length === 0) {

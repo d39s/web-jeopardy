@@ -49,13 +49,16 @@ export const de = {
     rulesHeading: 'Spielregeln',
     rulesHint: 'Was passiert bei einer falschen Antwort?',
     rulesGroupLabel: 'Verhalten bei falscher Antwort',
-    rulesDeductTitle: 'Punkte werden abgezogen',
-    rulesDeductDescription:
+    rulesFullTitle: 'Volle Punktzahl',
+    rulesFullDescription:
       'Die Punktzahl der Frage wird abgezogen – der Stand fällt nie unter null.',
+    rulesHalfTitle: 'Halbe Punktzahl',
+    rulesHalfDescription: 'Nur die Hälfte wird abgezogen: Eine 300er-Frage kostet 150 Punkte.',
     rulesKeepTitle: 'Punktestand bleibt',
     rulesKeepDescription: 'Eine falsche Antwort ändert den Punktestand nicht.',
-    sharedRuleDeduct: 'Falsche Antwort kostet Punkte',
-    sharedRuleNoDeduct: 'Falsche Antwort kostet keine Punkte',
+    sharedRuleFull: 'Falsche Antwort kostet die volle Punktzahl',
+    sharedRuleHalf: 'Falsche Antwort kostet die halbe Punktzahl',
+    sharedRuleNone: 'Falsche Antwort kostet keine Punkte',
 
     shareHeading: 'Spiel teilen',
     shareHint: 'Der Link enthält Thema, Teams, Bedenkzeit und Veto-Zeit.',
@@ -99,6 +102,7 @@ export const de = {
     newGame: 'Neues Spiel',
     newGameConfirm: 'Das laufende Spiel wird beendet und alle Punkte gehen verloren. Fortfahren?',
     fullscreen: 'Vollbild',
+    showResult: 'Auswertung',
     exitFullscreen: 'Vollbild beenden',
     cardLabel: (category: string, points: number) => `${category}, ${points} Punkte`,
     cardScoredLabel: (category: string, points: number) =>
@@ -116,6 +120,15 @@ export const de = {
     /** Zeichen auf der Karte – Farbe allein darf den Ausgang nicht tragen. */
     resultMarkCorrect: '✓',
     resultMarkWrong: '✗',
+
+    // Serien
+    /** Zeichen der Serie – die Bedeutung steht daneben im Vorlesetext. */
+    streakMarkCorrect: '🔥',
+    streakMarkWrong: '🧊',
+    streakCorrectLabel: (name: string, count: number) =>
+      `${name}: ${count} richtige Antworten in Folge`,
+    streakWrongLabel: (name: string, count: number) =>
+      `${name}: ${count} falsche Antworten in Folge`,
 
     // Zugreihenfolge
     turnLabel: (name: string) => `${name} ist am Zug`,
@@ -172,6 +185,41 @@ export const de = {
     tie: 'Unentschieden',
     backToBoard: 'Zurück zum Spielfeld',
     newGame: 'Neues Spiel',
+
+    // Reiter der Auswertung
+    tabsLabel: 'Auswertung',
+    tabRanking: 'Endstand',
+    tabStatistics: 'Statistik',
+    tabProgress: 'Verlauf',
+    tabClues: 'Fragen',
+
+    // Statistik
+    statsHeading: 'Zahlen je Team',
+    statsTeam: 'Team',
+    statsCorrect: 'Richtig',
+    statsWrong: 'Falsch',
+    statsVetos: 'Vetos',
+    statsScore: 'Punkte',
+    statsVetoHint: 'Vetos zählen die Fragen, in die ein Team nachträglich eingestiegen ist.',
+
+    // Punkteverlauf
+    chartHeading: 'Punkteverlauf',
+    chartEmpty: 'Es wurde noch keine Frage gespielt.',
+    chartAxisClues: 'Gespielte Fragen',
+    chartSummary: (count: number, standings: string) =>
+      `Punkteverlauf über ${count} Fragen. Endstand: ${standings}.`,
+    chartTeamScore: (name: string, score: number) => `${name} ${score}`,
+
+    // Rückblick auf die Fragen
+    cluesHeading: 'Alle Fragen in Spielreihenfolge',
+    cluesEmpty: 'Es wurde noch keine Frage gespielt.',
+    clueOrder: (order: number) => `Frage ${order}`,
+    cluePoints: (points: number) => `${points} Punkte`,
+    clueAnswer: 'Antwort',
+    clueParticipants: 'Beteiligt',
+    clueVetoMark: 'Veto',
+    clueNobody: 'Niemand richtig',
+    clueWinner: (name: string) => `${name} richtig`,
   },
 
   errors: {

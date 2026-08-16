@@ -1,5 +1,5 @@
 import { MAX_TEAM_NAME_LENGTH } from '@jeopardy/game-core';
-import type { Team } from '@jeopardy/game-core';
+import type { Team, TeamStreak } from '@jeopardy/game-core';
 import { useEffect, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Badge } from '../../components/ui/Badge';
@@ -8,16 +8,19 @@ import { TextField } from '../../components/ui/TextField';
 import { de } from '../../i18n/de';
 import { cn } from '../../lib/cn';
 import { useDispatch } from '../../state/GameProvider';
+import { StreakBadge } from './StreakBadge';
 
 export interface TeamTileProps {
   team: Team;
   score: number;
   /** Team am Zug – ruhige Hervorhebung plus Abzeichen, nie nur über die Farbe. */
   isOnTurn?: boolean;
+  /** Laufende Serie, sofern lang genug – sonst null. */
+  streak?: TeamStreak | null;
 }
 
 /** Teamname ist direkt am Spielfeld editierbar; die Punktebuttons folgen sofort. */
-export function TeamTile({ team, score, isOnTurn = false }: TeamTileProps) {
+export function TeamTile({ team, score, isOnTurn = false, streak = null }: TeamTileProps) {
   const dispatch = useDispatch();
   const [draft, setDraft] = useState(team.name);
 
@@ -43,7 +46,9 @@ export function TeamTile({ team, score, isOnTurn = false }: TeamTileProps) {
       // Das Team am Zug ist das "aktuelle" Element der Teamleiste.
       aria-current={isOnTurn ? 'true' : undefined}
       className={cn(
-        'flex items-center justify-between gap-2 px-4 py-3 transition-colors',
+        // @container: Punktestand und Abzeichen richten sich nach der Breite der
+        // Kachel, nicht nach der des Fensters – bei acht Teams ist sie schmal.
+        '@container flex items-center justify-between gap-2 px-4 py-3 transition-colors',
         isOnTurn && 'border-cat-1 bg-surface-hi',
       )}
     >
@@ -60,6 +65,8 @@ export function TeamTile({ team, score, isOnTurn = false }: TeamTileProps) {
           className="w-full min-w-0 border-transparent bg-transparent px-1 py-0 font-semibold"
         />
       </div>
+      {streak ? <StreakBadge teamName={team.name} streak={streak} /> : null}
+
       {/*
         Das Abzeichen sitzt in derselben Zeile wie Name und Punktestand – die
         Teamleiste wird dadurch nicht höher. Es bleibt bewusst schmal, damit der
@@ -72,7 +79,14 @@ export function TeamTile({ team, score, isOnTurn = false }: TeamTileProps) {
         </Badge>
       ) : null}
 
-      <p className="text-3xl font-bold tabular-nums" aria-hidden="true">
+      {/*
+        Der Punktestand schrumpft in schmalen Kacheln mit, damit vierstellige
+        Stände dem Teamnamen nicht den letzten Platz nehmen.
+      */}
+      <p
+        className="text-[clamp(1.25rem,13cqw,1.875rem)] leading-none font-bold tabular-nums"
+        aria-hidden="true"
+      >
         {score}
       </p>
       <span className="sr-only" aria-live="polite">

@@ -117,7 +117,7 @@ export function ClueDialog() {
               <SettleButtons
                 participants={participants}
                 points={open.clue.points}
-                deductOnWrong={state.deductOnWrong}
+                wrongPenalty={state.wrongPenalty}
                 compact={compact}
                 onSettle={(winnerTeamId) =>
                   dispatch({

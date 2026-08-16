@@ -1,5 +1,11 @@
 import { createDefaultTeams, createTeam } from '@jeopardy/game-core';
-import type { GameDefinition, Team, TopicCategory, TopicIndexEntry } from '@jeopardy/game-core';
+import type {
+  GameDefinition,
+  Team,
+  TopicCategory,
+  TopicIndexEntry,
+  WrongPenalty,
+} from '@jeopardy/game-core';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
@@ -43,7 +49,7 @@ export function SetupPage() {
   const [uploaded, setUploaded] = useState<GameDefinition | null>(null);
   const [starting, setStarting] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
-  const [deductOnWrong, setDeductOnWrong] = useState(true);
+  const [wrongPenalty, setWrongPenalty] = useState<WrongPenalty>('full');
   // null koppelt die Veto-Zeit an die Bedenkzeit – das ist der Standard.
   const [vetoSeconds, setVetoSeconds] = useState<number | null>(null);
 
@@ -96,7 +102,7 @@ export function SetupPage() {
             teamNames: normalizeTeams(teams).map((team) => team.name),
             timerSeconds,
             vetoSeconds: startVetoSeconds,
-            deductOnWrong,
+            wrongPenalty,
           },
           globalThis.location?.href ?? '',
         );
@@ -116,7 +122,7 @@ export function SetupPage() {
     setTeams(result.teams);
     setTimerSeconds(result.timerSeconds);
     setVetoSeconds(result.vetoSeconds);
-    setDeductOnWrong(result.deductOnWrong);
+    setWrongPenalty(result.wrongPenalty);
     closeShared();
   };
 
@@ -158,7 +164,7 @@ export function SetupPage() {
       teams: normalized,
       timerSeconds,
       vetoSeconds: startVetoSeconds,
-      deductOnWrong,
+      wrongPenalty,
     });
     void navigate('/game');
   };
@@ -191,7 +197,7 @@ export function SetupPage() {
 
       <VetoSetup value={vetoSeconds} timerSeconds={timerSeconds} onChange={setVetoSeconds} />
 
-      <RulesSetup deductOnWrong={deductOnWrong} onChange={setDeductOnWrong} />
+      <RulesSetup wrongPenalty={wrongPenalty} onChange={setWrongPenalty} />
 
       <TopicPicker
         categories={categories}

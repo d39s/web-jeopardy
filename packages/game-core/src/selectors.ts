@@ -1,7 +1,7 @@
 import { categoryColorAt } from './colors';
 import type { CategoryColor } from './colors';
 import { findClue } from './reducer';
-import type { Category, Clue, GameState, ScoreEvent, Team } from './types';
+import type { Category, Clue, ClueOutcome, GameState, ScoreEvent, Team } from './types';
 
 /**
  * Punktestand eines Teams. Die Klammerung auf null erfolgt **schrittweise** je
@@ -37,6 +37,11 @@ export function selectScoredCount(state: GameState): number {
   return new Set(state.events.map((event) => event.clueId)).size;
 }
 
+/** Noch nicht gewertete Karten – Grundlage für das Funkeln am Spielende. */
+export function selectOpenClueCount(state: GameState): number {
+  return Math.max(0, selectClueCount(state) - selectScoredCount(state));
+}
+
 export function selectIsFinished(state: GameState): boolean {
   const total = selectClueCount(state);
   return total > 0 && selectScoredCount(state) >= total;
@@ -56,6 +61,35 @@ export function selectTeamStats(
     correct: events.filter((event) => event.outcome === 'correct').length,
     wrong: events.filter((event) => event.outcome === 'wrong').length,
   };
+}
+
+/** Ab so vielen gleichen Ausgängen in Folge gilt eine Serie als Serie. */
+export const STREAK_MIN = 3;
+
+export interface TeamStreak {
+  /** Richtige oder falsche Antworten – gemischt gibt es keine Serie. */
+  kind: ClueOutcome;
+  /** Länge der Serie, mindestens `STREAK_MIN`. */
+  length: number;
+}
+
+/**
+ * Laufende Serie eines Teams, sonst null. Gezählt werden **nur eigene
+ * Beteiligungen**: Fragen, die andere Teams unter sich ausmachen, unterbrechen
+ * die Serie nicht – sonst käme bei vielen Teams kaum jemand auf drei in Folge.
+ */
+export function selectStreak(state: GameState, teamId: string): TeamStreak | null {
+  const own = state.events.filter((event) => event.teamId === teamId);
+  const last = own.at(-1);
+  if (!last) return null;
+
+  let length = 0;
+  for (let index = own.length - 1; index >= 0; index -= 1) {
+    if (own[index]?.outcome !== last.outcome) break;
+    length += 1;
+  }
+
+  return length >= STREAK_MIN ? { kind: last.outcome, length } : null;
 }
 
 export interface RankedTeam {
@@ -131,6 +165,138 @@ export interface ClueSummary {
   losers: Team[];
   /** Punktzahl der Frage. */
   points: number;
+}
+
+// ---------------------------------------------------------------------------
+// Auswertung nach dem Spiel
+// ---------------------------------------------------------------------------
+
+/** Reihenfolge, in der die Fragen gewertet wurden. */
+function scoredClueIdsInOrder(state: GameState): string[] {
+  return [...new Set(state.events.map((event) => event.clueId))];
+}
+
+export interface ReviewParticipant {
+  team: Team;
+  outcome: ClueOutcome;
+  /** Ob das Team per Veto eingestiegen ist. */
+  viaVeto: boolean;
+  /** Punkteänderung dieses Teams für diese Frage. */
+  delta: number;
+}
+
+export interface ClueReviewEntry {
+  /** Position im Spielverlauf, beginnend bei 1. */
+  order: number;
+  clue: Clue;
+  categoryName: string;
+  /** Position der Kategorie im Spielfeld – bestimmt die Farbe. */
+  categoryIndex: number;
+  /** Beteiligte in der Reihenfolge, in der sie an der Reihe waren. */
+  participants: ReviewParticipant[];
+  /** Team mit der richtigen Antwort; null, wenn niemand richtig lag. */
+  winner: Team | null;
+}
+
+/**
+ * Alle gewerteten Fragen in Spielreihenfolge – mit Frage, Musterlösung,
+ * Gewinner und allen Beteiligten samt Veto-Kennzeichnung.
+ */
+export function selectClueReview(state: GameState): ClueReviewEntry[] {
+  if (!state.definition) return [];
+  const definition = state.definition;
+  const teamOf = (id: string): Team | null => state.teams.find((team) => team.id === id) ?? null;
+
+  return scoredClueIdsInOrder(state).flatMap((clueId, index): ClueReviewEntry[] => {
+    const found = findClue(definition, clueId);
+    if (!found) return [];
+
+    const participants = state.events
+      .filter((event) => event.clueId === clueId)
+      .flatMap((event): ReviewParticipant[] => {
+        const team = teamOf(event.teamId);
+        return team
+          ? [{ team, outcome: event.outcome, viaVeto: event.viaVeto, delta: event.delta }]
+          : [];
+      });
+
+    return [
+      {
+        order: index + 1,
+        clue: found.clue,
+        categoryName: found.category.name,
+        categoryIndex: definition.categories.indexOf(found.category),
+        participants,
+        winner: participants.find((entry) => entry.outcome === 'correct')?.team ?? null,
+      },
+    ];
+  });
+}
+
+export interface TeamStatistics {
+  team: Team;
+  score: number;
+  correct: number;
+  wrong: number;
+  /** Beteiligungen, die über ein Veto zustande kamen. */
+  vetos: number;
+  /** Beteiligungen insgesamt – richtige plus falsche. */
+  played: number;
+}
+
+/** Kennzahlen je Team, in der Reihenfolge der Teamliste. */
+export function selectTeamStatistics(state: GameState): TeamStatistics[] {
+  return state.teams.map((team) => {
+    const events = state.events.filter((event) => event.teamId === team.id);
+    return {
+      team,
+      score: selectScore(state, team.id),
+      correct: events.filter((event) => event.outcome === 'correct').length,
+      wrong: events.filter((event) => event.outcome === 'wrong').length,
+      vetos: events.filter((event) => event.viaVeto).length,
+      played: events.length,
+    };
+  });
+}
+
+export interface ScoreSeries {
+  team: Team;
+  /** Punktestand nach jedem Schritt; der erste Wert ist der Stand vor der ersten Frage. */
+  scores: number[];
+}
+
+export interface ScoreProgress {
+  /** Anzahl gewerteter Fragen – die Reihe hat einen Wert mehr (Start bei 0). */
+  clueCount: number;
+  series: ScoreSeries[];
+  /** Höchster Stand im ganzen Verlauf; mindestens 0. */
+  max: number;
+}
+
+/**
+ * Punkteverlauf über das Spiel. Gerechnet wird wie in `selectScore`
+ * schrittweise mit Klammerung bei null – sonst liefe die Kurve unter die
+ * Nulllinie, während die Anzeige das nie tut.
+ */
+export function selectScoreProgress(state: GameState): ScoreProgress {
+  const running = new Map(state.teams.map((team) => [team.id, 0]));
+  const series: ScoreSeries[] = state.teams.map((team) => ({ team, scores: [0] }));
+  const clueIds = scoredClueIdsInOrder(state);
+
+  for (const clueId of clueIds) {
+    for (const event of state.events.filter((entry) => entry.clueId === clueId)) {
+      running.set(event.teamId, Math.max(0, (running.get(event.teamId) ?? 0) + event.delta));
+    }
+    for (const entry of series) {
+      entry.scores.push(running.get(entry.team.id) ?? 0);
+    }
+  }
+
+  return {
+    clueCount: clueIds.length,
+    series,
+    max: Math.max(0, ...series.flatMap((entry) => entry.scores)),
+  };
 }
 
 /** Ausgang einer gespielten Frage – Grundlage für die Markierung im Spielfeld. */
