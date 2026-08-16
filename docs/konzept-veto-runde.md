@@ -1,8 +1,8 @@
 # Konzept – Veto-Runde
 
-Status: Entwurf zur Abstimmung · Datum: 2026-08-16 · Grundlage: `kontext/veto-funktion/`
-(Beschreibung und Mockup) · Bezug: [Technisches Konzept](./technisches-konzept.md),
-[Arbeitsplan](./arbeitsplan.md)
+Status: abgestimmt, bereit zur Umsetzung · Datum: 2026-08-16 · Grundlage:
+`kontext/veto-funktion/` (Beschreibung und Mockup) sowie zwei Abstimmungsrunden ·
+Bezug: [Technisches Konzept](./technisches-konzept.md), [Arbeitsplan](./arbeitsplan.md)
 
 ---
 
@@ -11,64 +11,63 @@ Status: Entwurf zur Abstimmung · Datum: 2026-08-16 · Grundlage: `kontext/veto-
 1. [Ziel und Kurzfassung](#1-ziel-und-kurzfassung)
 2. [Ablauf](#2-ablauf)
 3. [Zustandsautomat](#3-zustandsautomat)
-4. [Entscheidungen und Eventualitäten](#4-entscheidungen-und-eventualitäten)
+4. [Regeln und Eventualitäten](#4-regeln-und-eventualitäten)
 5. [Auswirkungen auf Bestehendes](#5-auswirkungen-auf-bestehendes)
 6. [Datenmodell und Vertrag](#6-datenmodell-und-vertrag)
 7. [Oberfläche](#7-oberfläche)
-8. [Einstellung und Teilen-Link](#8-einstellung-und-teilen-link)
+8. [Einstellungen und Teilen-Link](#8-einstellungen-und-teilen-link)
 9. [Barrierefreiheit und Beamer](#9-barrierefreiheit-und-beamer)
 10. [Teststrategie](#10-teststrategie)
 11. [Persistenz und Migration](#11-persistenz-und-migration)
 12. [Arbeitsschnitt](#12-arbeitsschnitt)
-13. [Offene Fragen](#13-offene-fragen)
-14. [Nicht Teil dieses Konzepts](#14-nicht-teil-dieses-konzepts)
+13. [Entscheidungsverlauf](#13-entscheidungsverlauf)
+14. [Offene Detailfrage](#14-offene-detailfrage)
+15. [Nicht Teil dieses Konzepts](#15-nicht-teil-dieses-konzepts)
 
 ---
 
 ## 1. Ziel und Kurzfassung
 
-Heute gehört eine Frage genau einem Team: Wer am Zug ist, antwortet, und die Wertung trifft
-nur dieses Team. Die Veto-Runde öffnet die Frage für alle: **Meldet sich ein anderes Team,
-darf es übernehmen.** Am Ende entscheidet die Moderation, welches der beteiligten Teams
+Bisher gehört eine Frage genau einem Team: Wer am Zug ist, antwortet, und die Wertung trifft
+nur dieses Team. Künftig ist jede Frage für alle offen: **Meldet sich ein anderes Team per
+Veto, übernimmt es.** Am Ende entscheidet die Moderation, welches der beteiligten Teams
 richtig lag; die übrigen Beteiligten gehen leer aus oder verlieren Punkte – je nach der
 bereits vorhandenen Abzugsregel.
 
-In einem Satz: aus „ein Team pro Frage" wird „ein Team gewinnt die Frage, mehrere können
-sich daran versuchen".
+In einem Satz: aus „ein Team pro Frage" wird „ein Team gewinnt die Frage, mehrere versuchen
+sich daran".
 
-Die Funktion ist **optional** und wird auf der Startseite eingeschaltet. Bleibt sie aus,
-verhält sich das Spiel exakt wie heute.
+**Die Veto-Runde ist keine Option, sondern der Spielmodus.** Es gibt keinen Betrieb mehr ohne
+sie. Was das für die ursprüngliche Anforderung bedeutet, steht in
+[Kapitel 5.2](#52-die-vier-punkteknöpfe-entfallen).
 
 ---
 
 ## 2. Ablauf
 
-### 2.1 Regelfall
-
-1. Eine Karte wird geöffnet. Das Team am Zug (bisherige Reihum-Logik) beginnt, seine
-   Bedenkzeit läuft – sofern eine eingestellt ist.
-2. Im Popup stehen neben der Frage **ein Knopf je noch nicht beteiligtem Team** („Veto:
+1. Eine Karte wird geöffnet. Das Team am Zug (bisherige Reihum-Logik) beginnt; seine
+   Bedenkzeit läuft, sofern eine eingestellt ist. **Dieses Team antwortet zwingend** – es gibt
+   keinen Zustand „hat nichts gesagt".
+2. Im Popup stehen ab dem ersten Moment **ein Knopf je noch nicht beteiligtem Team** („Veto:
    Blaue Zwerge") sowie **„Kein Veto"**.
-3. Meldet sich ein Team, drückt die Moderation dessen Knopf. Damit ist dieses Team am Zug,
-   seine Bedenkzeit beginnt von vorn, und es steht in der Liste der Beteiligten.
+3. Meldet sich ein Team, drückt die Moderation dessen Knopf. Damit ist dieses Team am Zug, die
+   **Veto-Zeit** beginnt, und das Team zählt als beteiligt.
 4. Das wiederholt sich, bis entweder **„Kein Veto"** gedrückt wird oder **kein Team mehr
-   übrig** ist, das noch nicht dran war – die Vetos können sich also erschöpfen.
+   übrig** ist – die Vetos können sich also vollständig erschöpfen.
 5. Aufgedeckt wird immer per Klick: „Kein Veto" bzw., wenn keine Kandidaten mehr da sind,
-   „Antwort anzeigen". Auch nach abgelaufener Bedenkzeit deckt die Oberfläche nicht von
-   selbst auf.
+   „Antwort anzeigen". Auch nach abgelaufener Zeit deckt die Oberfläche nichts von selbst auf;
+   die Moderation trifft die Entscheidung.
 6. In der Wertung wählt die Moderation, **welches beteiligte Team richtig lag**. Dieses Team
-   erhält die Punkte. Alle übrigen Beteiligten erhalten 0 Punkte oder verlieren die Punktzahl
-   der Frage – je nach Einstellung „Spielregeln". Teams, die sich nicht beteiligt haben,
-   bleiben unberührt.
-7. Alternativ stehen **„Niemand richtig"** (alle Beteiligten falsch) und **„Ohne Wertung"**
-   (Frage abschließen, niemand bekommt oder verliert Punkte) zur Wahl.
+   erhält die Punkte, alle übrigen Beteiligten 0 Punkte oder −Punktzahl (je nach Abzugsregel).
+   Unbeteiligte Teams bleiben unberührt.
+7. Lag niemand richtig, gibt es **„Keine richtige Antwort gegeben"** – dann werden alle
+   Beteiligten als falsch gewertet.
 
-### 2.2 Zuordnung zum Mockup
+### Zuordnung zum Mockup
 
-Das Mockup (`kontext/veto-funktion/veto-funktion.png`) zeigt genau Schritt 2: Kategorie und
-Punktzahl in der Kopfzeile, darunter die Frage, darunter der Countdown, darunter die
-Veto-Knöpfe und „Kein Veto". Die Reihenfolge übernehme ich unverändert; die Knöpfe tragen
-statt „Veto 1 / Veto 2" die **echten Teamnamen**, damit die Moderation nicht zuordnen muss.
+`kontext/veto-funktion/veto-funktion.png` zeigt Schritt 2: Kategorie und Punktzahl in der
+Kopfzeile, darunter Frage, Countdown, Veto-Knöpfe und „Kein Veto". Diese Reihenfolge bleibt;
+die Knöpfe tragen statt „Veto 1 / Veto 2" die **echten Teamnamen**.
 
 ---
 
@@ -77,164 +76,141 @@ statt „Veto 1 / Veto 2" die **echten Teamnamen**, damit die Moderation nicht z
 ```mermaid
 stateDiagram-v2
     [*] --> Spielfeld
-    Spielfeld --> Antwortlauf: clue/open (Team am Zug beginnt)
+    Spielfeld --> Antwortlauf: clue/open (Team am Zug, Bedenkzeit)
 
     state Antwortlauf {
-        [*] --> Bedenkzeit
-        Bedenkzeit --> Bedenkzeit: clue/veto (anderes Team übernimmt, Frist neu)
-        Bedenkzeit --> Fristende: clue/timerExpired
-        Fristende --> Bedenkzeit: clue/veto
+        [*] --> Laufend
+        Laufend --> Laufend: clue/veto (anderes Team übernimmt, Veto-Zeit)
+        Laufend --> Fristende: clue/timerExpired
+        Fristende --> Laufend: clue/veto
     }
 
-    Antwortlauf --> Aufgedeckt: clue/noVeto (bzw. „Antwort anzeigen", wenn keine Kandidaten mehr)
-    Aufgedeckt --> Gewertet: score/settle (Gewinner, niemand richtig oder ohne Wertung)
+    Antwortlauf --> Aufgedeckt: clue/noVeto bzw. Antwort anzeigen
+    Aufgedeckt --> Gewertet: score/settle (Gewinner oder keine richtige Antwort)
     Gewertet --> Spielfeld: Karte grau, Zugriff wandert weiter
 
     Antwortlauf --> Spielfeld: clue/close (Runde verworfen, Karte bleibt spielbar)
     Aufgedeckt --> Spielfeld: clue/close (Runde verworfen, Karte bleibt spielbar)
 ```
 
-Zwei Dinge sind daran wichtig:
+Drei Eigenschaften sind daran wesentlich:
 
 - **Der Antwortlauf ist eine Schleife,** keine feste Reihenfolge. Wer als Nächstes antwortet,
-  bestimmt die Moderation per Veto-Knopf, nicht der Index im Team-Array.
-- **Gewertet wird genau einmal,** am Ende, für alle Beteiligten gemeinsam. Das ersetzt in
-  diesem Modus die heutige Einzelwertung je Team.
+  bestimmt die Moderation, nicht der Index im Team-Array.
+- **Jeder Übergang geht von einem Klick aus.** Kein automatisches Weiterrücken, kein
+  automatisches Aufdecken – auch nicht nach Fristablauf.
+- **Gewertet wird genau einmal,** am Ende, für alle Beteiligten gemeinsam.
 
 ---
 
-## 4. Entscheidungen und Eventualitäten
+## 4. Regeln und Eventualitäten
 
-Die Rohfassung ließ an mehreren Stellen Spielraum. Der Großteil ist inzwischen
-**entschieden** (Rückmeldung vom 16.08.2026); die drei verbliebenen Punkte stehen in
-[Kapitel 13](#13-offene-fragen).
+### 4.1 Veto-Knöpfe
 
-### 4.1 Wann erscheinen die Veto-Knöpfe? — entschieden
+Sie erscheinen **sofort mit dem Öffnen der Karte**, zusammen mit dem Countdown. Das erspart
+einen Knopf „hat geantwortet" und erlaubt es der Moderation, auch auf einen Zwischenruf vor
+der eigentlichen Antwort zu reagieren.
 
-| Möglichkeit                                       | Bewertung                                                                                                                                                                   |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sofort mit dem Öffnen der Karte** (entschieden) | Entspricht dem Mockup, in dem Countdown und Veto-Knöpfe zusammen stehen. Die Moderation kann jederzeit reagieren – auch wenn ein Team schon vor der Antwort dazwischenruft. |
-| Erst nachdem das Team am Zug geantwortet hat      | Verworfen: bräuchte einen zusätzlichen Knopf „hat geantwortet" – ein Klick mehr in jeder Frage, ohne erkennbaren Gewinn.                                                    |
-
-### 4.2 Wer darf ein Veto einlegen? — entschieden
+### 4.2 Wer darf ein Veto einlegen?
 
 Jedes Team, das bei **dieser Frage** noch nicht am Zug war: **eine Antwort je Team und
-Frage.** Beteiligte verschwinden aus der Knopfliste. Die Vetos können sich damit vollständig
-erschöpfen – dann bleibt nur noch das Aufdecken.
+Frage.** Beteiligte verschwinden aus der Knopfliste. Sind alle durch, entfällt die
+Veto-Auswahl und es bleibt „Antwort anzeigen".
 
-### 4.3 Was passiert, wenn die Bedenkzeit abläuft? — entschieden
+### 4.3 Ablauf der Zeit
 
-**Nach Fristablauf muss die Moderation eine der Veto-Entscheidungen treffen.** Die Zeit
-endet, der Countdown zeigt „Zeit abgelaufen", und die Auswahl bleibt stehen:
+Die Zeit endet, der Countdown zeigt „Zeit abgelaufen" – und sonst geschieht nichts. **Die
+Moderation muss eine der Veto-Entscheidungen treffen:** ein Team übernehmen lassen oder
+aufdecken. Das gilt gleichermaßen für das erste Team und für jedes übernehmende.
 
-| Fall                          | Verhalten                                                                                     |
-| ----------------------------- | --------------------------------------------------------------------------------------------- |
-| Es gibt noch Kandidaten       | Veto-Knöpfe und „Kein Veto" bleiben offen. Ohne Klick geschieht nichts.                       |
-| Es gibt keine Kandidaten mehr | Es bleibt allein „Antwort anzeigen". Auch hier deckt die Oberfläche **nicht** von selbst auf. |
+### 4.4 Wertung
 
-Kein automatisches Aufdecken, kein automatisches Weiterrücken: Im Veto-Modus geht jeder
-Übergang von einem Klick der Moderation aus. Das ist eine Regel statt mehrerer Sonderfälle
-und verhindert, dass am Beamer etwas passiert, während gerade diskutiert wird.
+| Wahl der Moderation                             | Wirkung                                                                                                          |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **„<Team> richtig"** (ein Knopf je Beteiligtem) | Dieses Team erhält die volle Punktzahl. Alle anderen Beteiligten: 0 Punkte oder −Punktzahl, je nach Abzugsregel. |
+| **„Keine richtige Antwort gegeben"**            | Alle Beteiligten werden als falsch gewertet (0 oder −Punktzahl).                                                 |
 
-**Zum Vergleich:** Ohne Veto bleibt es beim heutigen Verhalten – Fristablauf rückt
-automatisch zum nächsten Team weiter, und wenn alle durch sind, gilt die Frage als nicht
-beantwortet.
+**Teams, die nicht mitgespielt haben, bleiben in jedem Fall außen vor** – sie erscheinen weder
+als Knopf noch werden sie belastet. Ein unbeteiligtes Team lässt sich auch nicht nachträglich
+als Gewinner eintragen; das würde genau die Trennung aufweichen, die diese Regel schafft.
 
-### 4.4 Wie wird gewertet?
+Der Punktestand bleibt wie bisher bei null geklammert, und zwar je Wertung einzeln.
 
-| Wahl der Moderation                             | Wirkung                                                                                                                                                                |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **„<Team> richtig"** (ein Knopf je Beteiligtem) | Dieses Team erhält die volle Punktzahl. Alle anderen Beteiligten: 0 Punkte oder −Punktzahl, je nach Abzugsregel.                                                       |
-| **„Niemand richtig"**                           | Alle Beteiligten werden als falsch gewertet (0 oder −Punktzahl).                                                                                                       |
-| **„Ohne Wertung"**                              | Die Frage gilt als gespielt, niemand bekommt oder verliert Punkte. Für den Fall, dass niemand ernsthaft geantwortet hat, etwa weil die Zeit ungenutzt verstrichen ist. |
+### 4.5 Fehlbedienung
 
-**Teams, die nicht mitgespielt haben, bleiben in jedem Fall außen vor** – sie tauchen weder
-als Knopf auf noch werden sie belastet, auch nicht bei „Niemand richtig". Der Punktestand
-bleibt wie bisher bei null geklammert, und zwar je Wertung einzeln.
+| Situation                               | Verhalten                                                                                                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Veto versehentlich auf das falsche Team | Keine Rücknahme im Popup. Korrektur über **Schließen** – die Runde wird verworfen, die Karte bleibt farbig und spielbar, die Frage kann neu geöffnet werden. |
+| Veto auf ein bereits beteiligtes Team   | Wird nicht angeboten; der Reducer weist es zusätzlich ab.                                                                                                    |
+| Doppelklick auf denselben Veto-Knopf    | Der zweite Klick bleibt wirkungslos (Team ist bereits am Zug).                                                                                               |
+| Doppelklick in der Wertung              | Die erste Wertung zählt, die zweite wird abgewiesen – wie heute schon.                                                                                       |
+| Popup schließen, bevor gewertet wurde   | Die ganze Runde wird verworfen, Beteiligte werden vergessen. Das entspricht der bestehenden Regel „nur eine Wertung graut die Karte".                        |
 
-### 4.5 Kann ein unbeteiligtes Team als Gewinner gewählt werden? — entschieden
+### 4.6 Zusammenspiel mit den Einstellungen
 
-**Nein.** Zur Auswahl stehen ausschließlich Teams, die sich beteiligt haben; unbeteiligte
-Teams sind von der Wertung ausgenommen. Ein nachträgliches Eintragen gibt es nicht, weil es
-genau die Trennung aufweichen würde, die diese Regel schafft.
+| Einstellung              | Zusammenspiel                                                                                                                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bedenkzeit aus**       | Kein Countdown, weder für das erste noch für ein übernehmendes Team. Die Moderation steuert allein über die Knöpfe; die Veto-Zeit ist dann gegenstandslos und wird ausgegraut.     |
+| **Bedenkzeit an**        | Gilt für das Team, das die Frage beginnt.                                                                                                                                          |
+| **Veto-Zeit**            | Eigene, in der Regel kürzere Zeit für jedes per Veto übernehmende Team – zur Beschleunigung des Spielflusses. Eigener Regler, siehe [Kapitel 8](#8-einstellungen-und-teilen-link). |
+| **Abzugsregel an/aus**   | Entscheidet, ob unterlegene Beteiligte −Punktzahl oder 0 bekommen. Keine eigene Einstellung nötig.                                                                                 |
+| **Übungsmodus (1 Team)** | Es gibt nie Kandidaten. Die Veto-Auswahl erscheint nicht; die Wertung zeigt „Team A richtig" und „Keine richtige Antwort gegeben".                                                 |
+| **2 Teams**              | Nach dem Veto des zweiten Teams sind die Vetos erschöpft; es bleibt „Antwort anzeigen".                                                                                            |
+| **8 Teams**              | Bis zu sieben Veto-Knöpfe. Layout siehe [Kapitel 7](#7-oberfläche).                                                                                                                |
+| **Reihum-Zugriff**       | Unverändert: Wer eine neue Frage beginnt, bestimmt `startingTeamIndex`, und dieser wandert nach jeder abgeschlossenen Frage weiter – unabhängig davon, wer die Frage gewonnen hat. |
 
-Hat die Moderation ein Veto übersehen, führen zwei Wege heraus: **„Letztes Veto zurücknehmen"**
-vor dem Aufdecken (siehe 4.6) oder das Popup schließen – dann ist die Runde verworfen und die
-Karte wieder spielbar.
+### 4.7 Weitere Randfälle
 
-### 4.6 Fehlbedienung und Rücknahme
-
-| Situation                               | Verhalten                                                                                                                                                                                              |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Veto versehentlich auf das falsche Team | Knopf **„Letztes Veto zurücknehmen"** stellt den vorherigen Zustand her: Das Team verlässt die Beteiligtenliste, der Zugriff geht zurück, die Bedenkzeit startet neu. Nur bis zum Aufdecken verfügbar. |
-| Veto auf ein bereits beteiligtes Team   | Wird nicht angeboten; der Reducer weist es zusätzlich ab.                                                                                                                                              |
-| Doppelklick auf denselben Veto-Knopf    | Der zweite Klick bleibt wirkungslos (Team ist bereits am Zug).                                                                                                                                         |
-| Doppelklick in der Wertung              | Die erste Wertung zählt, die zweite wird abgewiesen – wie heute schon.                                                                                                                                 |
-| Popup schließen, bevor gewertet wurde   | Die ganze Runde wird verworfen, die Karte bleibt farbig und spielbar. Beteiligte werden vergessen. Das entspricht der bestehenden Regel „nur ein Punktebutton graut die Karte".                        |
-
-### 4.7 Zusammenspiel mit vorhandenen Einstellungen
-
-| Einstellung              | Zusammenspiel                                                                                                                                                                                |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bedenkzeit aus**       | Veto funktioniert unverändert, nur ohne Countdown. Die Moderation steuert allein über die Knöpfe; aufgedeckt wird über „Kein Veto".                                                          |
-| **Bedenkzeit an**        | Jedes übernehmende Team bekommt die **volle** eingestellte Zeit, nicht den Rest des Vorgängers.                                                                                              |
-| **Abzugsregel an/aus**   | Entscheidet, ob unterlegene Beteiligte −Punktzahl oder 0 bekommen. Keine eigene Einstellung nötig.                                                                                           |
-| **Übungsmodus (1 Team)** | Es gibt nie Kandidaten. Die Veto-Auswahl erscheint nicht, die Wertung zeigt nur „Team A richtig", „Niemand richtig" und „Ohne Wertung". Die Einstellung bleibt wählbar, wirkt aber nicht.    |
-| **2 Teams**              | Nach dem Veto des zweiten Teams sind die Vetos erschöpft; es bleibt „Antwort anzeigen".                                                                                                      |
-| **8 Teams**              | Bis zu sieben Veto-Knöpfe. Layout siehe [Kapitel 7](#7-oberfläche).                                                                                                                          |
-| **Reihum-Zugriff**       | Unverändert: Wer eine neue Frage beginnt, bestimmt weiterhin `startingTeamIndex`, und dieser wandert nach jeder abgeschlossenen Frage weiter – unabhängig davon, wer die Frage gewonnen hat. |
-
-### 4.8 Weitere Randfälle
-
-| Fall                                          | Verhalten                                                                                                                                                                                                                                                     |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Team wird während der Runde umbenannt         | Knöpfe und Wertung übernehmen den neuen Namen sofort (Namen werden nie kopiert, immer aus dem Spielstand gelesen).                                                                                                                                            |
-| Seite wird mitten in der Runde neu geladen    | Die Runde lebt im Spielstand und wird mitgespeichert: Beteiligte, aktuelles Team und Frist stehen nach dem Fortsetzen wieder da. Die verbleibende Zeit ergibt sich aus dem gespeicherten Fristende – ist sie inzwischen verstrichen, gilt sie als abgelaufen. |
-| „Neues Spiel" während der Runde               | Setzt alles zurück, wie heute.                                                                                                                                                                                                                                |
-| Alle 25 Karten gewertet                       | Endstand wie bisher. Da eine Frage nun mehrere Wertungen erzeugen kann, zählt für das Spielende die Anzahl **gewerteter Karten**, nicht die Anzahl Wertungen.                                                                                                 |
-| Statistik im Übungsmodus („x von 25 richtig") | Zählt weiterhin die richtigen Wertungen des Teams; unverändert gültig.                                                                                                                                                                                        |
-| Gleichstand im Endstand                       | Unverändert: gleicher Rang, Hinweis „Unentschieden".                                                                                                                                                                                                          |
-| Frage ohne Beteiligte                         | Kann nicht entstehen: Das Team am Zug ist ab dem Öffnen beteiligt. „Ohne Wertung" bleibt trotzdem verfügbar.                                                                                                                                                  |
+| Fall                                       | Verhalten                                                                                                                                                                                           |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Team wird während der Runde umbenannt      | Knöpfe und Wertung übernehmen den neuen Namen sofort; Namen werden nie kopiert, immer aus dem Spielstand gelesen.                                                                                   |
+| Seite wird mitten in der Runde neu geladen | Die Runde lebt im Spielstand und wird mitgespeichert: Beteiligte, aktuelles Team und Fristende stehen nach dem Fortsetzen wieder da. Ist die Frist inzwischen verstrichen, gilt sie als abgelaufen. |
+| „Neues Spiel" während der Runde            | Setzt alles zurück, wie heute.                                                                                                                                                                      |
+| Alle 25 Karten gewertet                    | Endstand wie bisher. Da eine Frage nun mehrere Wertungen erzeugt, zählt für das Spielende die Anzahl **gewerteter Karten**, nicht die Anzahl Wertungen.                                             |
+| Statistik im Übungsmodus                   | „x von 25 richtig" zählt weiterhin die richtigen Wertungen des Teams.                                                                                                                               |
+| Abzugsregel aus, niemand richtig           | Alle Beteiligten erhalten eine Wertung „falsch" mit 0 Punkten. Die Karte zeigt das entsprechend an, ohne von „minus Punkten" zu sprechen.                                                           |
+| Gleichstand im Endstand                    | Unverändert: gleicher Rang, Hinweis „Unentschieden".                                                                                                                                                |
 
 ---
 
 ## 5. Auswirkungen auf Bestehendes
 
-Drei Stellen ändern sich spürbar. Sie sind der Grund, warum dieses Konzept vor der Umsetzung
-abgestimmt gehört.
+Drei Stellen ändern sich spürbar.
 
 ### 5.1 Mehrere Wertungen je Frage
 
-Bisher gilt: **eine Frage, eine Wertung, ein Team.** Darauf bauen der Doppelklickschutz, die
-Markierung „bereits gespielt" und die Anzeige des Ausgangs auf der Karte auf. Mit der
-Veto-Runde können mehrere Wertungen zu einer Frage gehören (ein Gewinner, mehrere
-Unterlegene).
+Bisher gilt: **eine Frage, eine Wertung, ein Team.** Darauf bauen Doppelklickschutz,
+Graufärbung und Kartenanzeige auf. Künftig gehören zu einer Frage mehrere Wertungen (ein
+Gewinner, mehrere Unterlegene).
 
-Die Umstellung ist überschaubar, weil das Modell schon ein Ereignisprotokoll führt:
-`selectIsClueScored` bleibt „mindestens eine Wertung vorhanden", der Punktestand faltet
-weiterhin alle Ereignisse. Angepasst werden müssen die Anzeige des Kartenausgangs
-(Kapitel 7.3) und die Zählung der gespielten Karten.
+Das Ereignisprotokoll trägt die Umstellung: `selectIsClueScored` bleibt „mindestens eine
+Wertung vorhanden", der Punktestand faltet weiterhin alle Ereignisse. Anzupassen sind die
+Anzeige des Kartenausgangs (7.3) und die Zählung der gespielten Karten.
 
-### 5.2 Die vier Punkteknöpfe
+### 5.2 Die vier Punkteknöpfe entfallen
 
-Die ursprüngliche Anforderung schreibt die Knöpfe „Team A richtig / Team A falsch / Team B
-richtig / Team B falsch" wörtlich fest. Im Veto-Modus passen sie nicht mehr: Dort wählt die
-Moderation **einen Gewinner**, alles andere ergibt sich.
+Die ursprüngliche Anforderung schreibt „Team A richtig / Team A falsch / Team B richtig /
+Team B falsch" wörtlich fest. Mit der Veto-Runde als einzigem Modus **gibt es diese Knöpfe
+nicht mehr**: Die Moderation wählt einen Gewinner, alles Weitere ergibt sich.
 
-**Entschieden:** Die vier Knöpfe bleiben unverändert der Normalfall (Veto aus). Bei
-eingeschalteter Veto-Runde tritt die Gewinnerauswahl an ihre Stelle. Damit bleibt die
-ursprüngliche Anforderung in ihrer Standardkonfiguration wörtlich erfüllt, und die neue
-Mechanik bekommt die Bedienung, die zu ihr passt.
+Das ist eine bewusste Abkehr von einer ursprünglich bindenden Vorgabe. Konkret betroffen:
 
-Angenehmer Nebeneffekt: Weil die Auswahl nur Beteiligte auflistet, ist die Regel „wer nicht
-mitgespielt hat, wird nicht gewertet" nicht extra zu programmieren – sie ergibt sich aus der
-Oberfläche.
+- Der verbindliche Regressionstest `beschriftung-team-a-b-richtig-falsch` und Zeile 9 der
+  Abnahmematrix im Arbeitsplan verlieren ihre Grundlage und werden durch die neue
+  Wertungsbedienung ersetzt.
+- Zeile 10 („Punkte addieren/abziehen, nie unter 0") bleibt gültig und wird auf die neue
+  Wertung umgeschrieben.
+- Das Zweistufen-Prinzip „Musterlösung erst nach dem Aufdecken" bleibt unangetastet.
 
-### 5.3 Automatisches Weiterrücken bei Fristablauf
+Gewinn dieser Entscheidung: nur ein Wertungsweg, ein Timer-Verhalten, kein Modusschalter –
+deutlich weniger Sonderfälle in Code und Tests.
 
-Ohne Veto rückt der Zugriff bei abgelaufener Zeit automatisch weiter, und wenn alle durch
-sind, gilt die Frage als „nicht beantwortet". Mit Veto übernimmt die Moderation diese
-Steuerung. Beide Mechaniken schließen einander aus; welche gilt, entscheidet die Einstellung.
+### 5.3 Automatisches Weiterrücken entfällt
+
+Heute rückt der Zugriff bei abgelaufener Zeit automatisch weiter, und wenn alle Teams durch
+sind, gilt die Frage als „nicht beantwortet". Beides fällt weg; die Moderation steuert. Damit
+verschwindet auch der Ausgang `unanswered` – eine Frage endet künftig immer mit einem Gewinner
+oder mit „keine richtige Antwort".
 
 ---
 
@@ -246,43 +222,44 @@ Steuerung. Beide Mechaniken schließen einander aus; welche gilt, entscheidet di
 export interface GameState {
   // … bestehende Felder …
 
-  /** Ob die Veto-Runde gespielt wird. Einstellung von der Startseite. */
-  vetoEnabled: boolean;
+  /** Bedenkzeit für das Team, das die Frage beginnt (Sekunden, null = ohne). */
+  timerSeconds: number | null;
+
+  /** Zeit für ein per Veto übernehmendes Team (Sekunden, null = ohne). */
+  vetoSeconds: number | null;
 
   /**
    * Teams, die bei der offenen Frage bereits am Zug waren – in der Reihenfolge
-   * ihrer Beteiligung. Das erste Element ist das Team, das die Frage begonnen hat,
-   * das letzte das aktuell antwortende.
+   * ihrer Beteiligung. Das erste Element hat die Frage begonnen, das letzte
+   * antwortet gerade.
    */
   answeringTeamIds: string[];
 }
 ```
 
-`activeTeamIndex` wird durch **`activeTeamId: string | null`** ersetzt. Ein Index in die
-Teamliste trägt nicht mehr, sobald die Reihenfolge von der Moderation bestimmt wird; die ID
-funktioniert in beiden Modi. `startingTeamIndex` bleibt, weil der Reihum-Zugriff weiterhin
-über die Position läuft.
+`activeTeamIndex` wird durch **`activeTeamId: string | null`** ersetzt: Ein Index in die
+Teamliste trägt nicht mehr, sobald die Reihenfolge von der Moderation bestimmt wird.
+`startingTeamIndex` bleibt, weil der Reihum-Zugriff weiterhin über die Position läuft.
+
+Entfällt: `unanswered` als Ausgang (siehe 5.3).
 
 ### 6.2 Actions
 
 ```ts
-| { type: 'clue/veto'; teamId: string; at: number }   // Team übernimmt den Zugriff
-| { type: 'clue/vetoUndo'; at: number }               // letztes Veto zurücknehmen
-| { type: 'clue/noVeto' }                             // kein Veto -> Antwort aufdecken
+| { type: 'clue/veto'; teamId: string; at: number }  // Team übernimmt den Zugriff
+| { type: 'clue/noVeto' }                            // kein Veto -> Antwort aufdecken
 | {
     type: 'score/settle';
     clueId: string;
-    /** Gewinner; null bedeutet „niemand richtig". */
+    /** Gewinner; null bedeutet „keine richtige Antwort gegeben". */
     winnerTeamId: string | null;
-    /** true: Frage ohne jede Wertung abschließen. */
-    withoutScoring?: boolean;
     at: number;
   }
 ```
 
-`score/award` bleibt für den Normalfall ohne Veto erhalten – die vier Knöpfe funktionieren
-unverändert. `clue/revealAnswer` bleibt ebenfalls; `clue/noVeto` ist im Veto-Modus der
-fachlich richtige Name für denselben Übergang und beendet zusätzlich die Veto-Auswahl.
+`score/award` entfällt ersatzlos, ebenso die Fallunterscheidung beim Fristablauf.
+`clue/revealAnswer` bleibt als Übergang bestehen; `clue/noVeto` ist der fachlich passende Name
+und beendet zusätzlich die Veto-Auswahl.
 
 ### 6.3 Selektoren
 
@@ -297,38 +274,29 @@ export function selectAnsweringTeams(state: GameState): Team[];
 export function selectClueSummary(
   state: GameState,
   clueId: string,
-): {
-  winner: Team | null;
-  losers: Team[];
-  points: number;
-  outcome: 'correct' | 'wrong' | 'unanswered';
-} | null;
+): { winner: Team | null; losers: Team[]; points: number } | null;
 ```
 
-`selectClueResult` wird von `selectClueSummary` abgelöst; die bisherige Anzeige lässt sich
-daraus unverändert ableiten (Gewinner statt einzelnem Team).
+`selectClueResult` wird von `selectClueSummary` abgelöst.
 
 ### 6.4 Regeln im Reducer
 
-- `clue/veto` wirkt nur, wenn die Frage offen, noch nicht aufgedeckt, das Team unbeteiligt
-  und Veto eingeschaltet ist. Es setzt `activeTeamId`, hängt das Team an `answeringTeamIds`
-  und startet die Frist neu.
-- `clue/vetoUndo` entfernt das letzte Team wieder und stellt Zugriff und Frist des Vorgängers
-  her. Nach dem Aufdecken wirkungslos.
+- `clue/open` startet die Frist mit `timerSeconds` und setzt das Team am Zug als ersten
+  Beteiligten.
+- `clue/veto` wirkt nur, wenn die Frage offen, noch nicht aufgedeckt und das Team unbeteiligt
+  ist. Es setzt `activeTeamId`, hängt das Team an `answeringTeamIds` und startet die Frist mit
+  **`vetoSeconds`** neu.
+- Fristablauf beendet nur die Frist – keine weitere Wirkung.
 - `clue/noVeto` deckt auf und beendet die Frist.
-- Fristablauf mit Kandidaten: nur die Frist endet. Ohne Kandidaten: Antwort wird aufgedeckt.
-- `score/settle` erzeugt **eine Wertung je Beteiligtem**: Gewinner `+Punkte`, übrige
-  `-Punkte` oder `0` – oder, bei „Ohne Wertung", genau eine Wertung `unanswered` ohne Team.
-  Danach schließt das Popup, die Karte wird grau, der Reihum-Zugriff wandert weiter.
+- `score/settle` erzeugt **eine Wertung je Beteiligtem**: Gewinner `+Punkte`, übrige `-Punkte`
+  oder `0`. Danach schließt das Popup, die Karte wird grau, der Reihum-Zugriff wandert weiter.
 - Der Reducer bleibt rein: Zeitstempel kommen aus der Action, IDs aus dem Zustand.
 
 ---
 
 ## 7. Oberfläche
 
-### 7.1 Antwortlauf (Veto-Modus)
-
-Aufbau wie im Mockup, ergänzt um das, was die Moderation zum Überblick braucht:
+### 7.1 Antwortlauf
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -336,76 +304,74 @@ Aufbau wie im Mockup, ergänzt um das, was die Moderation zum Überblick braucht
 │                                                              │
 │            Welcher Ozean liegt zwischen …?                   │
 │                                                              │
-│                 Bedenkzeit für Blaue Zwerge                  │
-│                            27                                │
+│                  Veto-Zeit für Blaue Zwerge                  │
+│                            12                                │
 │                    ▓▓▓▓▓▓▓▓▓▓░░░░░░░                         │
 │                                                              │
 │   Bereits dran: Rote Riesen · Blaue Zwerge                   │
 │                                                              │
 │   [ Veto: Grüne Riesen ]  [ Veto: Gelbe Sterne ]             │
-│   [ Kein Veto – Antwort aufdecken ]                          │
-│   [ Letztes Veto zurücknehmen ]                    [Schließen]│
+│   [ Kein Veto – Antwort aufdecken ]              [Schließen] │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-- **Veto-Knöpfe** in der Farbe der neutralen Variante, ein Knopf je Kandidat, in Teamreihenfolge.
-- **„Kein Veto – Antwort aufdecken"** als hervorgehobene Hauptaktion; sind keine Kandidaten
-  mehr übrig, heißt der Knopf schlicht „Antwort anzeigen".
-- **Beteiligtenzeile** nennt die Teams, die schon dran waren – sonst verliert die Moderation
-  bei sechs Teams den Überblick.
-- **„Letztes Veto zurücknehmen"** erscheint erst, wenn mindestens ein Veto erfolgt ist.
-- Layout: Veto-Knöpfe in einem umbrechenden Raster (zwei Spalten ab vier Kandidaten), damit
-  das Popup bei acht Teams nicht über den Bildschirm hinauswächst.
+- **Veto-Knöpfe** in neutraler Variante, ein Knopf je Kandidat, in Teamreihenfolge.
+- **„Kein Veto – Antwort aufdecken"** als hervorgehobene Hauptaktion; ohne Kandidaten heißt der
+  Knopf schlicht „Antwort anzeigen".
+- **Beteiligtenzeile** nennt die Teams, die schon dran waren – sonst geht bei sechs Teams der
+  Überblick verloren.
+- Der Countdown beschriftet sich nach Herkunft der Zeit: „Bedenkzeit für …" beim ersten Team,
+  „Veto-Zeit für …" danach.
+- Layout: Veto-Knöpfe in einem umbrechenden Raster (zwei Spalten ab vier Kandidaten).
 
-### 7.2 Wertung (Veto-Modus)
-
-Nach dem Aufdecken: Musterlösung wie bisher, darunter
+### 7.2 Wertung
 
 ```
+   Musterlösung: Der Atlantik
+
    Wer lag richtig?
    [ Rote Riesen ]  [ Blaue Zwerge ]  [ Grüne Riesen ]
-   [ Niemand richtig ]        [ Ohne Wertung ]
-   ▸ anderes Team wählen
+   [ Keine richtige Antwort gegeben ]
+
+   Die übrigen beteiligten Teams verlieren 300 Punkte.
 ```
 
-- Ein Knopf je Beteiligtem, grün getönt.
-- „Niemand richtig" rot getönt, „Ohne Wertung" neutral.
-- „anderes Team wählen" ist zugeklappt und listet die unbeteiligten Teams (Fall 4.5).
-- Unter den Knöpfen steht als Hinweis, was mit den übrigen Beteiligten geschieht – abhängig
-  von der Abzugsregel: „Die übrigen beteiligten Teams verlieren 300 Punkte." bzw. „… erhalten
-  keine Punkte."
+- Ein Knopf je Beteiligtem, grün getönt; „Keine richtige Antwort gegeben" rot getönt.
+- Der Hinweis darunter richtet sich nach der Abzugsregel („… verlieren 300 Punkte" bzw. „…
+  erhalten keine Punkte").
+- Unbeteiligte Teams erscheinen nicht.
 
 ### 7.3 Karte im Spielfeld
 
-Die Karte zeigt weiterhin **den Ausgang aus Sicht des Gewinners**: Häkchen und grüne
-Punktzahl mit dessen Namen. Zusätzlich, wenn mehrere Teams beteiligt waren, eine dezente
-Angabe der Beteiligtenzahl, etwa „Rote Riesen · 3 Teams". Bei „Niemand richtig" das Kreuz mit
-durchgestrichener Punktzahl und der Angabe, wie viele Teams es versucht haben; bei „Ohne
-Wertung" wie bisher neutral.
-
-### 7.4 Ohne Veto
-
-Unverändert: „Antwort anzeigen", danach die vier bzw. 2 × n Punkteknöpfe.
+Die Karte zeigt den Ausgang aus Sicht des Gewinners: Häkchen, grüne Punktzahl, Name. Waren
+mehrere Teams beteiligt, ergänzt eine dezente Angabe die Beteiligtenzahl („Rote Riesen ·
+3 Teams"). Lag niemand richtig, erscheinen Kreuz und durchgestrichene Punktzahl mit der Anzahl
+der Versuche. Ist die Abzugsregel aus, entfällt die Durchstreichung, weil nichts abgezogen
+wurde.
 
 ---
 
-## 8. Einstellung und Teilen-Link
+## 8. Einstellungen und Teilen-Link
 
-- Auf der Startseite, direkt unter „Spielregeln", eine Auswahl im selben Kartenstil:
-  **„Ohne Veto"** (Standard) gegen **„Mit Veto-Runde"**, je mit einer Zeile Erklärung.
-- Im Teilen-Link ein zusätzlicher Parameter `veto=1`; fehlt er, wird ohne Veto gespielt. Der
-  geteilte Dialog zeigt die Einstellung als Abzeichen, wie Bedenkzeit und Abzugsregel.
-- Im Übungsmodus bleibt die Auswahl sichtbar, aber wirkungslos – mit einem Hinweis, dass sie
-  erst ab zwei Teams greift.
+Auf der Startseite steht unter „Bedenkzeit" ein **zweiter Regler „Veto-Zeit"** mit denselben
+Stufen (aus, 10 s bis 5 min).
+
+- **Standard: 15 Sekunden** – der Zweck der eigenen Zeit ist die Beschleunigung.
+- Ist die Bedenkzeit auf „aus" gestellt, wird der Veto-Regler deaktiviert und mit einem Hinweis
+  versehen: Ohne Bedenkzeit gibt es auch keine Veto-Zeit.
+- Im Teilen-Link ein zusätzlicher Parameter `vetozeit=<sekunden>`; fehlt er, gilt der Standard.
+  Der geteilte Dialog zeigt ihn als Abzeichen neben Bedenkzeit und Abzugsregel.
+
+Ein Schalter für die Veto-Runde selbst entfällt – sie ist der Spielmodus.
 
 ---
 
 ## 9. Barrierefreiheit und Beamer
 
-- Die Veto-Knöpfe sind normale Schaltflächen mit vollständigem Namen („Veto: Grüne Riesen"),
-  also per Tastatur erreichbar und vorlesbar.
-- Der Wechsel des antwortenden Teams wird über die bestehende `aria-live`-Zeile gemeldet
-  („Grüne Riesen ist am Zug"), nicht über die Countdown-Ziffern.
+- Veto-Knöpfe sind normale Schaltflächen mit vollständigem Namen („Veto: Grüne Riesen"), also
+  per Tastatur erreichbar und vorlesbar.
+- Der Wechsel des antwortenden Teams läuft über die bestehende `aria-live`-Zeile („Grüne Riesen
+  ist am Zug"), nicht über die Countdown-Ziffern.
 - Die Beteiligtenzeile ist Text, keine reine Farbcodierung.
 - Das Popup muss bei acht Teams und 1280 × 720 ohne Scrollen passen: Veto-Knöpfe umbrechend,
   Beteiligtenzeile einzeilig mit Kürzung, Frage bei Bedarf eine Stufe kleiner.
@@ -414,104 +380,98 @@ Unverändert: „Antwort anzeigen", danach die vier bzw. 2 × n Punkteknöpfe.
 
 ## 10. Teststrategie
 
-**Kern (Reducer/Selektoren), je mit 2, 3 und 8 Teams:**
+**Kern (Reducer/Selektoren), je mit 1, 2, 3 und 8 Teams:**
 
-- Veto setzt den Zugriff um, startet die Frist neu und ergänzt die Beteiligtenliste.
+- `clue/open` setzt das Team am Zug als ersten Beteiligten und startet die Bedenkzeit.
+- Veto setzt den Zugriff um, startet die **Veto-Zeit** und ergänzt die Beteiligtenliste.
 - Ein bereits beteiligtes Team kann kein zweites Veto einlegen.
-- Fristablauf mit Kandidaten deckt **nicht** auf; ohne Kandidaten deckt er auf.
+- Fristablauf deckt nicht auf und rückt nicht weiter – der Zustand bleibt bis zum Klick.
 - „Kein Veto" deckt auf und beendet die Frist.
-- Rücknahme stellt Zugriff, Beteiligtenliste und Frist wieder her; nach dem Aufdecken
-  wirkungslos.
-- Wertung: Gewinner bekommt Punkte, übrige Beteiligte verlieren Punkte bzw. bekommen 0
-  (beide Abzugsregeln), Unbeteiligte bleiben unberührt.
-- „Niemand richtig" und „Ohne Wertung" erzeugen die erwarteten Wertungen.
-- Punktestand bleibt bei jeder Kombination bei null geklammert.
+- Wertung: Gewinner bekommt Punkte, übrige Beteiligte verlieren Punkte bzw. bekommen 0 (beide
+  Abzugsregeln), Unbeteiligte bleiben unberührt.
+- „Keine richtige Antwort gegeben" wertet alle Beteiligten als falsch.
+- Punktestand bleibt in jeder Kombination bei null geklammert.
 - Karte gilt nach der Wertung als gespielt; Spielende zählt Karten, nicht Wertungen.
-- Ohne eingeschaltetes Veto ändert sich nichts am heutigen Verhalten (Regressionsnachweis).
+- Schließen vor der Wertung verwirft die Runde vollständig.
 
 **Oberfläche:**
 
 - Veto-Knöpfe erscheinen nur für Kandidaten und verschwinden nach Beteiligung.
 - Im Übungsmodus erscheint keine Veto-Auswahl.
 - Wertung listet genau die Beteiligten.
+- Countdown-Beschriftung wechselt von „Bedenkzeit" zu „Veto-Zeit".
 - Hinweistext zur Abzugsregel stimmt mit der Einstellung überein.
 
 **End-to-End:**
 
-- Vollständiger Durchlauf mit drei Teams: Frage öffnen, Veto, Veto, aufdecken, Gewinner
-  wählen, Punktestände und Kartenmarkierung prüfen.
+- Durchlauf mit drei Teams: Frage öffnen, zweimal Veto, aufdecken, Gewinner wählen,
+  Punktestände und Kartenmarkierung prüfen.
 - Durchlauf mit abgeschalteter Abzugsregel: Unterlegene behalten ihre Punkte.
-- Neuladen mitten in der Veto-Runde: Zustand ist wiederhergestellt.
-- Regressionslauf ohne Veto: die sechs bestehenden Kernregeln bleiben grün.
+- Veto-Zeit ist kürzer als die Bedenkzeit und greift beim übernehmenden Team.
+- Neuladen mitten in der Veto-Runde stellt den Zustand wieder her.
+- Die bestehenden Kernregeln bleiben gültig, soweit sie nicht durch 5.2 ersetzt sind: Karte
+  wird erst nach der Wertung grau, Musterlösung erst nach dem Aufdecken, Punktestand nie unter
+  null.
 
 ---
 
 ## 11. Persistenz und Migration
 
-Der gespeicherte Spielstand bekommt die Felder `vetoEnabled`, `answeringTeamIds` und
-`activeTeamId`. Ältere Einträge fallen wie schon bei der letzten Erweiterung durch die
-Schemaprüfung und werden verworfen – ein laufendes Spiel überlebt das Update also nicht. Der
-Alternativweg wäre eine Migration mit Standardwerten; sie lohnt erst, wenn das Spiel
-außerhalb der Entwicklung produktiv genutzt wird.
+Der gespeicherte Spielstand bekommt `vetoSeconds`, `answeringTeamIds` und `activeTeamId` und
+verliert `activeTeamIndex`. Ältere Einträge fallen wie schon bei der letzten Erweiterung durch
+die Schemaprüfung und werden verworfen – ein laufendes Spiel überlebt das Update nicht. Eine
+Migration lohnt erst, wenn das Spiel produktiv genutzt wird.
 
 ---
 
 ## 12. Arbeitsschnitt
 
-Nach dem bewährten Muster: erst der gemeinsame Unterbau, dann parallele Pakete mit getrennter
-Dateihoheit.
+Erst der gemeinsame Unterbau, dann parallele Pakete mit getrennter Dateihoheit.
 
-| ID     | Paket                                                                                    | Dateihoheit                         | Abhängig von |
-| ------ | ---------------------------------------------------------------------------------------- | ----------------------------------- | ------------ |
-| **V0** | Unterbau: Zustand, Actions, Reducer-Regeln, Selektoren, Texte, Kern-Tests                | `packages/game-core/`, `i18n/de.ts` | –            |
-| **V1** | Antwortlauf im Popup: Veto-Knöpfe, Beteiligtenzeile, Rücknahme, Aufdecken                | `apps/web/src/features/clue/`       | V0           |
-| **V2** | Wertung im Popup: Gewinnerauswahl, „Niemand richtig", „Ohne Wertung", erweiterte Auswahl | `apps/web/src/features/clue/`       | V0, V1       |
-| **V3** | Einstellung auf der Startseite und im Teilen-Link                                        | `apps/web/src/features/setup/`      | V0           |
-| **V4** | Kartenanzeige mit mehreren Beteiligten                                                   | `apps/web/src/features/board/`      | V0           |
-| **V5** | End-to-End-Tests und Abnahme                                                             | `e2e/`                              | V1–V4        |
+| ID     | Paket                                                                                       | Dateihoheit                         | Abhängig von |
+| ------ | ------------------------------------------------------------------------------------------- | ----------------------------------- | ------------ |
+| **V0** | Unterbau: Zustand, Actions, Reducer, Selektoren, Texte, Kern-Tests; Abbau von `score/award` | `packages/game-core/`, `i18n/de.ts` | –            |
+| **V1** | Antwortlauf im Popup: Veto-Knöpfe, Beteiligtenzeile, Countdown-Beschriftung, Aufdecken      | `apps/web/src/features/clue/`       | V0           |
+| **V2** | Wertung im Popup: Gewinnerauswahl, „Keine richtige Antwort gegeben", Regelhinweis           | `apps/web/src/features/clue/`       | V0, V1       |
+| **V3** | Veto-Zeit auf der Startseite und im Teilen-Link                                             | `apps/web/src/features/setup/`      | V0           |
+| **V4** | Kartenanzeige mit mehreren Beteiligten                                                      | `apps/web/src/features/board/`      | V0           |
+| **V5** | End-to-End-Tests, Abnahmematrix nachziehen, Konzept und Arbeitsplan aktualisieren           | `e2e/`, `docs/`                     | V1–V4        |
 
-V1 und V2 liegen im selben Ordner und gehören daher in eine Hand – nacheinander, nicht
-parallel. V3 und V4 laufen unabhängig davon.
+V1 und V2 liegen im selben Ordner und gehören in eine Hand, nacheinander. V3 und V4 laufen
+unabhängig davon parallel.
 
-Aufwand grob: V0 etwa ein Personentag, V1 und V2 zusammen etwa anderthalb, V3 und V4 je ein
-halber, V5 ein halber. In Summe rund vier Personentage.
+Aufwand grob: V0 gut ein Personentag (der Abbau des alten Wertungswegs kostet zusätzlich), V1
+und V2 zusammen anderthalb, V3 und V4 je ein halber, V5 ein halber – zusammen rund vier
+Personentage.
 
 ---
 
-## 13. Offene Fragen
+## 13. Entscheidungsverlauf
 
-Vier der ursprünglich fünf Punkte sind mit deiner Rückmeldung vom 16.08.2026 entschieden und
-oben eingearbeitet: Veto-Knöpfe erscheinen sofort (4.1), eine Antwort je Team (4.2), nach
-Fristablauf entscheidet die Moderation (4.3), Gewinnerauswahl statt der vier Punkteknöpfe im
-Veto-Modus, wobei Unbeteiligte nie gewertet werden (4.5, 5.2).
+| Punkt                                 | Entscheidung                                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Zeitpunkt der Veto-Knöpfe             | Sofort mit dem Öffnen der Frage; kein Knopf „hat geantwortet".                                 |
+| Anzahl Antworten je Team              | Genau eine je Frage; die Vetos können sich erschöpfen.                                         |
+| Fristablauf                           | Kein Automatismus – die Moderation trifft eine der Veto-Entscheidungen.                        |
+| Unbeteiligte Teams                    | Nie in der Wertung, auch nicht bei „keine richtige Antwort".                                   |
+| „Ohne Wertung" als dritte Möglichkeit | Entfällt: Wer am Zug ist, antwortet zwingend, also gibt es kein Schweigen zu berücksichtigen.  |
+| Zeit für übernehmende Teams           | Eigene, konfigurierbare **Veto-Zeit** statt voller oder verbleibender Bedenkzeit.              |
+| Rücknahme eines Vetos                 | Entfällt; Korrektur über Schließen und erneutes Öffnen.                                        |
+| Betrieb ohne Veto                     | Entfällt – die Veto-Runde ist der einzige Modus. Damit fallen die vier Punkteknöpfe weg (5.2). |
 
-Offen sind noch drei Punkte:
+---
 
-### 13.1 Braucht es „Ohne Wertung" neben „Niemand richtig"?
+## 14. Offene Detailfrage
 
-Weil es keinen Knopf „hat geantwortet" gibt, **gilt jedes Team, das am Zug war, als
-beteiligt** – auch eines, dessen Zeit ungenutzt verstrichen ist. Bei „Niemand richtig" würde
-es dann Punkte verlieren, obwohl es geschwiegen hat.
+**Standardwert und Kopplung der Veto-Zeit.** Mein Vorschlag: Standard 15 Sekunden, und bei
+abgeschalteter Bedenkzeit wird der Regler deaktiviert – ohne Grundzeit wirkt eine Veto-Zeit
+widersprüchlich. Denkbar wäre stattdessen, beide Zeiten unabhängig zu halten, sodass man auch
+„erstes Team ohne Zeitdruck, Veto-Teams unter Zeitdruck" spielen kann. Sag Bescheid, falls du
+das offenhalten möchtest; ansonsten setze ich die Kopplung wie beschrieben um.
 
-- _Vorschlag:_ zusätzlich **„Ohne Wertung"**, das die Frage abschließt, ohne jemanden zu
-  belasten. Ein Knopf mehr, aber der einzige Weg, das Schweigen vom Falschantworten zu
-  unterscheiden.
-- _Alternative:_ nur „Niemand richtig" – kürzer, aber wer nichts sagt, zahlt drauf.
+---
 
-### 13.2 Volle Bedenkzeit oder Restzeit für ein übernehmendes Team?
-
-- _Vorschlag:_ **volle Zeit** für jedes Team. Gleiche Bedingungen, leicht zu erklären.
-- _Alternative:_ die verbleibende Restzeit des Vorgängers. Macht ein spätes Veto riskant und
-  belohnt schnelles Melden, kann aber auf wenige Sekunden hinauslaufen.
-
-### 13.3 Soll „Letztes Veto zurücknehmen" mit hinein?
-
-- _Vorschlag:_ **ja.** Ein falsch getroffenes Veto lässt sich sonst nur durch Schließen und
-  Neuöffnen der Frage heilen, und das mitten im Spiel.
-- _Alternative:_ weglassen und auf das Schließen verweisen – ein Knopf weniger im Popup, das
-  bei acht Teams ohnehin voll ist.
-
-## 14. Nicht Teil dieses Konzepts
+## 15. Nicht Teil dieses Konzepts
 
 - **Buzzer-Hardware oder Reaktionsmessung.** Wer zuerst „Veto" ruft, entscheidet die
   Moderation; die Oberfläche misst nichts.
