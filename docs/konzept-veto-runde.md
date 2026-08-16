@@ -356,10 +356,12 @@ wurde.
 Auf der Startseite steht unter „Bedenkzeit" ein **zweiter Regler „Veto-Zeit"** mit denselben
 Stufen (aus, 10 s bis 5 min).
 
-- **Standard: 15 Sekunden** – der Zweck der eigenen Zeit ist die Beschleunigung.
+- **Standard ist die Kopplung an die Bedenkzeit.** Die linke Reglerstufe heißt „Wie die
+  Bedenkzeit" und nennt darunter den daraus folgenden Wert, damit sichtbar ist, was gilt.
+  Rechts davon stehen dieselben Stufen wie bei der Bedenkzeit.
 - Ist die Bedenkzeit auf „aus" gestellt, wird der Veto-Regler deaktiviert und mit einem Hinweis
-  versehen: Ohne Bedenkzeit gibt es auch keine Veto-Zeit.
-- Im Teilen-Link ein zusätzlicher Parameter `vetozeit=<sekunden>`; fehlt er, gilt der Standard.
+  versehen: Ohne Bedenkzeit läuft auch im Veto keine Uhr.
+- Im Teilen-Link ein zusätzlicher Parameter `vetozeit=<sekunden>`; fehlt er, gilt die Kopplung.
   Der geteilte Dialog zeigt ihn als Abzeichen neben Bedenkzeit und Abzugsregel.
 
 Ein Schalter für die Veto-Runde selbst entfällt – sie ist der Spielmodus.
@@ -455,19 +457,18 @@ Personentage.
 | Fristablauf                           | Kein Automatismus – die Moderation trifft eine der Veto-Entscheidungen.                        |
 | Unbeteiligte Teams                    | Nie in der Wertung, auch nicht bei „keine richtige Antwort".                                   |
 | „Ohne Wertung" als dritte Möglichkeit | Entfällt: Wer am Zug ist, antwortet zwingend, also gibt es kein Schweigen zu berücksichtigen.  |
-| Zeit für übernehmende Teams           | Eigene, konfigurierbare **Veto-Zeit** statt voller oder verbleibender Bedenkzeit.              |
+| Zeit für übernehmende Teams           | Eigene, konfigurierbare **Veto-Zeit**; ohne eigene Angabe an die Bedenkzeit gekoppelt.         |
 | Rücknahme eines Vetos                 | Entfällt; Korrektur über Schließen und erneutes Öffnen.                                        |
 | Betrieb ohne Veto                     | Entfällt – die Veto-Runde ist der einzige Modus. Damit fallen die vier Punkteknöpfe weg (5.2). |
 
 ---
 
-## 14. Offene Detailfrage
+## 14. Offene Detailfrage — entschieden
 
-**Standardwert und Kopplung der Veto-Zeit.** Mein Vorschlag: Standard 15 Sekunden, und bei
-abgeschalteter Bedenkzeit wird der Regler deaktiviert – ohne Grundzeit wirkt eine Veto-Zeit
-widersprüchlich. Denkbar wäre stattdessen, beide Zeiten unabhängig zu halten, sodass man auch
-„erstes Team ohne Zeitdruck, Veto-Teams unter Zeitdruck" spielen kann. Sag Bescheid, falls du
-das offenhalten möchtest; ansonsten setze ich die Kopplung wie beschrieben um.
+**Standardwert und Kopplung der Veto-Zeit.** Entschieden am 16.08.2026: Es gibt einen eigenen
+Regler; ohne eigenen Wert **koppelt sich die Veto-Zeit an die Bedenkzeit**. Im Spielstand
+steht dafür `vetoSeconds: null`, und `effectiveVetoSeconds` löst die Kopplung auf. Ist gar
+keine Bedenkzeit gesetzt, läuft auch im Veto keine Uhr; der Regler ist dann gesperrt.
 
 ---
 
