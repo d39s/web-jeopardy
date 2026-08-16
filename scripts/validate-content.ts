@@ -46,7 +46,7 @@ const jsonFiles = readdirSync(topicsDir).filter(
 
 for (const file of jsonFiles) {
   if (!listedFiles.has(file)) {
-    report(indexFile, `Die Datei ${file} ist in der Themenliste nicht eingetragen.`);
+    report(indexFile, [`Die Datei ${file} ist in der Themenliste nicht eingetragen.`]);
   }
 }
 
