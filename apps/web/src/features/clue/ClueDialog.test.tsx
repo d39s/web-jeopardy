@@ -16,6 +16,16 @@ function revealedState(teamCount = 3, vetoTeamIds: string[] = []): GameState {
   return gameReducer(openedState(teamCount, vetoTeamIds), { type: 'clue/revealAnswer' });
 }
 
+/** Offene Frage, deren Frist verstrichen ist – ohne dass etwas weitergerückt wäre. */
+function expiredState(teamCount = 8, vetoTeamIds: string[] = []): GameState {
+  const opened = openClue(
+    startedState(teamCount, sampleDefinition, { timerSeconds: 20 }),
+    CLUE_ID,
+    vetoTeamIds,
+  );
+  return gameReducer(opened, { type: 'clue/timerExpired', at: (opened.timerEndsAt ?? 0) + 1 });
+}
+
 /** Kopie des Beispielsets, bei der die erste Frage einen Moderationshinweis trägt. */
 function withNoteOnFirstClue(note: string): GameDefinition {
   return {
@@ -96,6 +106,75 @@ describe('veto-runde', () => {
 
     expect(screen.queryByRole('button', { name: /^Veto:/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Antwort anzeigen' })).toBeInTheDocument();
+  });
+
+  it('bietet auch bei acht teams jeden veto-knopf an', () => {
+    renderWithGame(<ClueDialog />, openedState(8));
+
+    for (const name of ['Team B', 'Team C', 'Team D', 'Team E', 'Team F', 'Team G', 'Team H']) {
+      expect(screen.getByRole('button', { name: `Veto: ${name}` })).toBeVisible();
+    }
+
+    expect(screen.queryByRole('button', { name: 'Veto: Team A' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' })).toBeVisible();
+  });
+
+  it('hält die beteiligtenzeile einzeilig und trotzdem vollständig', () => {
+    renderWithGame(<ClueDialog />, openedState(8, ['team-b', 'team-c', 'team-d', 'team-e']));
+
+    const zeile = screen.getByText(/^Bereits dran:/);
+    const voll = 'Bereits dran: Team A · Team B · Team C · Team D · Team E';
+
+    expect(zeile).toHaveTextContent(voll);
+    // Eine Zeile mit Kürzung – der volle Wortlaut bleibt im Titel erreichbar.
+    expect(zeile).toHaveClass('truncate');
+    expect(zeile).toHaveAttribute('title', voll);
+  });
+});
+
+describe('fristablauf', () => {
+  it('lässt veto-auswahl und hauptaktion stehen und sagt, was zu tun ist', () => {
+    renderWithGame(<ClueDialog />, expiredState(8));
+
+    const hinweis = screen.getByRole('status');
+    expect(hinweis).toHaveTextContent('Zeit abgelaufen');
+    expect(hinweis).toHaveTextContent('Veto zulassen oder die Antwort aufdecken');
+
+    // Von selbst passiert nichts: Beide Wege bleiben offen.
+    expect(screen.getByRole('button', { name: 'Veto: Team B' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Veto: Team H' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' })).toBeVisible();
+  });
+
+  it('zeigt auch nach dem ablauf noch die frage', () => {
+    renderWithGame(<ClueDialog />, expiredState(8));
+
+    expect(
+      screen.getByText('Welches Gas atmen Pflanzen bei der Fotosynthese auf?'),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('barrierefreiheit der veto-runde', () => {
+  it('meldet die übernahme in einer höflichen live-region', async () => {
+    renderWithGame(<ClueDialog />, openedState(3));
+
+    expect(screen.queryByText(/hat übernommen/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Veto: Team C' }));
+
+    const meldung = screen.getByText('Team C hat übernommen und ist jetzt am Zug.');
+    expect(meldung).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('nennt beim nächsten veto das neue team', async () => {
+    renderWithGame(<ClueDialog />, openedState(4));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Veto: Team C' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Veto: Team D' }));
+
+    expect(screen.getByText('Team D hat übernommen und ist jetzt am Zug.')).toBeInTheDocument();
+    expect(screen.queryByText(/^Team C hat übernommen/)).not.toBeInTheDocument();
   });
 });
 

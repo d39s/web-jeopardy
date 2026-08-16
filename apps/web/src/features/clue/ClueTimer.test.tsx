@@ -90,6 +90,27 @@ describe('bedenkzeit im frage-popup', () => {
     expect(screen.getByRole('button', { name: 'Veto: Team B' })).toBeVisible();
   });
 
+  it('fordert nach dem ablauf ruhig, aber ausdrücklich zur entscheidung auf', () => {
+    renderWithGame(<ClueDialog />, openedWithTimer(20));
+
+    advance(20_000);
+
+    const hinweis = screen.getByRole('status');
+    expect(hinweis).toHaveTextContent('Zeit abgelaufen');
+    expect(hinweis).toHaveTextContent('Es geht nichts von selbst weiter');
+    // Kein Blinken: Der Zustand bleibt stehen, bis die Moderation handelt.
+    expect(hinweis.outerHTML).not.toContain('animate-');
+  });
+
+  it('gibt die countdown-ziffern nicht an den screenreader weiter', () => {
+    renderWithGame(<ClueDialog />, openedWithTimer(20));
+
+    const ziffern = screen.getByText('20');
+    expect(ziffern).toHaveAttribute('aria-hidden', 'true');
+    // Kein Live-Bereich in der Ahnenkette – sonst spräche der Screenreader im Takt.
+    expect(ziffern.closest('[aria-live],[role="status"],[role="alert"]')).toBeNull();
+  });
+
   it('startet die zeit neu, wenn ein team per veto übernimmt', () => {
     const { transport } = renderWithGame(<ClueDialog />, openedWithTimer(20));
 
