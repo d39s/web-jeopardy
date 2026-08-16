@@ -3,6 +3,7 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
+import { ClueTimer } from './ClueTimer';
 import { ScoreButtons } from './ScoreButtons';
 
 const TITLE_ID = 'frage-dialog-titel';
@@ -37,6 +38,9 @@ export function ClueDialog() {
           <p className="text-center text-[clamp(1.4rem,3vw,2.4rem)] font-semibold text-balance">
             {open.clue.question}
           </p>
+
+          {/* Zeigt sich nur, solange eine Bedenkzeit läuft – siehe ClueTimer. */}
+          <ClueTimer />
 
           {/*
             Musterlösung und Punktebuttons entstehen erst nach dem Aufdecken –
