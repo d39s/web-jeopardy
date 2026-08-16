@@ -51,9 +51,10 @@ describe('anwendung', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText('Kohlenstoffdioxid')).not.toBeInTheDocument();
 
-    // Antwort aufdecken und werten
-    await userEvent.click(screen.getByRole('button', { name: 'Antwort anzeigen' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Team A richtig' }));
+    // Kein Veto: aufdecken und den Gewinner wählen
+    await userEvent.click(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' }));
+    expect(screen.getByText('Kohlenstoffdioxid')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Team A' }));
 
     // Karte ist jetzt gesperrt, Punktestand steht
     await waitFor(() =>

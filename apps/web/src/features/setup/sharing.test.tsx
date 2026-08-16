@@ -85,6 +85,24 @@ describe('spiel teilen', () => {
     );
   });
 
+  it('nimmt eine eigene veto-zeit auf und lässt die kopplung weg', async () => {
+    await renderSetup();
+
+    fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
+      target: { value: String(timerSliderValue(45)) },
+    });
+    // Solange die Veto-Zeit an der Bedenkzeit hängt, steht sie nicht im Link.
+    expect(linkField().value).not.toContain('vetozeit');
+
+    fireEvent.change(screen.getByLabelText('Veto-Zeit je Übernahme'), {
+      target: { value: String(timerSliderValue(20)) },
+    });
+
+    expect(linkField()).toHaveValue(
+      `${window.location.origin}/?thema=testthema&teams=Team%20A,Team%20B&timer=45&vetozeit=20`,
+    );
+  });
+
   it('übernimmt geänderte teamnamen und das gewählte thema in den link', async () => {
     await renderSetup();
 
@@ -186,6 +204,38 @@ describe('geteilten link öffnen', () => {
       'aria-pressed',
       'true',
     );
+  });
+
+  it('zeigt die geteilte veto-zeit und übernimmt sie in den regler', async () => {
+    await renderSetup('/?thema=zweites&teams=Adler,Falken&timer=45&vetozeit=20');
+    const dialog = await screen.findByRole('dialog');
+
+    expect(within(dialog).getByText('Veto-Zeit: 20 Sekunden')).toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Namen übernehmen' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByLabelText('Veto-Zeit je Übernahme')).toHaveValue(
+      String(timerSliderValue(20)),
+    );
+    expect(screen.getByText('20 Sekunden')).toBeInTheDocument();
+  });
+
+  it('nennt die kopplung, wenn der link keine brauchbare veto-zeit enthält', async () => {
+    await renderSetup('/?thema=zweites&teams=Adler&timer=45&vetozeit=7');
+    const dialog = await screen.findByRole('dialog');
+
+    expect(
+      within(dialog).getByText('Veto-Zeit: Wie die Bedenkzeit (45 Sekunden)'),
+    ).toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Namen übernehmen' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByLabelText('Veto-Zeit je Übernahme')).toHaveValue(
+      String(timerSliderValue(null)),
+    );
+    expect(screen.getByText('Damit gilt: 45 Sekunden')).toBeInTheDocument();
   });
 
   it('entfernt die parameter aus der adresszeile', async () => {

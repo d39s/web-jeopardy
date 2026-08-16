@@ -1,15 +1,27 @@
-import { selectActiveTeam } from '@jeopardy/game-core';
-import { useEffect, useState } from 'react';
+import { effectiveVetoSeconds, selectActiveTeam, selectIsTimeUp } from '@jeopardy/game-core';
+import { useEffect, useRef, useState } from 'react';
 import { de } from '../../i18n/de';
 import { cn } from '../../lib/cn';
 import { useDispatch, useGameState } from '../../state/GameProvider';
 
-/** Taktrate der Anzeige: fein genug, dass der Sekundenwechsel nicht ruckelt. */
-const TICK_MS = 250;
-/** Ab hier wirkt die Anzeige dringlich (Farbe, Größe, dezenter Puls). */
+/** Ab wann die Anzeige dringlich wirkt, in Sekunden. */
 const URGENT_SECONDS = 5;
-/** Wie lange der Hinweis auf den Teamwechsel stehen bleibt. */
-const NOTICE_MS = 3000;
+
+/**
+ * Zifferngrößen des Countdowns. Der `vh`-Anteil in `min()` deckelt sie über die
+ * Höhe, damit auf einem Beamer mit 1280 × 720 auch bei acht Teams alles ohne
+ * Scrollen in den Dialog passt.
+ */
+const DIGITS = {
+  roomy: {
+    calm: 'text-[clamp(2.25rem,min(6vw,9vh),4.5rem)] text-text',
+    urgent: 'text-[clamp(2.5rem,min(7vw,10vh),5rem)] text-negative motion-safe:animate-pulse',
+  },
+  compact: {
+    calm: 'text-[clamp(1.75rem,min(4vw,6.5vh),3rem)] text-text',
+    urgent: 'text-[clamp(2rem,min(4.5vw,7.5vh),3.5rem)] text-negative motion-safe:animate-pulse',
+  },
+} as const;
 
 /** Beamer-taugliche Ziffern: unter einer Minute nur Sekunden, darüber „m:ss". */
 function formatRemaining(seconds: number): string {
@@ -17,103 +29,209 @@ function formatRemaining(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
+/** Beschriftung der Uhr – groß genug, um im Raum gelesen zu werden. */
+const LABEL = {
+  roomy: 'text-[clamp(1.05rem,min(2.2vw,3.4vh),1.6rem)]',
+  compact: 'text-[clamp(0.95rem,min(1.8vw,2.8vh),1.25rem)]',
+} as const;
+
+export interface ClueTimerProps {
+  /** Bei vielen Teams rücken Ziffern und Innenabstände eine Stufe kleiner. */
+  compact?: boolean;
+}
+
 /**
- * Countdown der Bedenkzeit im Frage-Popup.
+ * Countdown im Frage-Popup.
  *
  * Die Anzeige hält **keinen** eigenen Spielzustand: Die Frist steht als
  * `timerEndsAt` im Spielstand, hier läuft lediglich eine Uhr mit, die den
- * Abstand zur Frist darstellt. Ist die Zeit abgelaufen, wird
- * `clue/timerExpired` gemeldet – ob daraufhin das nächste Team an den Zug
- * kommt oder die Frage als gespielt gilt, entscheidet allein der Reducer.
+ * Abstand dazu darstellt. Läuft die Zeit ab, wird `clue/timerExpired` gemeldet –
+ * mehr passiert dann nicht: Wie es weitergeht, entscheidet die Moderation über
+ * die Veto-Auswahl.
  */
-export function ClueTimer() {
+export function ClueTimer({ compact = false }: ClueTimerProps) {
   const state = useGameState();
   const dispatch = useDispatch();
 
   const endsAt = state.timerEndsAt;
-  const teamName = selectActiveTeam(state)?.name ?? '';
+  const activeTeam = selectActiveTeam(state);
+  const teamName = activeTeam?.name ?? '';
+  // Das erste Team spielt die Bedenkzeit, jedes übernehmende die Veto-Zeit.
+  const label =
+    state.answeringTeamIds.length > 1
+      ? de.clue.vetoTimerLabel(teamName)
+      : de.clue.timerLabel(teamName);
 
   const [now, setNow] = useState(() => Date.now());
-  const [notice, setNotice] = useState<string | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
 
-  // Ein Takt je Frist: Bei jedem Teamwechsel startet der Reducer eine neue
-  // Frist, damit läuft auch der Takt frisch los und wird sauber aufgeräumt.
+  // Der Balken misst gegen die Zeit, die diesem Team zusteht – für Übernahmen
+  // ist das die Veto-Zeit, sonst die Bedenkzeit.
+  const fullSeconds =
+    state.answeringTeamIds.length > 1 ? effectiveVetoSeconds(state) : state.timerSeconds;
+  const reducedMotion =
+    typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /*
+   * Der Takt liegt auf den Sekundengrenzen der Frist, nicht auf einem festen
+   * Intervall: Sonst springt die Ziffer mal nach 0,8 und mal nach 1,2 Sekunden,
+   * was als Ruckeln auffällt. Nach jedem Schlag wird der nächste neu geplant.
+   */
   useEffect(() => {
     if (endsAt === null) return;
 
-    setNow(Date.now());
-    const tick = setInterval(() => setNow(Date.now()), TICK_MS);
-    return () => clearInterval(tick);
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const schedule = () => {
+      const current = Date.now();
+      setNow(current);
+      const remaining = endsAt - current;
+      if (remaining <= 0) return;
+
+      // Rest bis zur nächsten vollen Sekunde der Frist.
+      const toNextSecond = remaining % 1000 || 1000;
+      timeout = setTimeout(schedule, toNextSecond);
+    };
+
+    schedule();
+    return () => clearTimeout(timeout);
   }, [endsAt]);
+
+  /*
+   * Der Balken läuft in einer einzigen, vom Browser durchgezogenen Animation ab:
+   * Startbreite setzen, Umbruch erzwingen, danach auf 0 mit der Restzeit als
+   * Dauer. Das entkoppelt die Optik vom Takt der Ziffern – und wer Bewegung
+   * reduziert hat, bekommt stattdessen die aktuelle Breite ohne Übergang.
+   */
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar || endsAt === null) return;
+
+    const full = fullSeconds === null ? null : fullSeconds * 1000;
+    const remaining = Math.max(0, endsAt - Date.now());
+    const share = full === null ? 1 : Math.min(1, remaining / full);
+
+    bar.style.transition = 'none';
+    bar.style.width = `${share * 100}%`;
+
+    if (reducedMotion) return;
+
+    // Erzwingt, dass die Startbreite gilt, bevor die Animation beginnt.
+    void bar.offsetWidth;
+    bar.style.transition = `width ${remaining}ms linear`;
+    bar.style.width = '0%';
+    // Bewusst ohne `now`: Die Animation soll je Frist genau einmal starten und
+    // nicht mit jedem Sekundenschlag von vorn beginnen.
+  }, [endsAt, fullSeconds, reducedMotion]);
 
   const expired = endsAt !== null && now >= endsAt;
 
   useEffect(() => {
     if (!expired) return;
-
-    setNotice(de.clue.timerExpiredForTeam(teamName));
     dispatch({ type: 'clue/timerExpired', at: Date.now() });
-  }, [expired, teamName, dispatch]);
+  }, [expired, dispatch]);
 
-  // Der Hinweis begleitet nur den Wechsel und verschwindet danach wieder.
-  useEffect(() => {
-    if (notice === null) return;
+  // Ohne eingestellte Zeit gibt es keinen Countdown.
+  if (state.timerSeconds === null) return null;
 
-    const reset = setTimeout(() => setNotice(null), NOTICE_MS);
-    return () => clearTimeout(reset);
-  }, [notice]);
+  // Die Frist ist abgelaufen: Der Hinweis bleibt stehen, bis die Moderation
+  // entscheidet – von selbst geschieht nichts mehr. Deshalb steht hier nicht nur
+  // „Zeit abgelaufen", sondern auch, was jetzt zu tun ist. Kein Blinken: Der
+  // Zustand ist dauerhaft und soll ruhig, aber unübersehbar sein.
+  if (endsAt === null) {
+    if (!selectIsTimeUp(state)) return null;
 
-  // Ohne eingestellte Bedenkzeit (oder nach dem Aufdecken der Antwort) ist
-  // kein Timer-Element im DOM.
-  if (state.timerSeconds === null || endsAt === null) return null;
+    return (
+      <section
+        role="status"
+        className={cn(
+          'flex w-full flex-col gap-1 rounded-card border-2 border-negative bg-negative-soft px-5',
+          compact ? 'py-3' : 'py-4',
+        )}
+      >
+        {/* Gleiche Zeile wie bei laufender Uhr: links wer, rechts der Stand. */}
+        <div className="flex items-center justify-between gap-4">
+          <p
+            className={cn(
+              'min-w-0 truncate font-semibold text-text',
+              LABEL[compact ? 'compact' : 'roomy'],
+            )}
+          >
+            {label}
+          </p>
+
+          <p
+            className={cn(
+              'shrink-0 font-bold text-negative',
+              compact
+                ? 'text-[clamp(1.1rem,min(2.6vw,4vh),1.6rem)]'
+                : 'text-[clamp(1.25rem,min(3.2vw,5vh),2rem)]',
+            )}
+          >
+            <span aria-hidden="true" className="mr-2">
+              {de.clue.timeUpMark}
+            </span>
+            {de.clue.timeUp}
+          </p>
+        </div>
+
+        <p className="text-sm text-text-muted sm:text-base">{de.clue.timeUpHint}</p>
+      </section>
+    );
+  }
 
   const remainingMs = Math.max(0, endsAt - now);
   const seconds = Math.ceil(remainingMs / 1000);
   const urgent = seconds <= URGENT_SECONDS;
-  const share = Math.min(1, remainingMs / (state.timerSeconds * 1000));
+  const digits = (compact ? DIGITS.compact : DIGITS.roomy)[urgent ? 'urgent' : 'calm'];
 
   return (
     <section
       className={cn(
-        'mx-auto flex w-full max-w-xl flex-col gap-3 rounded-card border bg-surface-hi px-5 py-4',
-        urgent ? 'border-negative/50' : 'border-border',
+        'flex w-full flex-col rounded-card border bg-surface-hi px-5',
+        compact ? 'gap-2 py-3' : 'gap-3 py-4',
+        urgent ? 'border-negative/60' : 'border-border',
       )}
     >
-      <p className="text-center text-sm uppercase tracking-wide text-text-muted sm:text-base">
-        {de.clue.timerLabel(teamName)}
-      </p>
-
       {/*
-        Die Ziffern sind reine Optik – vorgelesen wird die verbleibende Zeit
-        nicht, sonst spräche der Screenreader im Sekundentakt dazwischen.
+        Wer dran ist und wie lange noch – beides in einer Zeile, damit im Raum
+        auf einen Blick klar ist, wem die Uhr läuft. Die Beschriftung trägt
+        dabei dasselbe Gewicht wie die Ziffern, nur kleiner.
       */}
-      <p
-        aria-hidden="true"
-        className={cn(
-          'text-center font-bold leading-none tabular-nums transition-colors',
-          urgent
-            ? 'text-[clamp(3rem,9vw,6rem)] text-negative motion-safe:animate-pulse'
-            : 'text-[clamp(2.5rem,7vw,5rem)] text-text',
-        )}
-      >
-        {formatRemaining(seconds)}
-      </p>
+      <div className="flex items-center justify-between gap-4">
+        <p
+          className={cn(
+            'min-w-0 truncate font-semibold text-text',
+            LABEL[compact ? 'compact' : 'roomy'],
+          )}
+        >
+          {label}
+        </p>
+
+        {/*
+          Die Ziffern sind reine Optik – vorgelesen wird die verbleibende Zeit
+          nicht, sonst spräche der Screenreader im Sekundentakt dazwischen.
+        */}
+        <p
+          aria-hidden="true"
+          className={cn('shrink-0 font-bold leading-none tabular-nums transition-colors', digits)}
+        >
+          {formatRemaining(seconds)}
+        </p>
+      </div>
       <span className="sr-only">{de.clue.timerRemaining(seconds)}</span>
 
       <div className="h-2 overflow-hidden rounded-full bg-surface-mut" aria-hidden="true">
+        {/*
+          Die Breite wird nicht im Takt nachgezogen – das ruckelt, weil Takt und
+          Übergang gegeneinander laufen. Stattdessen bekommt der Balken je Frist
+          genau eine Animation, die der Browser flüssig durchzieht (siehe Effekt).
+        */}
         <div
-          className={cn(
-            'h-full rounded-full motion-safe:transition-[width] motion-safe:duration-200',
-            urgent ? 'bg-negative' : 'bg-cat-1',
-          )}
-          style={{ width: `${share * 100}%` }}
+          ref={barRef}
+          className={cn('h-full rounded-full', urgent ? 'bg-negative' : 'bg-cat-1')}
         />
       </div>
-
-      {/* Nur der Teamwechsel wird angesagt, nicht jede Sekunde. */}
-      <p className="min-h-6 text-center text-sm text-text-muted" aria-live="polite">
-        {notice ?? ''}
-      </p>
     </section>
   );
 }

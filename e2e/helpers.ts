@@ -30,27 +30,47 @@ export function clueCard(page: Page, category: string, points: number) {
 }
 
 export function scoredClueCard(page: Page, category: string, points: number) {
-  return page.getByRole('button', { name: `${category}, ${points} Punkte – bereits gespielt` });
+  return page.getByRole('button', { name: new RegExp(`^${category}, ${points} Punkte – bereits`) });
+}
+
+/** Veto-Knopf im geöffneten Popup. */
+export function vetoButton(page: Page, teamName: string) {
+  return page.getByRole('dialog').getByRole('button', { name: `Veto: ${teamName}`, exact: true });
 }
 
 /**
- * Punktebutton im geöffneten Popup. Die Suche bleibt bewusst auf den Dialog
- * beschränkt: Gewertete Karten nennen denselben Wortlaut in ihrem aria-label.
+ * Wertungsknopf im geöffneten Popup. Die Suche bleibt auf den Dialog beschränkt,
+ * weil gewertete Karten dieselben Teamnamen in ihrem aria-label nennen.
  */
-export function scoreButton(page: Page, label: string) {
+export function settleButton(page: Page, label: string) {
   return page.getByRole('dialog').getByRole('button', { name: label, exact: true });
 }
 
-/** Öffnet eine Karte, deckt die Antwort auf und wertet sie. */
+/** Deckt die Antwort auf – der Knopf heißt je nach verbliebenen Kandidaten anders. */
+export async function revealAnswer(page: Page): Promise<void> {
+  const keinVeto = page.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' });
+  if (await keinVeto.isVisible().catch(() => false)) {
+    await keinVeto.click();
+    return;
+  }
+  await page.getByRole('button', { name: 'Antwort anzeigen' }).click();
+}
+
+/**
+ * Spielt eine Frage komplett durch: öffnen, optionale Vetos, aufdecken, werten.
+ * `winner` ist der Teamname; `null` bedeutet „keine richtige Antwort gegeben".
+ */
 export async function playClue(
   page: Page,
   category: string,
   points: number,
-  buttonLabel: string,
+  winner: string | null,
+  vetoTeams: string[] = [],
 ): Promise<void> {
   await clueCard(page, category, points).click();
-  await page.getByRole('button', { name: 'Antwort anzeigen' }).click();
-  await scoreButton(page, buttonLabel).click();
+  for (const team of vetoTeams) await vetoButton(page, team).click();
+  await revealAnswer(page);
+  await settleButton(page, winner ?? 'Keine richtige Antwort gegeben').click();
   await expect(scoredClueCard(page, category, points)).toBeVisible();
 }
 

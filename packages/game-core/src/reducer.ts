@@ -1,13 +1,5 @@
 import { MAX_TEAM_NAME_LENGTH, MIN_TEAMS } from './teams';
-import type {
-  Category,
-  Clue,
-  ClueOutcome,
-  GameAction,
-  GameDefinition,
-  GameState,
-  ScoreEvent,
-} from './types';
+import type { Category, Clue, GameAction, GameDefinition, GameState, ScoreEvent } from './types';
 
 export const initialGameState: GameState = {
   phase: 'setup',
@@ -17,8 +9,10 @@ export const initialGameState: GameState = {
   openClueId: null,
   answerRevealed: false,
   timerSeconds: null,
+  vetoSeconds: null,
   startingTeamIndex: 0,
-  activeTeamIndex: 0,
+  activeTeamId: null,
+  answeringTeamIds: [],
   timerEndsAt: null,
   deductOnWrong: true,
 };
@@ -42,43 +36,20 @@ function countClues(definition: GameDefinition): number {
   return definition.categories.reduce((total, category) => total + category.clues.length, 0);
 }
 
-function deadlineFrom(state: GameState, at: number): number | null {
-  return state.timerSeconds === null ? null : at + state.timerSeconds * 1000;
+function countScoredClues(events: ScoreEvent[]): number {
+  return new Set(events.map((event) => event.clueId)).size;
 }
 
 /**
- * Schließt die geöffnete Frage mit einem Ergebnis ab: Wertung eintragen, Popup
- * schließen, Timer stoppen und den ersten Zugriff an das nächste Team weitergeben.
+ * Zeit für ein per Veto übernehmendes Team. Ohne eigenen Wert gilt die
+ * Bedenkzeit – die Kopplung ist der Standard, kein Sonderfall.
  */
-function finishClue(
-  state: GameState,
-  clueId: string,
-  teamId: string | null,
-  outcome: ClueOutcome,
-  delta: number,
-  at: number,
-): GameState {
-  const event: ScoreEvent = {
-    id: `${clueId}:${teamId ?? 'niemand'}:${state.events.length}`,
-    clueId,
-    teamId,
-    outcome,
-    delta,
-    at,
-  };
-  const events = [...state.events, event];
-  const allScored = state.definition !== null && events.length >= countClues(state.definition);
+export function effectiveVetoSeconds(state: GameState): number | null {
+  return state.vetoSeconds ?? state.timerSeconds;
+}
 
-  return {
-    ...state,
-    events,
-    openClueId: null,
-    answerRevealed: false,
-    timerEndsAt: null,
-    // Reihum: die nächste Frage beginnt beim nächsten Team.
-    startingTeamIndex: (state.startingTeamIndex + 1) % Math.max(1, state.teams.length),
-    phase: allScored ? 'finished' : state.phase,
-  };
+function deadline(seconds: number | null, at: number): number | null {
+  return seconds === null ? null : at + seconds * 1000;
 }
 
 /**
@@ -97,6 +68,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         definition: action.definition,
         teams: action.teams,
         timerSeconds: action.timerSeconds ?? null,
+        vetoSeconds: action.vetoSeconds ?? null,
         deductOnWrong: action.deductOnWrong ?? true,
       };
     }
@@ -111,22 +83,43 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    // Öffnen ist bewusst folgenlos für die Punkte: Die Karte wird erst grau,
-    // wenn gewertet wurde.
+    // Öffnen ist folgenlos für die Punkte: Die Karte wird erst grau, wenn
+    // gewertet wurde. Das Team am Zug gilt ab hier als beteiligt – es
+    // antwortet zwingend, einen Zustand „hat nichts gesagt" gibt es nicht.
     case 'clue/open': {
       if (!state.definition) return state;
       if (!findClue(state.definition, action.clueId)) return state;
       if (isClueScored(state.events, action.clueId)) return state;
+
+      const starting = state.teams[state.startingTeamIndex % Math.max(1, state.teams.length)];
+      if (!starting) return state;
+
       return {
         ...state,
         openClueId: action.clueId,
         answerRevealed: false,
-        activeTeamIndex: state.startingTeamIndex % Math.max(1, state.teams.length),
-        timerEndsAt: deadlineFrom(state, action.at),
+        activeTeamId: starting.id,
+        answeringTeamIds: [starting.id],
+        timerEndsAt: deadline(state.timerSeconds, action.at),
       };
     }
 
-    // Mit der Antwort endet die Bedenkzeit.
+    // Ein anderes Team übernimmt. Jedes Team darf das höchstens einmal je
+    // Frage; die Frist beginnt mit der Veto-Zeit neu.
+    case 'clue/veto': {
+      if (!state.openClueId || state.answerRevealed) return state;
+      if (!state.teams.some((team) => team.id === action.teamId)) return state;
+      if (state.answeringTeamIds.includes(action.teamId)) return state;
+
+      return {
+        ...state,
+        activeTeamId: action.teamId,
+        answeringTeamIds: [...state.answeringTeamIds, action.teamId],
+        timerEndsAt: deadline(effectiveVetoSeconds(state), action.at),
+      };
+    }
+
+    // Mit der Antwort endet die Frist und damit die Veto-Auswahl.
     case 'clue/revealAnswer': {
       if (!state.openClueId || state.answerRevealed) return state;
       return { ...state, answerRevealed: true, timerEndsAt: null };
@@ -134,54 +127,72 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'clue/close': {
       if (!state.openClueId) return state;
-      return { ...state, openClueId: null, answerRevealed: false, timerEndsAt: null };
-    }
-
-    case 'clue/timerExpired': {
-      if (!state.openClueId || state.timerEndsAt === null) return state;
-      // Nur eine tatsächlich verstrichene Frist zählt. Das schützt vor doppelt
-      // gemeldeten Abläufen und, in Phase 2, vor verspäteten Meldungen anderer
-      // Clients – sonst würde ein Team seinen Zugriff verlieren.
-      if (action.at < state.timerEndsAt) return state;
-
-      const teamCount = Math.max(1, state.teams.length);
-      const nextTeamIndex = (state.activeTeamIndex + 1) % teamCount;
-
-      // Sind alle Teams durch, gilt die Frage als gespielt – ohne Punkte.
-      if (nextTeamIndex === state.startingTeamIndex % teamCount) {
-        return finishClue(state, state.openClueId, null, 'unanswered', 0, action.at);
-      }
-
+      // Die Runde wird verworfen: Beteiligte werden vergessen, die Karte
+      // bleibt spielbar.
       return {
         ...state,
-        activeTeamIndex: nextTeamIndex,
-        timerEndsAt: deadlineFrom(state, action.at),
+        openClueId: null,
+        answerRevealed: false,
+        activeTeamId: null,
+        answeringTeamIds: [],
+        timerEndsAt: null,
       };
     }
 
-    case 'score/award': {
+    // Fristablauf beendet allein die Frist. Wie es weitergeht, entscheidet die
+    // Moderation über die Veto-Auswahl.
+    case 'clue/timerExpired': {
+      if (!state.openClueId || state.timerEndsAt === null) return state;
+      // Nur eine tatsächlich verstrichene Frist zählt – das schützt vor doppelt
+      // oder verspätet gemeldeten Abläufen, in Phase 2 auch von anderen Clients.
+      if (action.at < state.timerEndsAt) return state;
+
+      return { ...state, timerEndsAt: null };
+    }
+
+    case 'score/settle': {
       if (!state.definition) return state;
       const found = findClue(state.definition, action.clueId);
       if (!found) return state;
-      if (!state.teams.some((team) => team.id === action.teamId)) return state;
-      // Schutz gegen Doppelklick und gegen konkurrierende Wertungen in Phase 2.
+      if (action.clueId !== state.openClueId) return state;
+      // Schutz gegen Doppelklick und konkurrierende Wertungen in Phase 2.
       if (isClueScored(state.events, action.clueId)) return state;
+      if (state.answeringTeamIds.length === 0) return state;
+      // Nur ein beteiligtes Team kann gewinnen; Unbeteiligte bleiben außen vor.
+      if (action.winnerTeamId !== null && !state.answeringTeamIds.includes(action.winnerTeamId)) {
+        return state;
+      }
 
-      // Falsche Antworten kosten nur Punkte, wenn die Regel eingeschaltet ist.
-      const delta = action.correct
-        ? found.clue.points
-        : state.deductOnWrong
-          ? -found.clue.points
-          : 0;
+      const points = found.clue.points;
+      const events = [
+        ...state.events,
+        ...state.answeringTeamIds.map((teamId, index): ScoreEvent => {
+          const correct = teamId === action.winnerTeamId;
+          return {
+            id: `${action.clueId}:${teamId}:${state.events.length + index}`,
+            clueId: action.clueId,
+            teamId,
+            outcome: correct ? 'correct' : 'wrong',
+            delta: correct ? points : state.deductOnWrong ? -points : 0,
+            at: action.at,
+          };
+        }),
+      ];
 
-      return finishClue(
-        state,
-        action.clueId,
-        action.teamId,
-        action.correct ? 'correct' : 'wrong',
-        delta,
-        action.at,
-      );
+      const allScored = countScoredClues(events) >= countClues(state.definition);
+
+      return {
+        ...state,
+        events,
+        openClueId: null,
+        answerRevealed: false,
+        activeTeamId: null,
+        answeringTeamIds: [],
+        timerEndsAt: null,
+        // Reihum: die nächste Frage beginnt beim nächsten Team.
+        startingTeamIndex: (state.startingTeamIndex + 1) % Math.max(1, state.teams.length),
+        phase: allScored ? 'finished' : state.phase,
+      };
     }
 
     case 'game/reset':

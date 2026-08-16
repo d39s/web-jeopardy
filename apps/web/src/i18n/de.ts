@@ -30,6 +30,22 @@ export const de = {
     timerMinutesSeconds: (minutes: number, seconds: number) =>
       `${minutes}:${String(seconds).padStart(2, '0')} Minuten`,
 
+    vetoHeading: 'Veto-Zeit',
+    vetoHint:
+      'Gilt für ein Team, das per Veto übernimmt. Ohne eigene Angabe bekommt es ' +
+      'dieselbe Zeit wie das Team, das die Frage begonnen hat.',
+    vetoLabel: 'Veto-Zeit je Übernahme',
+    vetoLinked: 'Wie die Bedenkzeit',
+    vetoScaleLinked: 'Gekoppelt',
+    /** Zweite Zeile unter dem Regler, solange die Zeit gekoppelt ist. */
+    vetoDerived: (label: string) => `Damit gilt: ${label}`,
+    /** Ein Satz für Abzeichen und Vorlesetexte, in denen keine zweite Zeile passt. */
+    vetoLinkedWith: (label: string) => `Wie die Bedenkzeit (${label})`,
+    vetoNoTimerHint:
+      'Ohne Bedenkzeit läuft auch im Veto keine Uhr – erst mit einer Bedenkzeit ' +
+      'lässt sich hier etwas einstellen.',
+    sharedVeto: (label: string) => `Veto-Zeit: ${label}`,
+
     rulesHeading: 'Spielregeln',
     rulesHint: 'Was passiert bei einer falschen Antwort?',
     rulesGroupLabel: 'Verhalten bei falscher Antwort',
@@ -42,7 +58,7 @@ export const de = {
     sharedRuleNoDeduct: 'Falsche Antwort kostet keine Punkte',
 
     shareHeading: 'Spiel teilen',
-    shareHint: 'Der Link enthält Thema, Teams und Bedenkzeit.',
+    shareHint: 'Der Link enthält Thema, Teams, Bedenkzeit und Veto-Zeit.',
     shareLinkLabel: 'Link zur Spielkonfiguration',
     shareCopy: 'Link kopieren',
     shareCopied: 'Link kopiert.',
@@ -88,8 +104,9 @@ export const de = {
     // Ausgang einer gespielten Karte
     resultCorrect: (team: string, points: number) => `${team} richtig, plus ${points} Punkte`,
     resultWrong: (team: string, points: number) => `${team} falsch, minus ${points} Punkte`,
-    resultUnanswered: 'Nicht beantwortet',
-    resultUnansweredShort: 'Ohne Wertung',
+    resultNobody: 'Niemand richtig',
+    resultNobodyLong: (points: number) => `Niemand richtig, ${points} Punkte`,
+    resultTeamCount: (count: number) => `${count} Teams`,
     /** Zeichen auf der Karte – Farbe allein darf den Ausgang nicht tragen. */
     resultMarkCorrect: '✓',
     resultMarkWrong: '✗',
@@ -105,18 +122,38 @@ export const de = {
     revealAnswer: 'Antwort anzeigen',
     answerHeading: 'Musterlösung',
     close: 'Schließen',
-    scoreCorrect: (teamName: string) => `${teamName} richtig`,
-    scoreWrong: (teamName: string) => `${teamName} falsch`,
     noteHeading: 'Hinweis für die Moderation',
 
+    // Veto-Runde
+    vetoHeading: 'Veto – wer übernimmt?',
+    vetoHint: 'Ein Veto startet die Frist neu.',
+    vetoButton: (teamName: string) => `Veto: ${teamName}`,
+    noVeto: 'Kein Veto – Antwort aufdecken',
+    participants: (names: string) => `Bereits dran: ${names}`,
+    /** Nur für Screenreader – die Übernahme ist sonst rein visuell. */
+    vetoAnnouncement: (teamName: string) => `${teamName} hat übernommen und ist jetzt am Zug.`,
+
+    // Wertung
+    settleHeading: 'Wer lag richtig?',
+    settleNobody: 'Keine richtige Antwort gegeben',
+    /** Zeichen auf den Wertungsknöpfen – Farbe allein darf die Wahl nicht tragen. */
+    settleMarkCorrect: '✓',
+    settleMarkNobody: '✗',
+    settleHintDeduct: (points: number) =>
+      `Die übrigen beteiligten Teams verlieren ${points} Punkte.`,
+    settleHintKeep: 'Die übrigen beteiligten Teams erhalten keine Punkte.',
+
     // Bedenkzeit
-    timerLabel: (teamName: string) => `Bedenkzeit für ${teamName}`,
+    timerLabel: (teamName: string) => `Bedenkzeit ${teamName}`,
+    vetoTimerLabel: (teamName: string) => `Veto-Zeit ${teamName}`,
+    timeUp: 'Zeit abgelaufen',
+    /** Zeichen neben „Zeit abgelaufen" – der Zustand hängt nicht an der Farbe. */
+    timeUpMark: '⏱',
+    timeUpHint: 'Es geht nichts von selbst weiter: Veto zulassen oder die Antwort aufdecken.',
     timerRemaining: (seconds: number) => `noch ${seconds} Sekunden`,
     timerExpiredForTeam: (teamName: string) => `Zeit für ${teamName} abgelaufen`,
-    timerExpiredAll: 'Zeit abgelaufen – die Frage gilt als gespielt.',
     timerPause: 'Pause',
     timerResume: 'Weiter',
-    timerSkip: 'Nächstes Team',
   },
 
   result: {

@@ -1,7 +1,7 @@
 import { categoryColorAt } from './colors';
 import type { CategoryColor } from './colors';
 import { findClue } from './reducer';
-import type { Category, Clue, ClueOutcome, GameState, ScoreEvent, Team } from './types';
+import type { Category, Clue, GameState, ScoreEvent, Team } from './types';
 
 /**
  * Punktestand eines Teams. Die Klammerung auf null erfolgt **schrittweise** je
@@ -18,8 +18,8 @@ export function selectIsClueScored(state: GameState, clueId: string): boolean {
   return state.events.some((event) => event.clueId === clueId);
 }
 
-export function selectClueEvent(state: GameState, clueId: string): ScoreEvent | null {
-  return state.events.find((event) => event.clueId === clueId) ?? null;
+export function selectClueEvents(state: GameState, clueId: string): ScoreEvent[] {
+  return state.events.filter((event) => event.clueId === clueId);
 }
 
 export function selectOpenClue(state: GameState): { clue: Clue; category: Category } | null {
@@ -32,8 +32,9 @@ export function selectClueCount(state: GameState): number {
   return state.definition.categories.reduce((total, cat) => total + cat.clues.length, 0);
 }
 
+/** Anzahl gespielter Karten – nicht Anzahl Wertungen, denn eine Frage erzeugt mehrere. */
 export function selectScoredCount(state: GameState): number {
-  return state.events.length;
+  return new Set(state.events.map((event) => event.clueId)).size;
 }
 
 export function selectIsFinished(state: GameState): boolean {
@@ -55,41 +56,6 @@ export function selectTeamStats(
     correct: events.filter((event) => event.outcome === 'correct').length,
     wrong: events.filter((event) => event.outcome === 'wrong').length,
   };
-}
-
-export interface ClueResult {
-  outcome: ClueOutcome;
-  /** Null, wenn die Zeit bei allen Teams abgelaufen ist. */
-  team: Team | null;
-  delta: number;
-}
-
-/** Ausgang einer gespielten Frage – Grundlage für die Markierung im Spielfeld. */
-export function selectClueResult(state: GameState, clueId: string): ClueResult | null {
-  const event = state.events.find((entry) => entry.clueId === clueId);
-  if (!event) return null;
-
-  return {
-    outcome: event.outcome,
-    team: state.teams.find((team) => team.id === event.teamId) ?? null,
-    delta: event.delta,
-  };
-}
-
-/** Team, das bei der geöffneten Frage gerade den Zugriff hat. */
-export function selectActiveTeam(state: GameState): Team | null {
-  if (state.teams.length === 0) return null;
-  return state.teams[state.activeTeamIndex % state.teams.length] ?? null;
-}
-
-/** Team mit dem ersten Zugriff auf die nächste Frage. */
-export function selectStartingTeam(state: GameState): Team | null {
-  if (state.teams.length === 0) return null;
-  return state.teams[state.startingTeamIndex % state.teams.length] ?? null;
-}
-
-export function selectIsTimerRunning(state: GameState): boolean {
-  return state.timerEndsAt !== null;
 }
 
 export interface RankedTeam {
@@ -118,4 +84,72 @@ export function selectRanking(state: GameState): RankedTeam[] {
 /** Farbe einer Kategorie: Angabe aus dem Fragenset, sonst Position im Spielfeld. */
 export function resolveCategoryColor(category: Category, index: number): CategoryColor {
   return category.color ?? categoryColorAt(index);
+}
+
+// ---------------------------------------------------------------------------
+// Veto-Runde
+// ---------------------------------------------------------------------------
+
+/** Team, das bei der offenen Frage gerade antwortet. */
+export function selectActiveTeam(state: GameState): Team | null {
+  if (state.activeTeamId === null) return null;
+  return state.teams.find((team) => team.id === state.activeTeamId) ?? null;
+}
+
+/** Team mit dem ersten Zugriff auf die nächste Frage. */
+export function selectStartingTeam(state: GameState): Team | null {
+  if (state.teams.length === 0) return null;
+  return state.teams[state.startingTeamIndex % state.teams.length] ?? null;
+}
+
+export function selectIsTimerRunning(state: GameState): boolean {
+  return state.timerEndsAt !== null;
+}
+
+/** Teams, die sich an der offenen Frage beteiligt haben – in Reihenfolge. */
+export function selectAnsweringTeams(state: GameState): Team[] {
+  return state.answeringTeamIds
+    .map((id) => state.teams.find((team) => team.id === id))
+    .filter((team): team is Team => team !== undefined);
+}
+
+/** Teams, die bei der offenen Frage noch ein Veto einlegen dürfen. */
+export function selectVetoCandidates(state: GameState): Team[] {
+  if (!state.openClueId || state.answerRevealed) return [];
+  return state.teams.filter((team) => !state.answeringTeamIds.includes(team.id));
+}
+
+/** Ob das Team am Zug seine Frist bereits ausgeschöpft hat. */
+export function selectIsTimeUp(state: GameState): boolean {
+  return state.openClueId !== null && !state.answerRevealed && state.timerEndsAt === null;
+}
+
+export interface ClueSummary {
+  /** Team mit der richtigen Antwort; null, wenn niemand richtig lag. */
+  winner: Team | null;
+  /** Beteiligte Teams ohne den Gewinner. */
+  losers: Team[];
+  /** Punktzahl der Frage. */
+  points: number;
+}
+
+/** Ausgang einer gespielten Frage – Grundlage für die Markierung im Spielfeld. */
+export function selectClueSummary(state: GameState, clueId: string): ClueSummary | null {
+  const events = selectClueEvents(state, clueId);
+  if (events.length === 0 || !state.definition) return null;
+
+  const found = findClue(state.definition, clueId);
+  if (!found) return null;
+
+  const teamOf = (id: string): Team | null => state.teams.find((team) => team.id === id) ?? null;
+  const winnerEvent = events.find((event) => event.outcome === 'correct');
+
+  return {
+    winner: winnerEvent ? teamOf(winnerEvent.teamId) : null,
+    losers: events
+      .filter((event) => event.outcome === 'wrong')
+      .map((event) => teamOf(event.teamId))
+      .filter((team): team is Team => team !== null),
+    points: found.clue.points,
+  };
 }

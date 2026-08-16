@@ -45,13 +45,13 @@ describe('bedenkzeit im frage-popup', () => {
     renderWithGame(<ClueDialog />, openedWithTimer(null));
 
     expect(screen.getByText('Welches Gas atmen Pflanzen bei der Fotosynthese auf?')).toBeVisible();
-    expect(screen.queryByText(/Bedenkzeit für/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Bedenkzeit Team/)).not.toBeInTheDocument();
   });
 
   it('zeigt die bedenkzeit für das team am zug', () => {
     renderWithGame(<ClueDialog />, openedWithTimer(20));
 
-    expect(screen.getByText('Bedenkzeit für Team A')).toBeVisible();
+    expect(screen.getByText('Bedenkzeit Team A')).toBeVisible();
     expect(screen.getByText('20')).toBeVisible();
     expect(screen.getByText('noch 20 Sekunden')).toBeInTheDocument();
   });
@@ -75,66 +75,72 @@ describe('bedenkzeit im frage-popup', () => {
     expect(screen.getByText('55')).toBeVisible();
   });
 
-  it('gibt nach ablauf an das nächste team weiter und startet die zeit neu', () => {
+  it('meldet den ablauf, rückt aber nicht von selbst weiter', () => {
     const { transport } = renderWithGame(<ClueDialog />, openedWithTimer(20));
 
     advance(20_000);
 
-    expect(transport.getState().activeTeamIndex).toBe(1);
-    expect(transport.getState().timerEndsAt).toBe(START + 40_000);
-    expect(screen.getByText('Bedenkzeit für Team B')).toBeVisible();
-    expect(screen.getByText('20')).toBeVisible();
-    expect(screen.getByText('Zeit für Team A abgelaufen')).toBeVisible();
+    const state = transport.getState();
+    // Nach dem Ablauf entscheidet die Moderation – die Frage bleibt offen.
+    expect(state.timerEndsAt).toBeNull();
+    expect(state.activeTeamId).toBe('team-a');
+    expect(state.openClueId).toBe('wissenschaft-100');
+    expect(state.events).toHaveLength(0);
+    expect(screen.getByText('Zeit abgelaufen')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Veto: Team B' })).toBeVisible();
   });
 
-  it('blendet den hinweis auf den teamwechsel wieder aus', () => {
+  it('fordert nach dem ablauf ruhig, aber ausdrücklich zur entscheidung auf', () => {
     renderWithGame(<ClueDialog />, openedWithTimer(20));
 
     advance(20_000);
-    expect(screen.getByText('Zeit für Team A abgelaufen')).toBeVisible();
 
-    advance(3000);
-    expect(screen.queryByText('Zeit für Team A abgelaufen')).not.toBeInTheDocument();
+    const hinweis = screen.getByRole('status');
+    expect(hinweis).toHaveTextContent('Zeit abgelaufen');
+    expect(hinweis).toHaveTextContent('Es geht nichts von selbst weiter');
+    // Kein Blinken: Der Zustand bleibt stehen, bis die Moderation handelt.
+    expect(hinweis.outerHTML).not.toContain('animate-');
   });
 
-  it('schließt das popup ohne wertung, wenn alle teams durch sind', () => {
+  it('gibt die countdown-ziffern nicht an den screenreader weiter', () => {
+    renderWithGame(<ClueDialog />, openedWithTimer(20));
+
+    const ziffern = screen.getByText('20');
+    expect(ziffern).toHaveAttribute('aria-hidden', 'true');
+    // Kein Live-Bereich in der Ahnenkette – sonst spräche der Screenreader im Takt.
+    expect(ziffern.closest('[aria-live],[role="status"],[role="alert"]')).toBeNull();
+  });
+
+  it('startet die zeit neu, wenn ein team per veto übernimmt', () => {
     const { transport } = renderWithGame(<ClueDialog />, openedWithTimer(20));
 
     advance(20_000);
-    advance(20_000);
+    fireEvent.click(screen.getByRole('button', { name: 'Veto: Team B' }));
 
-    const state = transport.getState();
-    expect(state.openClueId).toBeNull();
-    expect(state.events).toHaveLength(1);
-    expect(state.events[0]?.outcome).toBe('unanswered');
-    expect(state.events[0]?.teamId).toBeNull();
-    expect(state.events[0]?.delta).toBe(0);
-    expect(screen.queryByText(/Bedenkzeit für/)).not.toBeInTheDocument();
+    expect(transport.getState().activeTeamId).toBe('team-b');
+    expect(screen.getByText('Veto-Zeit Team B')).toBeVisible();
+    expect(screen.getByText('20')).toBeVisible();
   });
 
-  it('wertet im übungsmodus mit einem team die frage nach einem ablauf als gespielt', () => {
-    const { transport } = renderWithGame(<ClueDialog />, openedWithTimer(20, 1));
+  it('zeigt im übungsmodus keine veto-auswahl', () => {
+    renderWithGame(<ClueDialog />, openedWithTimer(20, 1));
 
-    expect(screen.getByText('Bedenkzeit für Team A')).toBeVisible();
+    expect(screen.getByText('Bedenkzeit Team A')).toBeVisible();
+    expect(screen.queryByRole('button', { name: /^Veto:/ })).not.toBeInTheDocument();
 
     advance(20_000);
-
-    const state = transport.getState();
-    expect(state.openClueId).toBeNull();
-    expect(state.events).toHaveLength(1);
-    expect(state.events[0]?.outcome).toBe('unanswered');
-    expect(screen.queryByText(/Bedenkzeit für/)).not.toBeInTheDocument();
+    expect(screen.getByText('Zeit abgelaufen')).toBeVisible();
   });
 
   // Bei laufender Uhr wird geklickt, ohne die Zeit zu bewegen – daher
   // fireEvent statt userEvent, das intern selbst auf Timer wartet.
-  it('beendet die bedenkzeit mit "antwort anzeigen"', () => {
+  it('beendet die bedenkzeit mit dem aufdecken', () => {
     const { transport } = renderWithGame(<ClueDialog />, openedWithTimer(20));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Antwort anzeigen' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' }));
 
     expect(transport.getState().timerEndsAt).toBeNull();
-    expect(screen.queryByText(/Bedenkzeit für/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Bedenkzeit Team/)).not.toBeInTheDocument();
     expect(screen.getByText('Kohlenstoffdioxid')).toBeVisible();
   });
 
@@ -145,6 +151,6 @@ describe('bedenkzeit im frage-popup', () => {
     advance(60_000);
 
     expect(transport.getState().events).toHaveLength(0);
-    expect(transport.getState().activeTeamIndex).toBe(0);
+    expect(transport.getState().activeTeamId).toBe('team-a');
   });
 });

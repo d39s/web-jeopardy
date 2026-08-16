@@ -559,7 +559,12 @@ HEALTHCHECK CMD wget -qO- http://localhost/ || exit 1
 | A11y        | `@axe-core/playwright`                 | Startseite, Board, geöffnetes Popup                                                                                                               |
 
 **Verbindliche Regressionstests für die Kernanforderungen** (dürfen nie entfernt werden):
-`karte-bleibt-farbig-nach-oeffnen-ohne-wertung`, `antwort-und-buttons-erst-nach-reveal`, `punktestand-faellt-nicht-unter-null`, `beschriftung-team-a-b-richtig-falsch`, `punktebuttons-fuer-beliebig-viele-teams`, `uebungsmodus-mit-einem-team`.
+`karte bleibt farbig nach öffnen ohne wertung`, `antwort und wertung erscheinen erst nach dem
+aufdecken`, `punktestand fällt nicht unter null`, `veto steht für jedes unbeteiligte team
+bereit`, `gewertet werden nur teams, die sich beteiligt haben`, `übungsmodus mit einem team`.
+
+> Die frühere Regel zur wörtlichen Beschriftung der vier Punkteknöpfe ist mit der Veto-Runde
+> entfallen; die Begründung steht in [Konzept Veto-Runde](./konzept-veto-runde.md), Kapitel 5.2.
 
 **Coverage-Ziel:** `game-core` ≥ 90 % Statements (harte CI-Schwelle), App-Layer ≥ 60 % (Richtwert).
 

@@ -16,6 +16,7 @@ import { TeamSetup } from './TeamSetup';
 import { RulesSetup } from './RulesSetup';
 import { TimerSetup } from './TimerSetup';
 import { TopicPicker } from './TopicPicker';
+import { VetoSetup, effectiveVetoSetting } from './VetoSetup';
 import { buildShareLink, clearShareParams, parseShareParams } from './shareConfig';
 
 /** Leere Namen fallen auf den Standardnamen der jeweiligen Position zurück. */
@@ -41,6 +42,8 @@ export function SetupPage() {
   const [starting, setStarting] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
   const [deductOnWrong, setDeductOnWrong] = useState(true);
+  // null koppelt die Veto-Zeit an die Bedenkzeit – das ist der Standard.
+  const [vetoSeconds, setVetoSeconds] = useState<number | null>(null);
 
   /**
    * Der geteilte Link wird genau einmal beim ersten Rendern ausgewertet. Danach
@@ -75,6 +78,9 @@ export function SetupPage() {
   const resumable = state.definition !== null && state.phase !== 'setup';
   const canStart = uploaded !== null || selectedId !== null;
 
+  /** Ohne Bedenkzeit ist eine eigene Veto-Zeit gegenstandslos – siehe VetoSetup. */
+  const startVetoSeconds = effectiveVetoSetting(vetoSeconds, timerSeconds);
+
   /**
    * Ein selbst geladenes Fragenset passt nicht in eine Adresszeile – dann gibt
    * es keinen Link. Sonst spiegelt er immer die aktuell eingestellten Werte.
@@ -87,6 +93,7 @@ export function SetupPage() {
             topicId: selectedId,
             teamNames: normalizeTeams(teams).map((team) => team.name),
             timerSeconds,
+            vetoSeconds: startVetoSeconds,
             deductOnWrong,
           },
           globalThis.location?.href ?? '',
@@ -104,6 +111,7 @@ export function SetupPage() {
     }
     setTeams(result.teams);
     setTimerSeconds(result.timerSeconds);
+    setVetoSeconds(result.vetoSeconds);
     setDeductOnWrong(result.deductOnWrong);
     closeShared();
   };
@@ -140,7 +148,14 @@ export function SetupPage() {
 
     const normalized = normalizeTeams(teams);
     saveLastTeams(normalized);
-    dispatch({ type: 'game/start', definition, teams: normalized, timerSeconds, deductOnWrong });
+    dispatch({
+      type: 'game/start',
+      definition,
+      teams: normalized,
+      timerSeconds,
+      vetoSeconds: startVetoSeconds,
+      deductOnWrong,
+    });
     void navigate('/game');
   };
 
@@ -169,6 +184,8 @@ export function SetupPage() {
       <TeamSetup teams={teams} onChange={setTeams} />
 
       <TimerSetup value={timerSeconds} onChange={setTimerSeconds} />
+
+      <VetoSetup value={vetoSeconds} timerSeconds={timerSeconds} onChange={setVetoSeconds} />
 
       <RulesSetup deductOnWrong={deductOnWrong} onChange={setDeductOnWrong} />
 
