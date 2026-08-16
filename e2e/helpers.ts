@@ -33,6 +33,14 @@ export function scoredClueCard(page: Page, category: string, points: number) {
   return page.getByRole('button', { name: `${category}, ${points} Punkte – bereits gespielt` });
 }
 
+/**
+ * Punktebutton im geöffneten Popup. Die Suche bleibt bewusst auf den Dialog
+ * beschränkt: Gewertete Karten nennen denselben Wortlaut in ihrem aria-label.
+ */
+export function scoreButton(page: Page, label: string) {
+  return page.getByRole('dialog').getByRole('button', { name: label, exact: true });
+}
+
 /** Öffnet eine Karte, deckt die Antwort auf und wertet sie. */
 export async function playClue(
   page: Page,
@@ -42,6 +50,6 @@ export async function playClue(
 ): Promise<void> {
   await clueCard(page, category, points).click();
   await page.getByRole('button', { name: 'Antwort anzeigen' }).click();
-  await page.getByRole('button', { name: buttonLabel }).click();
+  await scoreButton(page, buttonLabel).click();
   await expect(scoredClueCard(page, category, points)).toBeVisible();
 }

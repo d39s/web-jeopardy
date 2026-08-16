@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { clueCard, playClue, scoredClueCard, startGame } from './helpers';
+import { clueCard, playClue, scoreButton, scoredClueCard, startGame } from './helpers';
 
 /**
  * Verbindliche Regressionstests für die Kernanforderungen aus details.md.
@@ -76,7 +76,7 @@ test('punktebuttons entstehen für beliebig viele teams', async ({ page }) => {
     .filter({ hasText: /(richtig|falsch)$/ });
 
   await expect(scoreButtons).toHaveCount(8);
-  await expect(page.getByRole('button', { name: 'Team D falsch' })).toBeVisible();
+  await expect(scoreButton(page, 'Team D falsch')).toBeVisible();
 });
 
 test('übungsmodus mit einem team', async ({ page }) => {
@@ -90,6 +90,6 @@ test('übungsmodus mit einem team', async ({ page }) => {
     .filter({ hasText: /(richtig|falsch)$/ });
   await expect(scoreButtons).toHaveCount(2);
 
-  await page.getByRole('button', { name: 'Team A richtig' }).click();
+  await scoreButton(page, 'Team A richtig').click();
   await expect(page.getByText('Team A: 100 Punkte')).toBeAttached();
 });
