@@ -425,3 +425,31 @@ Lint und Typecheck ohne Befund, Produktions-Build 104 kB gzip.
 - **Gedämpfte Farben auf gewerteten Karten:** Grün und Rot liegen unter der Abdunklung, die
   für graue Karten vorgeschrieben ist. Falls das auf dem Beamer zu blass wirkt, wäre eine
   leicht höhere Deckkraft für gewertete Karten der kleinste Eingriff.
+
+## 13. Runde 3: Auswertung und Spielgefühl
+
+Fünf Wünsche aus `kontext/new-features.md`, umgesetzt in vier Commits. Die Reihenfolge ergab
+sich aus den Abhängigkeiten: Erst das Datenmodell (Abzugsregel und `viaVeto`), dann die
+Anzeigen, die darauf aufbauen.
+
+### Abnahmematrix Runde 3
+
+| #   | Anforderung                                                   | Nachweis                                                                               |
+| --- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| R6  | Fragen am Spielende nachlesbar, mit Gewinner und Vetos        | E2E `auswertung öffnet sich am spielende und zeigt alle reiter`, `selectClueReview`    |
+| R7  | Serie hinter dem Teamnamen (Flamme bzw. Eis) ab drei in Folge | E2E `serie erscheint am teamnamen ab drei richtigen antworten in folge`                |
+| R8  | Statistik je Team: Vetos, richtige und falsche Antworten      | Komponententest `zeigt im reiter Statistik die zahlen je team`, `selectTeamStatistics` |
+| R9  | Diagramm über den Punkteverlauf                               | Komponententest `zeigt im reiter Verlauf das diagramm mit einer linie je team`         |
+| R10 | Halber Punktabzug als Zwischenstufe                           | E2E `bei halber abzugsregel kostet eine falsche antwort die hälfte`                    |
+| R11 | Funkeln der übrigen Karten ab acht offenen Fragen             | Komponententests `lässt die letzten offenen karten funkeln` und die Gegenprobe         |
+
+### Prüfstand nach Runde 3
+
+255 Unit- und Komponententests, 23 End-to-End-Tests (darunter axe-Prüfungen der Auswertung
+ohne Verstöße), Lint und Typecheck ohne Befund, Produktions-Build 110 kB gzip.
+
+### Abweichung von der Vorgabe
+
+Statistik und Punkteverlauf stehen in **zwei** Reitern statt in einem. Gemeinsam in einem
+Reiter passten Tabelle und Diagramm bei 1280 × 720 nicht ohne Scrollen auf den Schirm – und
+auf einem Beamer ist Scrollen die schlechteste aller Bedienungen.

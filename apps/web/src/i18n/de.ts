@@ -102,6 +102,7 @@ export const de = {
     newGame: 'Neues Spiel',
     newGameConfirm: 'Das laufende Spiel wird beendet und alle Punkte gehen verloren. Fortfahren?',
     fullscreen: 'Vollbild',
+    showResult: 'Auswertung',
     exitFullscreen: 'Vollbild beenden',
     cardLabel: (category: string, points: number) => `${category}, ${points} Punkte`,
     cardScoredLabel: (category: string, points: number) =>
@@ -184,6 +185,41 @@ export const de = {
     tie: 'Unentschieden',
     backToBoard: 'Zurück zum Spielfeld',
     newGame: 'Neues Spiel',
+
+    // Reiter der Auswertung
+    tabsLabel: 'Auswertung',
+    tabRanking: 'Endstand',
+    tabStatistics: 'Statistik',
+    tabProgress: 'Verlauf',
+    tabClues: 'Fragen',
+
+    // Statistik
+    statsHeading: 'Zahlen je Team',
+    statsTeam: 'Team',
+    statsCorrect: 'Richtig',
+    statsWrong: 'Falsch',
+    statsVetos: 'Vetos',
+    statsScore: 'Punkte',
+    statsVetoHint: 'Vetos zählen die Fragen, in die ein Team nachträglich eingestiegen ist.',
+
+    // Punkteverlauf
+    chartHeading: 'Punkteverlauf',
+    chartEmpty: 'Es wurde noch keine Frage gespielt.',
+    chartAxisClues: 'Gespielte Fragen',
+    chartSummary: (count: number, standings: string) =>
+      `Punkteverlauf über ${count} Fragen. Endstand: ${standings}.`,
+    chartTeamScore: (name: string, score: number) => `${name} ${score}`,
+
+    // Rückblick auf die Fragen
+    cluesHeading: 'Alle Fragen in Spielreihenfolge',
+    cluesEmpty: 'Es wurde noch keine Frage gespielt.',
+    clueOrder: (order: number) => `Frage ${order}`,
+    cluePoints: (points: number) => `${points} Punkte`,
+    clueAnswer: 'Antwort',
+    clueParticipants: 'Beteiligt',
+    clueVetoMark: 'Veto',
+    clueNobody: 'Niemand richtig',
+    clueWinner: (name: string) => `${name} richtig`,
   },
 
   errors: {

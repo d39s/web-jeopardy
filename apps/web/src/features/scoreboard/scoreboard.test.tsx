@@ -164,39 +164,116 @@ describe('am zug', () => {
 });
 
 describe('endstand', () => {
-  it('bleibt während des spiels verborgen', () => {
-    renderWithGame(<ResultOverlay onNewGame={vi.fn()} />, startedState());
+  it('bleibt geschlossen, solange er nicht angefordert ist', () => {
+    renderWithGame(
+      <ResultOverlay open={false} onClose={vi.fn()} onNewGame={vi.fn()} />,
+      finishedState(2),
+    );
     expect(screen.queryByRole('heading', { name: 'Endstand' })).not.toBeInTheDocument();
   });
 
   it('zeigt nach der letzten frage das ranking', () => {
-    renderWithGame(<ResultOverlay onNewGame={vi.fn()} />, finishedState(2));
+    renderWithGame(<ResultOverlay open onClose={vi.fn()} onNewGame={vi.fn()} />, finishedState(2));
 
     expect(screen.getByRole('heading', { name: 'Endstand' })).toBeInTheDocument();
-    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    expect(within(screen.getByRole('tabpanel')).getAllByRole('listitem')).toHaveLength(2);
   });
 
   it('zeigt im übungsmodus die trefferquote statt eines rankings', () => {
-    renderWithGame(<ResultOverlay onNewGame={vi.fn()} />, finishedState(1));
+    renderWithGame(<ResultOverlay open onClose={vi.fn()} onNewGame={vi.fn()} />, finishedState(1));
 
     expect(screen.getByRole('heading', { name: 'Ergebnis' })).toBeInTheDocument();
     expect(screen.getByText(/von 25 Fragen richtig beantwortet/)).toBeInTheDocument();
-    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('tabpanel')).queryByRole('list')).not.toBeInTheDocument();
   });
 
-  it('lässt sich schließen und meldet den wunsch nach einem neuen spiel', async () => {
+  it('meldet das schließen und den start eines neuen spiels', async () => {
+    const onClose = vi.fn();
     const onNewGame = vi.fn();
-    renderWithGame(<ResultOverlay onNewGame={onNewGame} />, finishedState(2));
+    renderWithGame(
+      <ResultOverlay open onClose={onClose} onNewGame={onNewGame} />,
+      finishedState(2),
+    );
 
     await userEvent.click(screen.getByRole('button', { name: 'Zurück zum Spielfeld' }));
-    expect(screen.queryByRole('heading', { name: 'Endstand' })).not.toBeInTheDocument();
-  });
-
-  it('meldet den start eines neuen spiels', async () => {
-    const onNewGame = vi.fn();
-    renderWithGame(<ResultOverlay onNewGame={onNewGame} />, finishedState(2));
+    expect(onClose).toHaveBeenCalledOnce();
 
     await userEvent.click(screen.getByRole('button', { name: 'Neues Spiel' }));
     expect(onNewGame).toHaveBeenCalledOnce();
+  });
+});
+
+describe('auswertung in reitern', () => {
+  function renderAuswertung(teamCount = 2) {
+    return renderWithGame(
+      <ResultOverlay open onClose={vi.fn()} onNewGame={vi.fn()} />,
+      finishedState(teamCount),
+    );
+  }
+
+  it('startet beim endstand', () => {
+    renderAuswertung();
+
+    expect(screen.getByRole('tab', { name: 'Endstand' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Statistik' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+  });
+
+  it('zeigt im reiter Statistik die zahlen je team', async () => {
+    renderAuswertung();
+    await userEvent.click(screen.getByRole('tab', { name: 'Statistik' }));
+
+    // Reihenfolge der Spalten: richtig, falsch, Vetos, Punkte.
+    const zeile = screen.getByRole('row', { name: /^Team A/ });
+    expect(within(zeile).getAllByRole('cell')).toHaveLength(4);
+  });
+
+  it('zeigt im reiter Verlauf das diagramm mit einer linie je team', async () => {
+    const { container } = renderAuswertung(3);
+    await userEvent.click(screen.getByRole('tab', { name: 'Verlauf' }));
+
+    expect(screen.getByRole('img', { name: /Punkteverlauf über 25 Fragen/ })).toBeInTheDocument();
+    // Eine Polylinie je Team, dazu die Legendenstriche.
+    expect(container.querySelectorAll('polyline')).toHaveLength(3);
+  });
+
+  it('zeigt im reiter Fragen alle fragen mit lösung und beteiligten', async () => {
+    renderAuswertung(3);
+    await userEvent.click(screen.getByRole('tab', { name: 'Fragen' }));
+
+    const panel = within(screen.getByRole('tabpanel'));
+    expect(panel.getAllByRole('listitem')).toHaveLength(25);
+    expect(panel.getByText('Wer stellte die Relativitätstheorie auf?')).toBeInTheDocument();
+    expect(panel.getByText('Albert Einstein')).toBeInTheDocument();
+  });
+
+  it('weist im rückblick auf ein veto hin', async () => {
+    let state = startedState(3);
+    // Team B steigt per Veto ein und gewinnt.
+    state = playClue(state, 'wissenschaft-100', 'team-b', ['team-b']);
+    renderWithGame(<ResultOverlay open onClose={vi.fn()} onNewGame={vi.fn()} />, state);
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Fragen' }));
+    const panel = within(screen.getByRole('tabpanel'));
+
+    expect(panel.getByText('Beteiligt: Team A · Team B (Veto)')).toBeInTheDocument();
+    expect(panel.getByText('Team B richtig')).toBeInTheDocument();
+  });
+
+  it('wechselt den reiter auch mit den pfeiltasten', async () => {
+    renderAuswertung();
+    const ersterReiter = screen.getByRole('tab', { name: 'Endstand' });
+    ersterReiter.focus();
+
+    await userEvent.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: 'Statistik' })).toHaveFocus();
+
+    await userEvent.keyboard('{End}');
+    expect(screen.getByRole('tab', { name: 'Fragen' })).toHaveAttribute('aria-selected', 'true');
+
+    await userEvent.keyboard('{Home}');
+    expect(screen.getByRole('tab', { name: 'Endstand' })).toHaveAttribute('aria-selected', 'true');
   });
 });

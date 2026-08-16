@@ -673,3 +673,65 @@ Der gespeicherte Spielstand hat neue Pflichtfelder. Ältere Einträge scheitern 
 Schemaprüfung und werden verworfen – ein laufendes Spiel aus der Zeit davor lässt sich also
 nicht fortsetzen. Das ist bewusst so: Ein halb migrierter Spielstand wäre schlimmer als ein
 neu gestartetes Spiel.
+
+## 17. Erweiterungen aus Runde 3
+
+### 17.1 Auswertung am Spielende
+
+Mit der letzten Wertung öffnet sich die Auswertung von selbst. Sie liegt in einem Dialog mit
+vier Reitern, damit jeder Abschnitt ohne Scrollen auf einen Beamer passt:
+
+| Reiter    | Inhalt                                                                      |
+| --------- | --------------------------------------------------------------------------- |
+| Endstand  | Ranking wie bisher, im Übungsmodus die Trefferquote                         |
+| Statistik | Richtige, falsche und per Veto erspielte Beteiligungen sowie Punkte je Team |
+| Verlauf   | Punkteverlauf über alle Fragen als Liniendiagramm                           |
+| Fragen    | Alle gespielten Fragen mit Musterlösung, Gewinner und Beteiligten           |
+
+Wer den Dialog schließt, kommt über den Knopf **Auswertung** in der Kopfzeile zurück; er
+erscheint dort erst, wenn das Spiel beendet ist. Die Reiter folgen dem ARIA-Muster
+(`tablist`/`tab`/`tabpanel`) mit Pfeiltasten, Pos1 und Ende.
+
+Grundlage sind drei neue Selektoren in `game-core`:
+
+- `selectClueReview` – alle gewerteten Fragen in Spielreihenfolge samt Beteiligten,
+- `selectTeamStatistics` – Kennzahlen je Team,
+- `selectScoreProgress` – Punktestand nach jeder Frage, mit derselben schrittweisen
+  Klammerung bei null wie `selectScore`.
+
+Damit der Rückblick sagen kann, **wer per Veto eingestiegen ist**, trägt jede Wertung das
+Feld `viaVeto`. Es ließe sich zwar aus der Reihenfolge der Wertungen ableiten – das erste
+beteiligte Team hat die Frage begonnen –, aber eine implizite Reihenfolge ist eine schlechte
+Grundlage für eine Anzeige.
+
+Das Diagramm ist handgezeichnetes SVG statt einer Diagrammbibliothek: Für fünf Linien lohnt
+kein zusätzliches Paket im Bundle. Ab dem sechsten Team wiederholt sich die Kategoriepalette,
+deshalb unterscheidet dann zusätzlich die Strichart. Die Legende steht über dem Diagramm und
+nennt Namen und Endstand – die Farbe allein trägt die Zuordnung nicht.
+
+Der Moderationshinweis einer Frage (`note`) bleibt auch im Rückblick unsichtbar. Er richtet
+sich an die Moderation während des Spiels.
+
+### 17.2 Serien am Teamnamen
+
+Ab drei richtigen Antworten in Folge steht 🔥 mit der Länge hinter dem Teamnamen, ab drei
+falschen 🧊. Gezählt werden **nur eigene Beteiligungen**: Fragen, die andere Teams unter sich
+ausmachen, unterbrechen die Serie nicht. Bei sechs oder acht Teams käme sonst kaum jemand auf
+drei in Folge, und die Anzeige wäre nutzlos.
+
+Die Zeichen sind für Screenreader ausgeblendet – ein Emoji wird je nach Vorlesesoftware als
+„Feuer" gesprochen, was über die Serie nichts aussagt. Daneben steht der Sinn im Klartext.
+
+Damit der Teamname bei acht Teams lesbar bleibt, ist die Teamkachel ein Container-Query-
+Kontext: Der Punktestand schrumpft in schmalen Kacheln mit.
+
+### 17.3 Funkeln der letzten Karten
+
+Sind höchstens acht Fragen offen, umgibt die verbliebenen Karten ein weicher Schein in ihrer
+Kategoriefarbe (`--animate-funkeln`). Der Takt ist je Karte um 180 ms versetzt, damit das
+Spielfeld nicht im Gleichschritt blinkt.
+
+Beide Stufen der Animation tragen gleich viele Schatten. Nur dann blendet der Browser weich
+über – bei unterschiedlich langen Schattenlisten springt der Wert bei 50 %, und aus dem
+Funkeln wird ein Blinken. Bei `prefers-reduced-motion` greift die bestehende Regel in
+`global.css`.

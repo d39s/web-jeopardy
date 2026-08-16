@@ -6,6 +6,7 @@ import {
   selectActiveTeam,
   selectAnsweringTeams,
   selectClueCount,
+  selectClueReview,
   selectClueSummary,
   selectIsFinished,
   selectIsPracticeMode,
@@ -14,10 +15,12 @@ import {
   selectOpenClue,
   selectRanking,
   selectScore,
+  selectScoreProgress,
   selectScoredCount,
   selectStartingTeam,
   selectStreak,
   selectTeamStats,
+  selectTeamStatistics,
   selectVetoCandidates,
 } from './selectors';
 import { createDefaultTeams } from './teams';
@@ -272,5 +275,69 @@ describe('serien', () => {
 
   it('kennt ohne beteiligung keine serie', () => {
     expect(selectStreak(startedGame(), 'team-c')).toBeNull();
+  });
+});
+
+describe('auswertung', () => {
+  /** Drei gespielte Fragen mit Veto, verlorener Frage und Runde ohne Gewinner. */
+  function gespieltesSpiel(): GameState {
+    let state = play(startedGame(), 'wissenschaft-500', 'team-c', ['team-c']);
+    state = play(state, 'geografie-200', null, ['team-a']);
+    return play(state, 'musik-100', 'team-c');
+  }
+
+  it('gibt die fragen in spielreihenfolge mit lösung und beteiligten zurück', () => {
+    const review = selectClueReview(gespieltesSpiel());
+
+    expect(review.map((entry) => [entry.order, entry.clue.id])).toEqual([
+      [1, 'wissenschaft-500'],
+      [2, 'geografie-200'],
+      [3, 'musik-100'],
+    ]);
+
+    const erste = review[0];
+    expect(erste?.categoryName).toBe('Wissenschaft');
+    expect(erste?.clue.answer).toBe('Albert Einstein');
+    expect(erste?.winner?.id).toBe('team-c');
+    // Team A hat begonnen, Team C ist per Veto eingestiegen.
+    expect(erste?.participants.map((teil) => [teil.team.id, teil.viaVeto, teil.delta])).toEqual([
+      ['team-a', false, -500],
+      ['team-c', true, 500],
+    ]);
+  });
+
+  it('kennt fragen ohne gewinner', () => {
+    const zweite = selectClueReview(gespieltesSpiel())[1];
+
+    expect(zweite?.winner).toBeNull();
+    expect(zweite?.participants.every((teil) => teil.outcome === 'wrong')).toBe(true);
+  });
+
+  it('zählt richtige, falsche und per veto erspielte beteiligungen je team', () => {
+    const statistik = selectTeamStatistics(gespieltesSpiel());
+
+    expect(statistik.map((eintrag) => eintrag.team.id)).toEqual(['team-a', 'team-b', 'team-c']);
+    expect(statistik[0]).toMatchObject({ correct: 0, wrong: 2, vetos: 1, played: 2 });
+    expect(statistik[2]).toMatchObject({ correct: 2, wrong: 0, vetos: 1, played: 2, score: 600 });
+    // Team B hat die zweite Frage begonnen – beteiligt, aber ohne Veto.
+    expect(statistik[1]).toMatchObject({ correct: 0, wrong: 1, vetos: 0, played: 1, score: 0 });
+  });
+
+  it('liefert den punkteverlauf mit startwert und klammerung bei null', () => {
+    const verlauf = selectScoreProgress(gespieltesSpiel());
+
+    expect(verlauf.clueCount).toBe(3);
+    // Ein Wert mehr als Fragen: der Stand vor der ersten Frage.
+    expect(verlauf.series[0]?.scores).toEqual([0, 0, 0, 0]);
+    expect(verlauf.series[2]?.scores).toEqual([0, 500, 500, 600]);
+    expect(verlauf.max).toBe(600);
+  });
+
+  it('bleibt ohne gespielte frage leer', () => {
+    const leer = startedGame();
+
+    expect(selectClueReview(leer)).toEqual([]);
+    expect(selectScoreProgress(leer).clueCount).toBe(0);
+    expect(selectScoreProgress(leer).series[0]?.scores).toEqual([0]);
   });
 });
