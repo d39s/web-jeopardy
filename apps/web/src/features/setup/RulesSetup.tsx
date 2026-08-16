@@ -27,7 +27,7 @@ export function RulesSetup({ deductOnWrong, onChange }: RulesSetupProps) {
       <h2 className="text-xl font-bold">{de.setup.rulesHeading}</h2>
       <p className="text-sm text-text-muted">{de.setup.rulesHint}</p>
 
-      <ul className="grid gap-3 sm:grid-cols-2" aria-label={de.setup.rulesGroupLabel}>
+      <ul className="grid items-stretch gap-3 sm:grid-cols-2" aria-label={de.setup.rulesGroupLabel}>
         {options.map((option) => {
           const selected = deductOnWrong === option.value;
 
@@ -38,7 +38,9 @@ export function RulesSetup({ deductOnWrong, onChange }: RulesSetupProps) {
                 aria-pressed={selected}
                 onClick={() => onChange(option.value)}
                 className={cn(
-                  'w-full rounded-card border bg-surface p-4 text-left transition-colors',
+                  // h-full: beide Karten sind gleich hoch, auch bei unterschiedlich
+                  // langer Beschreibung.
+                  'h-full w-full rounded-card border bg-surface p-4 text-left transition-colors',
                   selected ? 'border-cat-1 bg-surface-hi' : 'border-border hover:bg-surface-hi',
                 )}
               >

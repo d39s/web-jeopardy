@@ -46,7 +46,8 @@ export function TimerSetup({ value, onChange }: TimerSetupProps) {
       <p className="text-sm text-text-muted">{de.setup.timerHint}</p>
 
       <div className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
-        <p className="text-2xl font-bold tabular-nums">{label}</p>
+        {/* Bleibt kleiner als die Abschnittsüberschrift – es ist ein Wert, keine Überschrift. */}
+        <p className="text-lg font-semibold tabular-nums">{label}</p>
 
         <label htmlFor={id} className="sr-only">
           {de.setup.timerLabel}
