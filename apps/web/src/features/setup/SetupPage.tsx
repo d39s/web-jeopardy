@@ -1,7 +1,7 @@
 import { createDefaultTeams, createTeam } from '@jeopardy/game-core';
 import type { GameDefinition, Team, TopicIndexEntry } from '@jeopardy/game-core';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { fetchTopic, fetchTopicIndex, parseUploadedFile } from '../../content/loader';
@@ -9,9 +9,13 @@ import type { LoadError } from '../../content/loader';
 import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
 import { loadLastTeams, saveLastTeams } from '../../state/persistence';
+import { ShareSection } from './ShareSection';
+import { SharedConfigDialog } from './SharedConfigDialog';
+import type { SharedConfigResult } from './SharedConfigDialog';
 import { TeamSetup } from './TeamSetup';
 import { TimerSetup } from './TimerSetup';
 import { TopicPicker } from './TopicPicker';
+import { buildShareLink, clearShareParams, parseShareParams } from './shareConfig';
 
 /** Leere Namen fallen auf den Standardnamen der jeweiligen Position zurück. */
 function normalizeTeams(teams: Team[]): Team[] {
@@ -25,6 +29,7 @@ export function SetupPage() {
   const state = useGameState();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [teams, setTeams] = useState<Team[]>(() => loadLastTeams() ?? createDefaultTeams(2));
   const [topics, setTopics] = useState<TopicIndexEntry[]>([]);
@@ -34,6 +39,19 @@ export function SetupPage() {
   const [uploaded, setUploaded] = useState<GameDefinition | null>(null);
   const [starting, setStarting] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
+
+  /**
+   * Der geteilte Link wird genau einmal beim ersten Rendern ausgewertet. Danach
+   * steuert allein der Zustand den Dialog – das Entfernen der Parameter aus der
+   * Adresszeile öffnet ihn also nicht erneut.
+   */
+  const [sharedLink] = useState(() => parseShareParams(location.search));
+  const [sharedOpen, setSharedOpen] = useState(sharedLink.status === 'ok');
+
+  useEffect(() => {
+    // Aus einem unbrauchbaren Link ist nichts zu holen – Adresszeile aufräumen.
+    if (sharedLink.status === 'invalid') clearShareParams();
+  }, [sharedLink.status]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -54,6 +72,37 @@ export function SetupPage() {
 
   const resumable = state.definition !== null && state.phase !== 'setup';
   const canStart = uploaded !== null || selectedId !== null;
+
+  /**
+   * Ein selbst geladenes Fragenset passt nicht in eine Adresszeile – dann gibt
+   * es keinen Link. Sonst spiegelt er immer die aktuell eingestellten Werte.
+   */
+  const shareLink =
+    uploaded !== null || selectedId === null
+      ? null
+      : buildShareLink(
+          {
+            topicId: selectedId,
+            teamNames: normalizeTeams(teams).map((team) => team.name),
+            timerSeconds,
+          },
+          globalThis.location?.href ?? '',
+        );
+
+  const closeShared = () => {
+    setSharedOpen(false);
+    clearShareParams();
+  };
+
+  const applyShared = (result: SharedConfigResult) => {
+    if (result.topicId !== null) {
+      setSelectedId(result.topicId);
+      setUploaded(null);
+    }
+    setTeams(result.teams);
+    setTimerSeconds(result.timerSeconds);
+    closeShared();
+  };
 
   const handleUpload = async (file: File) => {
     const result = await parseUploadedFile(file);
@@ -129,6 +178,24 @@ export function SetupPage() {
         }}
         onUpload={(file) => void handleUpload(file)}
       />
+
+      <ShareSection
+        link={shareLink}
+        uploadWarning={uploaded !== null}
+        invalidLink={sharedLink.status === 'invalid'}
+      />
+
+      {sharedLink.status === 'ok' ? (
+        <SharedConfigDialog
+          // Erst öffnen, wenn der Themenindex da ist – sonst fehlt der Titel.
+          open={sharedOpen && !loading}
+          config={sharedLink.config}
+          topics={topics}
+          fallbackTeams={teams}
+          onConfirm={applyShared}
+          onDismiss={closeShared}
+        />
+      ) : null}
 
       <footer className="flex flex-wrap items-center gap-4">
         <Button
