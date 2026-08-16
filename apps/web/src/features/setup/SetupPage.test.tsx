@@ -1,10 +1,11 @@
 import { initialGameState, sampleDefinition } from '@jeopardy/game-core';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithGame, startedState } from '../../test/renderWithGame';
 import { SetupPage } from './SetupPage';
+import { timerSliderValue } from './TimerSetup';
 
 const topicIndex = {
   schemaVersion: 1,
@@ -111,6 +112,39 @@ describe('startseite', () => {
 
     await waitFor(() => expect(transport.getState().phase).toBe('playing'));
     expect(transport.getState().teams.map((team) => team.name)).toEqual(['Die Adler', 'Team B']);
+  });
+
+  it('reicht eine eigene veto-zeit an das spiel weiter', async () => {
+    const { transport } = renderSetup();
+    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
+      target: { value: String(timerSliderValue(45)) },
+    });
+    fireEvent.change(screen.getByLabelText('Veto-Zeit je Übernahme'), {
+      target: { value: String(timerSliderValue(20)) },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
+
+    await waitFor(() => expect(transport.getState().phase).toBe('playing'));
+    expect(transport.getState().timerSeconds).toBe(45);
+    expect(transport.getState().vetoSeconds).toBe(20);
+  });
+
+  it('gibt die kopplung als offene veto-zeit weiter', async () => {
+    const { transport } = renderSetup();
+    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
+      target: { value: String(timerSliderValue(45)) },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
+
+    await waitFor(() => expect(transport.getState().phase).toBe('playing'));
+    // null heißt im Kern: es gilt die Bedenkzeit.
+    expect(transport.getState().vetoSeconds).toBeNull();
   });
 
   it('meldet einen fehler, wenn die themenliste nicht geladen werden kann', async () => {
