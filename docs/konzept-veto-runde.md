@@ -52,8 +52,10 @@ verhält sich das Spiel exakt wie heute.
 3. Meldet sich ein Team, drückt die Moderation dessen Knopf. Damit ist dieses Team am Zug,
    seine Bedenkzeit beginnt von vorn, und es steht in der Liste der Beteiligten.
 4. Das wiederholt sich, bis entweder **„Kein Veto"** gedrückt wird oder **kein Team mehr
-   übrig** ist, das noch nicht dran war.
-5. „Kein Veto" bzw. der Wegfall aller Kandidaten deckt die **Musterlösung** auf.
+   übrig** ist, das noch nicht dran war – die Vetos können sich also erschöpfen.
+5. Aufgedeckt wird immer per Klick: „Kein Veto" bzw., wenn keine Kandidaten mehr da sind,
+   „Antwort anzeigen". Auch nach abgelaufener Bedenkzeit deckt die Oberfläche nicht von
+   selbst auf.
 6. In der Wertung wählt die Moderation, **welches beteiligte Team richtig lag**. Dieses Team
    erhält die Punkte. Alle übrigen Beteiligten erhalten 0 Punkte oder verlieren die Punktzahl
    der Frage – je nach Einstellung „Spielregeln". Teams, die sich nicht beteiligt haben,
@@ -84,8 +86,7 @@ stateDiagram-v2
         Fristende --> Bedenkzeit: clue/veto
     }
 
-    Antwortlauf --> Aufgedeckt: clue/noVeto
-    Antwortlauf --> Aufgedeckt: keine Kandidaten mehr und Frist abgelaufen
+    Antwortlauf --> Aufgedeckt: clue/noVeto (bzw. „Antwort anzeigen", wenn keine Kandidaten mehr)
     Aufgedeckt --> Gewertet: score/settle (Gewinner, niemand richtig oder ohne Wertung)
     Gewertet --> Spielfeld: Karte grau, Zugriff wandert weiter
 
@@ -104,37 +105,40 @@ Zwei Dinge sind daran wichtig:
 
 ## 4. Entscheidungen und Eventualitäten
 
-Die Beschreibung lässt an mehreren Stellen Spielraum. Hier steht jeweils, wie ich es
-umsetzen würde und warum. Punkte, bei denen ich deine Entscheidung brauche, sind in
-[Kapitel 13](#13-offene-fragen) zusammengefasst.
+Die Rohfassung ließ an mehreren Stellen Spielraum. Der Großteil ist inzwischen
+**entschieden** (Rückmeldung vom 16.08.2026); die drei verbliebenen Punkte stehen in
+[Kapitel 13](#13-offene-fragen).
 
-### 4.1 Wann erscheinen die Veto-Knöpfe?
+### 4.1 Wann erscheinen die Veto-Knöpfe? — entschieden
 
-| Möglichkeit                                     | Bewertung                                                                                                                                                                   |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sofort mit dem Öffnen der Karte** (Vorschlag) | Entspricht dem Mockup, in dem Countdown und Veto-Knöpfe zusammen stehen. Die Moderation kann jederzeit reagieren – auch wenn ein Team schon vor der Antwort dazwischenruft. |
-| Erst nachdem das Team am Zug geantwortet hat    | Bräuchte einen zusätzlichen Knopf „hat geantwortet". Ein Klick mehr in jeder Frage, ohne erkennbaren Gewinn.                                                                |
+| Möglichkeit                                       | Bewertung                                                                                                                                                                   |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sofort mit dem Öffnen der Karte** (entschieden) | Entspricht dem Mockup, in dem Countdown und Veto-Knöpfe zusammen stehen. Die Moderation kann jederzeit reagieren – auch wenn ein Team schon vor der Antwort dazwischenruft. |
+| Erst nachdem das Team am Zug geantwortet hat      | Verworfen: bräuchte einen zusätzlichen Knopf „hat geantwortet" – ein Klick mehr in jeder Frage, ohne erkennbaren Gewinn.                                                    |
 
-### 4.2 Wer darf ein Veto einlegen?
+### 4.2 Wer darf ein Veto einlegen? — entschieden
 
-Jedes Team, das bei **dieser Frage** noch nicht am Zug war. Ein Team bekommt also höchstens
-einen Anlauf je Frage. Beteiligte verschwinden aus der Knopfliste; sind alle durch, entfällt
-die Veto-Auswahl vollständig.
+Jedes Team, das bei **dieser Frage** noch nicht am Zug war: **eine Antwort je Team und
+Frage.** Beteiligte verschwinden aus der Knopfliste. Die Vetos können sich damit vollständig
+erschöpfen – dann bleibt nur noch das Aufdecken.
 
-### 4.3 Was passiert, wenn die Bedenkzeit abläuft?
+### 4.3 Was passiert, wenn die Bedenkzeit abläuft? — entschieden
 
-| Fall                          | Verhalten                                                                                                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Es gibt noch Kandidaten       | Die Frist endet, der Countdown zeigt „Zeit abgelaufen". Die Veto-Auswahl **bleibt offen** – die Moderation entscheidet, ob noch jemand übernimmt oder aufgedeckt wird. |
-| Es gibt keine Kandidaten mehr | Die Musterlösung wird **automatisch aufgedeckt**. Warten hätte hier keinen Zweck mehr.                                                                                 |
+**Nach Fristablauf muss die Moderation eine der Veto-Entscheidungen treffen.** Die Zeit
+endet, der Countdown zeigt „Zeit abgelaufen", und die Auswahl bleibt stehen:
 
-Damit ist der Ablauf für jedes Team gleich – anders als in der Rohfassung, die für das erste
-Team ein Weiterrücken und für ein Veto-Team ein Aufdecken beschreibt. Ein einheitlicher
-Ablauf ist am Beamer leichter zu moderieren.
+| Fall                          | Verhalten                                                                                     |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| Es gibt noch Kandidaten       | Veto-Knöpfe und „Kein Veto" bleiben offen. Ohne Klick geschieht nichts.                       |
+| Es gibt keine Kandidaten mehr | Es bleibt allein „Antwort anzeigen". Auch hier deckt die Oberfläche **nicht** von selbst auf. |
 
-**Wichtig:** Im Veto-Modus rückt der Zugriff bei Fristablauf **nicht** automatisch zum
-nächsten Team weiter (das ist das heutige Verhalten ohne Veto). Sonst würde die Moderation
-zwei konkurrierende Mechaniken gleichzeitig bedienen.
+Kein automatisches Aufdecken, kein automatisches Weiterrücken: Im Veto-Modus geht jeder
+Übergang von einem Klick der Moderation aus. Das ist eine Regel statt mehrerer Sonderfälle
+und verhindert, dass am Beamer etwas passiert, während gerade diskutiert wird.
+
+**Zum Vergleich:** Ohne Veto bleibt es beim heutigen Verhalten – Fristablauf rückt
+automatisch zum nächsten Team weiter, und wenn alle durch sind, gilt die Frage als nicht
+beantwortet.
 
 ### 4.4 Wie wird gewertet?
 
@@ -144,15 +148,19 @@ zwei konkurrierende Mechaniken gleichzeitig bedienen.
 | **„Niemand richtig"**                           | Alle Beteiligten werden als falsch gewertet (0 oder −Punktzahl).                                                                                                       |
 | **„Ohne Wertung"**                              | Die Frage gilt als gespielt, niemand bekommt oder verliert Punkte. Für den Fall, dass niemand ernsthaft geantwortet hat, etwa weil die Zeit ungenutzt verstrichen ist. |
 
-Unbeteiligte Teams werden **nie** belastet. Der Punktestand bleibt wie bisher bei null
-geklammert, und zwar je Wertung einzeln.
+**Teams, die nicht mitgespielt haben, bleiben in jedem Fall außen vor** – sie tauchen weder
+als Knopf auf noch werden sie belastet, auch nicht bei „Niemand richtig". Der Punktestand
+bleibt wie bisher bei null geklammert, und zwar je Wertung einzeln.
 
-### 4.5 Kann ein unbeteiligtes Team als Gewinner gewählt werden?
+### 4.5 Kann ein unbeteiligtes Team als Gewinner gewählt werden? — entschieden
 
-Standardmäßig nein – zur Auswahl stehen nur Beteiligte. Für den Fall, dass die Moderation ein
-Veto zu registrieren vergessen hat, ist ein aufklappbarer Bereich „anderes Team wählen"
-vorgesehen, der alle übrigen Teams anbietet. Damit wird dieses Team nachträglich zum
-Beteiligten und erhält die Punkte, ohne dass die Runde neu gespielt werden muss.
+**Nein.** Zur Auswahl stehen ausschließlich Teams, die sich beteiligt haben; unbeteiligte
+Teams sind von der Wertung ausgenommen. Ein nachträgliches Eintragen gibt es nicht, weil es
+genau die Trennung aufweichen würde, die diese Regel schafft.
+
+Hat die Moderation ein Veto übersehen, führen zwei Wege heraus: **„Letztes Veto zurücknehmen"**
+vor dem Aufdecken (siehe 4.6) oder das Popup schließen – dann ist die Runde verworfen und die
+Karte wieder spielbar.
 
 ### 4.6 Fehlbedienung und Rücknahme
 
@@ -172,7 +180,7 @@ Beteiligten und erhält die Punkte, ohne dass die Runde neu gespielt werden muss
 | **Bedenkzeit an**        | Jedes übernehmende Team bekommt die **volle** eingestellte Zeit, nicht den Rest des Vorgängers.                                                                                              |
 | **Abzugsregel an/aus**   | Entscheidet, ob unterlegene Beteiligte −Punktzahl oder 0 bekommen. Keine eigene Einstellung nötig.                                                                                           |
 | **Übungsmodus (1 Team)** | Es gibt nie Kandidaten. Die Veto-Auswahl erscheint nicht, die Wertung zeigt nur „Team A richtig", „Niemand richtig" und „Ohne Wertung". Die Einstellung bleibt wählbar, wirkt aber nicht.    |
-| **2 Teams**              | Nach dem Veto des zweiten Teams gibt es keine Kandidaten mehr; danach wird aufgedeckt.                                                                                                       |
+| **2 Teams**              | Nach dem Veto des zweiten Teams sind die Vetos erschöpft; es bleibt „Antwort anzeigen".                                                                                                      |
 | **8 Teams**              | Bis zu sieben Veto-Knöpfe. Layout siehe [Kapitel 7](#7-oberfläche).                                                                                                                          |
 | **Reihum-Zugriff**       | Unverändert: Wer eine neue Frage beginnt, bestimmt weiterhin `startingTeamIndex`, und dieser wandert nach jeder abgeschlossenen Frage weiter – unabhängig davon, wer die Frage gewonnen hat. |
 
@@ -213,10 +221,14 @@ Die ursprüngliche Anforderung schreibt die Knöpfe „Team A richtig / Team A f
 richtig / Team B falsch" wörtlich fest. Im Veto-Modus passen sie nicht mehr: Dort wählt die
 Moderation **einen Gewinner**, alles andere ergibt sich.
 
-**Vorschlag:** Die vier Knöpfe bleiben unverändert der Normalfall (Veto aus). Nur bei
+**Entschieden:** Die vier Knöpfe bleiben unverändert der Normalfall (Veto aus). Bei
 eingeschalteter Veto-Runde tritt die Gewinnerauswahl an ihre Stelle. Damit bleibt die
-ursprüngliche Anforderung in ihrer Standardkonfiguration erfüllt, und die neue Mechanik
-bekommt die Bedienung, die zu ihr passt.
+ursprüngliche Anforderung in ihrer Standardkonfiguration wörtlich erfüllt, und die neue
+Mechanik bekommt die Bedienung, die zu ihr passt.
+
+Angenehmer Nebeneffekt: Weil die Auswahl nur Beteiligte auflistet, ist die Regel „wer nicht
+mitgespielt hat, wird nicht gewertet" nicht extra zu programmieren – sie ergibt sich aus der
+Oberfläche.
 
 ### 5.3 Automatisches Weiterrücken bei Fristablauf
 
@@ -468,23 +480,36 @@ halber, V5 ein halber. In Summe rund vier Personentage.
 
 ## 13. Offene Fragen
 
-Diese Punkte ändern die Umsetzung spürbar, deshalb hätte ich dazu gern deine Entscheidung.
+Vier der ursprünglich fünf Punkte sind mit deiner Rückmeldung vom 16.08.2026 entschieden und
+oben eingearbeitet: Veto-Knöpfe erscheinen sofort (4.1), eine Antwort je Team (4.2), nach
+Fristablauf entscheidet die Moderation (4.3), Gewinnerauswahl statt der vier Punkteknöpfe im
+Veto-Modus, wobei Unbeteiligte nie gewertet werden (4.5, 5.2).
 
-1. **Fristablauf mit verbleibenden Kandidaten** – mein Vorschlag: Die Zeit endet, die
-   Veto-Auswahl bleibt offen, die Moderation entscheidet (Kapitel 4.3). Alternative: sofort
-   aufdecken, wie es die Rohfassung für das Veto-Team beschreibt.
-2. **Wertung bei „Niemand richtig"** – mein Vorschlag: Alle Beteiligten werden als falsch
-   gewertet, zusätzlich gibt es „Ohne Wertung" für den Fall, dass niemand ernsthaft
-   geantwortet hat. Alternative: Nur „Ohne Wertung" anbieten und den Abzug ganz weglassen.
-3. **Bedenkzeit für übernehmende Teams** – mein Vorschlag: jedes Team bekommt die volle Zeit.
-   Alternative: die verbleibende Restzeit, was das Übernehmen riskanter macht.
-4. **Ersetzt die Gewinnerauswahl die vier Punkteknöpfe** (nur im Veto-Modus)? Mein Vorschlag
-   ja, siehe Kapitel 5.2 – damit weicht der Veto-Modus bewusst von der ursprünglich wörtlich
-   festgelegten Beschriftung ab.
-5. **Rücknahme eines Vetos** – soll sie mit hinein oder reicht „Popup schließen und Frage neu
-   öffnen"? Mein Vorschlag: mit hinein, sie kostet wenig und verhindert Ärger am Beamer.
+Offen sind noch drei Punkte:
 
----
+### 13.1 Braucht es „Ohne Wertung" neben „Niemand richtig"?
+
+Weil es keinen Knopf „hat geantwortet" gibt, **gilt jedes Team, das am Zug war, als
+beteiligt** – auch eines, dessen Zeit ungenutzt verstrichen ist. Bei „Niemand richtig" würde
+es dann Punkte verlieren, obwohl es geschwiegen hat.
+
+- _Vorschlag:_ zusätzlich **„Ohne Wertung"**, das die Frage abschließt, ohne jemanden zu
+  belasten. Ein Knopf mehr, aber der einzige Weg, das Schweigen vom Falschantworten zu
+  unterscheiden.
+- _Alternative:_ nur „Niemand richtig" – kürzer, aber wer nichts sagt, zahlt drauf.
+
+### 13.2 Volle Bedenkzeit oder Restzeit für ein übernehmendes Team?
+
+- _Vorschlag:_ **volle Zeit** für jedes Team. Gleiche Bedingungen, leicht zu erklären.
+- _Alternative:_ die verbleibende Restzeit des Vorgängers. Macht ein spätes Veto riskant und
+  belohnt schnelles Melden, kann aber auf wenige Sekunden hinauslaufen.
+
+### 13.3 Soll „Letztes Veto zurücknehmen" mit hinein?
+
+- _Vorschlag:_ **ja.** Ein falsch getroffenes Veto lässt sich sonst nur durch Schließen und
+  Neuöffnen der Frage heilen, und das mitten im Spiel.
+- _Alternative:_ weglassen und auf das Schließen verweisen – ein Knopf weniger im Popup, das
+  bei acht Teams ohnehin voll ist.
 
 ## 14. Nicht Teil dieses Konzepts
 
