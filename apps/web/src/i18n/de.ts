@@ -18,6 +18,31 @@ export const de = {
     removeTeam: (name: string) => `${name} entfernen`,
     maxTeamsReached: (max: number) => `Mehr als ${max} Teams passen nicht auf das Spielfeld.`,
     duplicateName: 'Dieser Name wird bereits verwendet – die Punktebuttons sehen dann gleich aus.',
+    timerHeading: 'Bedenkzeit',
+    timerHint:
+      'Gilt je Frage und Team. Läuft die Zeit ab, ist das nächste Team an der Reihe; ' +
+      'antwortet niemand, gilt die Frage als gespielt.',
+    timerLabel: 'Bedenkzeit je Frage',
+    timerOff: 'Ohne Zeitbegrenzung',
+    timerSeconds: (seconds: number) => `${seconds} Sekunden`,
+    timerMinutes: (minutes: number) => (minutes === 1 ? '1 Minute' : `${minutes} Minuten`),
+    timerMinutesSeconds: (minutes: number, seconds: number) =>
+      `${minutes}:${String(seconds).padStart(2, '0')} Minuten`,
+
+    shareHeading: 'Spiel teilen',
+    shareHint: 'Der Link enthält Thema, Teams und Bedenkzeit.',
+    shareCopy: 'Link kopieren',
+    shareCopied: 'Link kopiert.',
+    shareFailed: 'Der Link konnte nicht kopiert werden.',
+    shareUploadWarning:
+      'Ein selbst geladenes Fragenset lässt sich nicht per Link teilen – bitte die Datei mitgeben.',
+    sharedHeading: 'Geteiltes Spiel',
+    sharedIntro: 'Diese Konfiguration wurde geteilt. Bitte die Teamnamen prüfen und anpassen.',
+    sharedTopic: (title: string) => `Thema: ${title}`,
+    sharedTimer: (label: string) => `Bedenkzeit: ${label}`,
+    sharedConfirm: 'Namen übernehmen',
+    sharedInvalid: 'Der geteilte Link ist unvollständig oder fehlerhaft.',
+
     topicsHeading: 'Thema',
     topicsLoading: 'Themen werden geladen …',
     topicsEmpty: 'Es sind noch keine Fragensets vorhanden.',
@@ -45,6 +70,17 @@ export const de = {
     teamNameLabel: (name: string) => `Name von ${name}`,
     scoreLabel: (name: string, score: number) => `${name}: ${score} Punkte`,
     points: 'Punkte',
+
+    // Ausgang einer gespielten Karte
+    resultCorrect: (team: string, points: number) => `${team} richtig, plus ${points} Punkte`,
+    resultWrong: (team: string, points: number) => `${team} falsch, minus ${points} Punkte`,
+    resultUnanswered: 'Nicht beantwortet',
+    resultUnansweredShort: 'Ohne Wertung',
+
+    // Zugreihenfolge
+    turnLabel: (name: string) => `${name} ist am Zug`,
+    turnNext: (name: string) => `Nächste Frage beginnt bei ${name}`,
+    turnBadge: 'Am Zug',
   },
 
   clue: {
@@ -55,6 +91,15 @@ export const de = {
     scoreCorrect: (teamName: string) => `${teamName} richtig`,
     scoreWrong: (teamName: string) => `${teamName} falsch`,
     noteHeading: 'Hinweis für die Moderation',
+
+    // Bedenkzeit
+    timerLabel: (teamName: string) => `Bedenkzeit für ${teamName}`,
+    timerRemaining: (seconds: number) => `noch ${seconds} Sekunden`,
+    timerExpiredForTeam: (teamName: string) => `Zeit für ${teamName} abgelaufen`,
+    timerExpiredAll: 'Zeit abgelaufen – die Frage gilt als gespielt.',
+    timerPause: 'Pause',
+    timerResume: 'Weiter',
+    timerSkip: 'Nächstes Team',
   },
 
   result: {

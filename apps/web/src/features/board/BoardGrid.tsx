@@ -44,7 +44,7 @@ export function BoardGrid() {
               points={clue.points}
               color={resolveCategoryColor(category, index)}
               scored={selectIsClueScored(state, clue.id)}
-              onOpen={() => dispatch({ type: 'clue/open', clueId: clue.id })}
+              onOpen={() => dispatch({ type: 'clue/open', clueId: clue.id, at: Date.now() })}
             />
           );
         }),

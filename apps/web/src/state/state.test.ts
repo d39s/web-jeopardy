@@ -45,7 +45,7 @@ describe('lokaler transport', () => {
     expect(listener).toHaveBeenCalledOnce();
 
     unsubscribe();
-    transport.dispatch({ type: 'clue/open', clueId: 'wissenschaft-100' });
+    transport.dispatch({ type: 'clue/open', clueId: 'wissenschaft-100', at: 0 });
     expect(listener).toHaveBeenCalledOnce();
   });
 
@@ -54,7 +54,7 @@ describe('lokaler transport', () => {
     const listener = vi.fn();
     transport.subscribe(listener);
 
-    transport.dispatch({ type: 'clue/open', clueId: 'gibt-es-nicht' });
+    transport.dispatch({ type: 'clue/open', clueId: 'gibt-es-nicht', at: 0 });
     expect(listener).not.toHaveBeenCalled();
   });
 });

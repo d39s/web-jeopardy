@@ -1,5 +1,13 @@
 import { MAX_TEAM_NAME_LENGTH, MIN_TEAMS } from './teams';
-import type { Category, Clue, GameAction, GameDefinition, GameState, ScoreEvent } from './types';
+import type {
+  Category,
+  Clue,
+  ClueOutcome,
+  GameAction,
+  GameDefinition,
+  GameState,
+  ScoreEvent,
+} from './types';
 
 export const initialGameState: GameState = {
   phase: 'setup',
@@ -8,6 +16,10 @@ export const initialGameState: GameState = {
   events: [],
   openClueId: null,
   answerRevealed: false,
+  timerSeconds: null,
+  startingTeamIndex: 0,
+  activeTeamIndex: 0,
+  timerEndsAt: null,
 };
 
 export function findClue(
@@ -29,6 +41,45 @@ function countClues(definition: GameDefinition): number {
   return definition.categories.reduce((total, category) => total + category.clues.length, 0);
 }
 
+function deadlineFrom(state: GameState, at: number): number | null {
+  return state.timerSeconds === null ? null : at + state.timerSeconds * 1000;
+}
+
+/**
+ * Schließt die geöffnete Frage mit einem Ergebnis ab: Wertung eintragen, Popup
+ * schließen, Timer stoppen und den ersten Zugriff an das nächste Team weitergeben.
+ */
+function finishClue(
+  state: GameState,
+  clueId: string,
+  teamId: string | null,
+  outcome: ClueOutcome,
+  delta: number,
+  at: number,
+): GameState {
+  const event: ScoreEvent = {
+    id: `${clueId}:${teamId ?? 'niemand'}:${state.events.length}`,
+    clueId,
+    teamId,
+    outcome,
+    delta,
+    at,
+  };
+  const events = [...state.events, event];
+  const allScored = state.definition !== null && events.length >= countClues(state.definition);
+
+  return {
+    ...state,
+    events,
+    openClueId: null,
+    answerRevealed: false,
+    timerEndsAt: null,
+    // Reihum: die nächste Frage beginnt beim nächsten Team.
+    startingTeamIndex: (state.startingTeamIndex + 1) % Math.max(1, state.teams.length),
+    phase: allScored ? 'finished' : state.phase,
+  };
+}
+
 /**
  * Zentrale Spielregel. Rein und deterministisch: keine Zeit-, Zufalls- oder
  * Browser-Quellen – Zeitstempel und IDs kommen über die Action bzw. ergeben
@@ -40,12 +91,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'game/start': {
       if (action.teams.length < MIN_TEAMS) return state;
       return {
+        ...initialGameState,
         phase: 'playing',
         definition: action.definition,
         teams: action.teams,
-        events: [],
-        openClueId: null,
-        answerRevealed: false,
+        timerSeconds: action.timerSeconds ?? null,
       };
     }
 
@@ -65,17 +115,42 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.definition) return state;
       if (!findClue(state.definition, action.clueId)) return state;
       if (isClueScored(state.events, action.clueId)) return state;
-      return { ...state, openClueId: action.clueId, answerRevealed: false };
+      return {
+        ...state,
+        openClueId: action.clueId,
+        answerRevealed: false,
+        activeTeamIndex: state.startingTeamIndex % Math.max(1, state.teams.length),
+        timerEndsAt: deadlineFrom(state, action.at),
+      };
     }
 
+    // Mit der Antwort endet die Bedenkzeit.
     case 'clue/revealAnswer': {
       if (!state.openClueId || state.answerRevealed) return state;
-      return { ...state, answerRevealed: true };
+      return { ...state, answerRevealed: true, timerEndsAt: null };
     }
 
     case 'clue/close': {
       if (!state.openClueId) return state;
-      return { ...state, openClueId: null, answerRevealed: false };
+      return { ...state, openClueId: null, answerRevealed: false, timerEndsAt: null };
+    }
+
+    case 'clue/timerExpired': {
+      if (!state.openClueId || state.timerEndsAt === null) return state;
+
+      const teamCount = Math.max(1, state.teams.length);
+      const nextTeamIndex = (state.activeTeamIndex + 1) % teamCount;
+
+      // Sind alle Teams durch, gilt die Frage als gespielt – ohne Punkte.
+      if (nextTeamIndex === state.startingTeamIndex % teamCount) {
+        return finishClue(state, state.openClueId, null, 'unanswered', 0, action.at);
+      }
+
+      return {
+        ...state,
+        activeTeamIndex: nextTeamIndex,
+        timerEndsAt: deadlineFrom(state, action.at),
+      };
     }
 
     case 'score/award': {
@@ -86,24 +161,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Schutz gegen Doppelklick und gegen konkurrierende Wertungen in Phase 2.
       if (isClueScored(state.events, action.clueId)) return state;
 
-      const event: ScoreEvent = {
-        id: `${action.clueId}:${action.teamId}:${state.events.length}`,
-        clueId: action.clueId,
-        teamId: action.teamId,
-        correct: action.correct,
-        delta: action.correct ? found.clue.points : -found.clue.points,
-        at: action.at,
-      };
-      const events = [...state.events, event];
-      const allScored = events.length >= countClues(state.definition);
-
-      return {
-        ...state,
-        events,
-        openClueId: null,
-        answerRevealed: false,
-        phase: allScored ? 'finished' : state.phase,
-      };
+      return finishClue(
+        state,
+        action.clueId,
+        action.teamId,
+        action.correct ? 'correct' : 'wrong',
+        action.correct ? found.clue.points : -found.clue.points,
+        action.at,
+      );
     }
 
     case 'game/reset':

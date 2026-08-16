@@ -10,6 +10,7 @@ import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
 import { loadLastTeams, saveLastTeams } from '../../state/persistence';
 import { TeamSetup } from './TeamSetup';
+import { TimerSetup } from './TimerSetup';
 import { TopicPicker } from './TopicPicker';
 
 /** Leere Namen fallen auf den Standardnamen der jeweiligen Position zurück. */
@@ -32,6 +33,7 @@ export function SetupPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [uploaded, setUploaded] = useState<GameDefinition | null>(null);
   const [starting, setStarting] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -85,7 +87,7 @@ export function SetupPage() {
 
     const normalized = normalizeTeams(teams);
     saveLastTeams(normalized);
-    dispatch({ type: 'game/start', definition, teams: normalized });
+    dispatch({ type: 'game/start', definition, teams: normalized, timerSeconds });
     void navigate('/game');
   };
 
@@ -112,6 +114,8 @@ export function SetupPage() {
       ) : null}
 
       <TeamSetup teams={teams} onChange={setTeams} />
+
+      <TimerSetup value={timerSeconds} onChange={setTimerSeconds} />
 
       <TopicPicker
         topics={topics}

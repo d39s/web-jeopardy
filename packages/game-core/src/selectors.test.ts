@@ -3,6 +3,10 @@ import { sampleDefinition } from './fixtures';
 import { gameReducer, initialGameState } from './reducer';
 import {
   resolveCategoryColor,
+  selectActiveTeam,
+  selectClueResult,
+  selectIsTimerRunning,
+  selectStartingTeam,
   selectClueCount,
   selectClueEvent,
   selectIsFinished,
@@ -15,11 +19,12 @@ import {
 import { createDefaultTeams } from './teams';
 import type { GameState } from './types';
 
-function startedGame(teamCount = 2): GameState {
+function startedGame(teamCount = 2, timerSeconds: number | null = null): GameState {
   return gameReducer(initialGameState, {
     type: 'game/start',
     definition: sampleDefinition,
     teams: createDefaultTeams(teamCount),
+    timerSeconds,
   });
 }
 
@@ -121,7 +126,7 @@ describe('spielzustand', () => {
   });
 
   it('liefert die geöffnete frage samt kategorie', () => {
-    const state = gameReducer(startedGame(), { type: 'clue/open', clueId: 'musik-400' });
+    const state = gameReducer(startedGame(), { type: 'clue/open', clueId: 'musik-400', at: 0 });
     const open = selectOpenClue(state);
 
     expect(open?.category.name).toBe('Musik');
@@ -148,5 +153,82 @@ describe('kategoriefarben', () => {
     const category = sampleDefinition.categories[0];
     if (!category) throw new Error('Fixture unvollständig.');
     expect(resolveCategoryColor({ ...category, color: '#FFD166' }, 0)).toBe('#FFD166');
+  });
+});
+
+describe('ausgang einer gespielten frage', () => {
+  it('meldet eine richtige antwort mit team und punkten', () => {
+    const state = award(startedGame(), 'wissenschaft-100', 'team-a', true);
+    const result = selectClueResult(state, 'wissenschaft-100');
+
+    expect(result).toEqual({
+      outcome: 'correct',
+      team: { id: 'team-a', name: 'Team A' },
+      delta: 100,
+    });
+  });
+
+  it('meldet eine falsche antwort mit negativem delta', () => {
+    const state = award(startedGame(), 'geografie-200', 'team-b', false);
+
+    expect(selectClueResult(state, 'geografie-200')).toMatchObject({
+      outcome: 'wrong',
+      delta: -200,
+    });
+  });
+
+  it('meldet eine nicht beantwortete frage ohne team', () => {
+    let state = gameReducer(startedGame(2, 30), { type: 'clue/open', clueId: 'musik-300', at: 0 });
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 1 });
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 2 });
+
+    expect(selectClueResult(state, 'musik-300')).toEqual({
+      outcome: 'unanswered',
+      team: null,
+      delta: 0,
+    });
+  });
+
+  it('meldet nichts für eine ungespielte frage', () => {
+    expect(selectClueResult(startedGame(), 'film-400')).toBeNull();
+  });
+
+  it('zählt nicht beantwortete fragen bei keinem team als fehler', () => {
+    let state = gameReducer(startedGame(2, 30), { type: 'clue/open', clueId: 'musik-300', at: 0 });
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 1 });
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 2 });
+
+    expect(selectTeamStats(state, 'team-a')).toEqual({ correct: 0, wrong: 0 });
+  });
+});
+
+describe('zugriff', () => {
+  it('nennt das team am zug und das startteam der nächsten frage', () => {
+    const state = gameReducer(startedGame(3, 30), {
+      type: 'clue/open',
+      clueId: 'wissenschaft-100',
+      at: 0,
+    });
+
+    expect(selectActiveTeam(state)?.id).toBe('team-a');
+    expect(selectStartingTeam(state)?.id).toBe('team-a');
+    expect(selectIsTimerRunning(state)).toBe(true);
+  });
+
+  it('folgt dem ablauf der bedenkzeit', () => {
+    let state = gameReducer(startedGame(3, 30), {
+      type: 'clue/open',
+      clueId: 'wissenschaft-100',
+      at: 0,
+    });
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 30_000 });
+
+    expect(selectActiveTeam(state)?.id).toBe('team-b');
+  });
+
+  it('liefert ohne teams keinen zugriff', () => {
+    expect(selectActiveTeam(initialGameState)).toBeNull();
+    expect(selectStartingTeam(initialGameState)).toBeNull();
+    expect(selectIsTimerRunning(initialGameState)).toBe(false);
   });
 });

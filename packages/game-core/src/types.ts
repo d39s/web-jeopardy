@@ -63,17 +63,27 @@ export interface Team {
   name: string;
 }
 
+/**
+ * Ausgang einer gespielten Frage. `unanswered` entsteht, wenn die Zeit bei
+ * allen Teams abgelaufen ist – die Frage gilt dann als gespielt, ohne Punkte.
+ */
+export type ClueOutcome = 'correct' | 'wrong' | 'unanswered';
+
 export interface ScoreEvent {
   id: string;
   clueId: string;
-  teamId: string;
-  correct: boolean;
-  /** Positiv bei richtiger, negativ bei falscher Antwort. */
+  /** Null, wenn niemand geantwortet hat. */
+  teamId: string | null;
+  outcome: ClueOutcome;
+  /** Positiv bei richtiger, negativ bei falscher Antwort, 0 ohne Antwort. */
   delta: number;
   at: number;
 }
 
 export type GamePhase = 'setup' | 'playing' | 'finished';
+
+/** Auswählbare Bedenkzeiten je Frage; `null` bedeutet „ohne Timer". */
+export const TIMER_OPTIONS = [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300] as const;
 
 export interface GameState {
   phase: GamePhase;
@@ -83,6 +93,14 @@ export interface GameState {
   events: ScoreEvent[];
   openClueId: string | null;
   answerRevealed: boolean;
+  /** Bedenkzeit je Team und Frage in Sekunden; null bedeutet ohne Timer. */
+  timerSeconds: number | null;
+  /** Team mit dem ersten Zugriff auf die nächste Frage – wechselt reihum. */
+  startingTeamIndex: number;
+  /** Team, das bei der geöffneten Frage gerade am Zug ist. */
+  activeTeamIndex: number;
+  /** Zeitpunkt (epoch ms), zu dem die laufende Bedenkzeit endet. */
+  timerEndsAt: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -90,11 +108,19 @@ export interface GameState {
 // ---------------------------------------------------------------------------
 
 export type GameAction =
-  | { type: 'game/start'; definition: GameDefinition; teams: Team[] }
+  | {
+      type: 'game/start';
+      definition: GameDefinition;
+      teams: Team[];
+      /** Ohne Angabe wird ohne Timer gespielt. */
+      timerSeconds?: number | null;
+    }
   | { type: 'team/rename'; teamId: string; name: string }
-  | { type: 'clue/open'; clueId: string }
+  | { type: 'clue/open'; clueId: string; at: number }
   | { type: 'clue/revealAnswer' }
   | { type: 'clue/close' }
+  /** Die Bedenkzeit des Teams am Zug ist abgelaufen. */
+  | { type: 'clue/timerExpired'; at: number }
   | { type: 'score/award'; clueId: string; teamId: string; correct: boolean; at: number }
   | { type: 'game/reset' };
 
