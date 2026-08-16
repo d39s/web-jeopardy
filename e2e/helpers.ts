@@ -30,11 +30,18 @@ export async function startGame(page: Page, teamCount = 2): Promise<void> {
  * Die Auswahl läuft in zwei Stufen: erst die Themenkategorie, dann das
  * Fragenset. Ohne Angabe wird jeweils das erste genommen.
  */
-export async function chooseTopic(page: Page, category = 'Allgemeinwissen'): Promise<void> {
-  const kategorie = page.getByRole('button', { name: new RegExp(category) });
+export async function chooseTopic(
+  page: Page,
+  category = 'Allgemeinwissen',
+  topic = category,
+): Promise<void> {
+  const kategorie = page.getByRole('button', { name: new RegExp(`^${category} `) });
   if (await kategorie.isVisible().catch(() => false)) await kategorie.click();
 
-  await page.getByRole('button', { name: new RegExp(`^${category}.*Schwierigkeit`) }).click();
+  // Der barrierefreie Name beginnt mit dem Titel und nennt danach die
+  // Schwierigkeit – so trifft die Suche genau ein Fragenset, auch wenn die
+  // Kategorie mehrere Stufen enthält.
+  await page.getByRole('button', { name: new RegExp(`^${topic} Schwierigkeit`) }).click();
 }
 
 export function clueCard(page: Page, category: string, points: number) {
