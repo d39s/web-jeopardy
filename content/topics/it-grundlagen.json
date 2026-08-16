@@ -2,6 +2,8 @@
   "schemaVersion": 1,
   "id": "it-grundlagen",
   "title": "IT-Grundlagen",
+  "category": "it",
+  "difficulty": 1,
   "description": "Netzwerke, Hardware, Software, Sicherheit und ein Stück Internetgeschichte.",
   "author": "Projektteam",
   "locale": "de-DE",

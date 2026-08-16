@@ -1,5 +1,5 @@
 import { createDefaultTeams, createTeam } from '@jeopardy/game-core';
-import type { GameDefinition, Team, TopicIndexEntry } from '@jeopardy/game-core';
+import type { GameDefinition, Team, TopicCategory, TopicIndexEntry } from '@jeopardy/game-core';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
@@ -34,7 +34,9 @@ export function SetupPage() {
   const location = useLocation();
 
   const [teams, setTeams] = useState<Team[]>(() => loadLastTeams() ?? createDefaultTeams(2));
+  const [categories, setCategories] = useState<TopicCategory[]>([]);
   const [topics, setTopics] = useState<TopicIndexEntry[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<LoadError | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -65,8 +67,8 @@ export function SetupPage() {
       if (controller.signal.aborted) return;
       setLoading(false);
       if (result.ok) {
+        setCategories(result.data.categories);
         setTopics(result.data.topics);
-        setSelectedId((current) => current ?? result.data.topics[0]?.id ?? null);
       } else {
         setError(result.error);
       }
@@ -107,6 +109,8 @@ export function SetupPage() {
   const applyShared = (result: SharedConfigResult) => {
     if (result.topicId !== null) {
       setSelectedId(result.topicId);
+      // Damit das geteilte Thema sichtbar ist, in seine Kategorie wechseln.
+      setSelectedCategory(topics.find((topic) => topic.id === result.topicId)?.category ?? null);
       setUploaded(null);
     }
     setTeams(result.teams);
@@ -190,7 +194,10 @@ export function SetupPage() {
       <RulesSetup deductOnWrong={deductOnWrong} onChange={setDeductOnWrong} />
 
       <TopicPicker
+        categories={categories}
         topics={topics}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
         loading={loading}
         error={error}
         selectedId={selectedId}

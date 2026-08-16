@@ -21,8 +21,20 @@ export async function startGame(page: Page, teamCount = 2): Promise<void> {
     await page.getByRole('button', { name: 'Team hinzufügen' }).click();
   }
 
+  await chooseTopic(page);
   await page.getByRole('button', { name: 'Spiel starten' }).click();
   await expect(page.getByRole('button', { name: /, 100 Punkte$/ }).first()).toBeVisible();
+}
+
+/**
+ * Die Auswahl läuft in zwei Stufen: erst die Themenkategorie, dann das
+ * Fragenset. Ohne Angabe wird jeweils das erste genommen.
+ */
+export async function chooseTopic(page: Page, category = 'Allgemeinwissen'): Promise<void> {
+  const kategorie = page.getByRole('button', { name: new RegExp(category) });
+  if (await kategorie.isVisible().catch(() => false)) await kategorie.click();
+
+  await page.getByRole('button', { name: new RegExp(`^${category}.*Schwierigkeit`) }).click();
 }
 
 export function clueCard(page: Page, category: string, points: number) {

@@ -9,16 +9,31 @@ import { timerSliderValue } from './TimerSetup';
 
 const topicIndex = {
   schemaVersion: 1,
+  categories: [{ id: 'testkategorie', title: 'Testkategorie', description: 'Zum Ausprobieren.' }],
   topics: [
     {
       id: 'testthema',
       title: 'Testthema',
       description: 'Zum Ausprobieren.',
+      category: 'testkategorie',
+      difficulty: 1,
       file: 'testthema.json',
     },
-    { id: 'zweites', title: 'Zweites Thema', file: 'zweites.json' },
+    {
+      id: 'zweites',
+      title: 'Zweites Thema',
+      category: 'testkategorie',
+      difficulty: 3,
+      file: 'zweites.json',
+    },
   ],
 };
+
+/** Zwei Stufen: erst die Kategorie, dann das Fragenset. */
+async function chooseTopic(title = 'Testthema'): Promise<void> {
+  await userEvent.click(await screen.findByRole('button', { name: /Testkategorie/ }));
+  await userEvent.click(screen.getByRole('button', { name: new RegExp(title) }));
+}
 
 function mockTopicRequests(): void {
   vi.stubGlobal(
@@ -56,7 +71,7 @@ describe('startseite', () => {
 
     expect(screen.getByDisplayValue('Team A')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Team B')).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
   });
 
   it('fügt teams hinzu und entfernt sie wieder', async () => {
@@ -91,7 +106,8 @@ describe('startseite', () => {
 
   it('startet das spiel mit dem gewählten thema und den teams', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+    await chooseTopic();
 
     await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
 
@@ -102,7 +118,8 @@ describe('startseite', () => {
 
   it('übernimmt geänderte teamnamen und füllt leere felder auf', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+    await chooseTopic();
 
     await userEvent.clear(screen.getByDisplayValue('Team A'));
     await userEvent.type(screen.getByLabelText('Name von Team 1'), 'Die Adler');
@@ -116,7 +133,8 @@ describe('startseite', () => {
 
   it('reicht eine eigene veto-zeit an das spiel weiter', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+    await chooseTopic();
 
     fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
       target: { value: String(timerSliderValue(45)) },
@@ -134,7 +152,8 @@ describe('startseite', () => {
 
   it('gibt die kopplung als offene veto-zeit weiter', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+    await chooseTopic();
 
     fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
       target: { value: String(timerSliderValue(45)) },
@@ -187,6 +206,8 @@ describe('startseite', () => {
     await waitFor(() =>
       expect(screen.getByText(/entspricht nicht dem erwarteten Format/)).toBeInTheDocument(),
     );
-    expect(screen.getByText(/^categories:/)).toBeInTheDocument();
+    // Die Reihenfolge der Meldungen folgt dem Schema – geprüft wird, dass die
+    // fehlenden Pflichtfelder feldgenau benannt sind.
+    expect(screen.getByText(/^category:/)).toBeInTheDocument();
   });
 });

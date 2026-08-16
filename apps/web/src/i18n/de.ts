@@ -74,6 +74,12 @@ export const de = {
     sharedInvalid: 'Der geteilte Link ist unvollständig oder fehlerhaft.',
 
     topicsHeading: 'Thema',
+    categoryHint: 'Zuerst die Kategorie wählen, danach das Fragenset.',
+    categoryTopicCount: (count: number) => (count === 1 ? '1 Fragenset' : `${count} Fragensets`),
+    categoryBack: 'Andere Kategorie',
+    categoryOf: (title: string) => `Kategorie: ${title}`,
+    difficultyLabel: (level: number) => `Schwierigkeit ${level} von 3`,
+    difficultyMark: '?',
     topicsLoading: 'Themen werden geladen …',
     topicsEmpty: 'Es sind noch keine Fragensets vorhanden.',
     topicsError: 'Die Themenliste konnte nicht geladen werden.',

@@ -1,22 +1,45 @@
 {
   "schemaVersion": 1,
+  "categories": [
+    {
+      "id": "allgemeinwissen",
+      "title": "Allgemeinwissen",
+      "description": "Quer durch Erdkunde, Geschichte, Natur, Sprache und Zahlen."
+    },
+    {
+      "id": "popkultur",
+      "title": "Popkultur",
+      "description": "Kino, Musik, Serien, Games und Netzkultur."
+    },
+    {
+      "id": "it",
+      "title": "IT und Technik",
+      "description": "Netzwerke, Hardware, Software, Sicherheit und Internetgeschichte."
+    }
+  ],
   "topics": [
     {
       "id": "allgemeinwissen",
       "title": "Allgemeinwissen",
       "description": "Erdkunde, Geschichte, Natur, Sprache und Zahlen – für jede Runde geeignet.",
+      "category": "allgemeinwissen",
+      "difficulty": 1,
       "file": "allgemeinwissen.json"
     },
     {
       "id": "popkultur",
       "title": "Popkultur",
       "description": "Kino, Musik, Serien, Games und Internet – der lockere Abendklassiker.",
+      "category": "popkultur",
+      "difficulty": 1,
       "file": "popkultur.json"
     },
     {
       "id": "it-grundlagen",
       "title": "IT-Grundlagen",
       "description": "Netzwerke, Hardware, Software, Sicherheit und ein Stück Internetgeschichte.",
+      "category": "it",
+      "difficulty": 1,
       "file": "it-grundlagen.json"
     }
   ]

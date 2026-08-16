@@ -28,10 +28,18 @@ export const categorySchema = z.strictObject({
     .length(CLUES_PER_CATEGORY, `Jede Kategorie braucht genau ${CLUES_PER_CATEGORY} Fragen.`),
 });
 
+const difficultySchema = z
+  .number()
+  .int()
+  .min(1, 'Schwierigkeit liegt zwischen 1 und 3.')
+  .max(3, 'Schwierigkeit liegt zwischen 1 und 3.');
+
 const gameDefinitionShape = z.strictObject({
   schemaVersion: z.literal(1),
   id: idSchema,
   title: z.string().trim().min(1).max(80),
+  category: idSchema,
+  difficulty: difficultySchema,
   description: z.string().trim().max(300).optional(),
   author: z.string().trim().max(80).optional(),
   locale: z.string().trim().max(20).optional(),
@@ -83,13 +91,24 @@ export const gameDefinitionSchema = gameDefinitionShape.superRefine((definition,
   });
 });
 
-export const topicIndexSchema = z.strictObject({
+const topicIndexShape = z.strictObject({
   schemaVersion: z.literal(1),
+  categories: z
+    .array(
+      z.strictObject({
+        id: idSchema,
+        title: z.string().trim().min(1).max(80),
+        description: z.string().trim().max(300).optional(),
+      }),
+    )
+    .min(1, 'Es braucht mindestens eine Themenkategorie.'),
   topics: z.array(
     z.strictObject({
       id: idSchema,
       title: z.string().trim().min(1).max(80),
       description: z.string().trim().max(300).optional(),
+      category: idSchema,
+      difficulty: difficultySchema,
       file: z
         .string()
         .trim()
@@ -97,6 +116,31 @@ export const topicIndexSchema = z.strictObject({
         .regex(/^[a-z0-9][a-z0-9-]*\.json$/i, 'Dateiname muss auf .json enden.'),
     }),
   ),
+});
+
+export const topicIndexSchema = topicIndexShape.superRefine((index, ctx) => {
+  const known = new Set(index.categories.map((category) => category.id));
+
+  index.categories.forEach((category, position) => {
+    if (index.categories.findIndex((other) => other.id === category.id) !== position) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['categories', position, 'id'],
+        message: `Die Kategorie "${category.id}" ist mehrfach eingetragen.`,
+      });
+    }
+  });
+
+  // Ein Verweis ins Leere fiele sonst erst in der Oberfläche auf.
+  index.topics.forEach((topic, position) => {
+    if (!known.has(topic.category)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['topics', position, 'category'],
+        message: `Unbekannte Themenkategorie "${topic.category}".`,
+      });
+    }
+  });
 });
 
 export const teamSchema = z.strictObject({
