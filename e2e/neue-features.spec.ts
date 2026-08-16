@@ -16,7 +16,7 @@ test('bedenkzeit läuft ab, ohne von selbst weiterzurücken', async ({ page }) =
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
   await clueCard(page, 'Erdkunde', 100).click();
-  await expect(page.getByText('Bedenkzeit für Team A')).toBeVisible();
+  await expect(page.getByText('Bedenkzeit Team A')).toBeVisible();
 
   // Nach Ablauf entscheidet die Moderation – die Frage bleibt offen.
   await expect(page.getByText('Zeit abgelaufen')).toBeVisible({ timeout: 15_000 });
@@ -35,7 +35,7 @@ test('veto startet die zeit für das übernehmende team neu', async ({ page }) =
 
   await vetoButton(page, 'Team B').click();
   // Ohne eigene Veto-Zeit gilt die Bedenkzeit erneut.
-  await expect(page.getByText('Veto-Zeit für Team B')).toBeVisible();
+  await expect(page.getByText('Veto-Zeit Team B')).toBeVisible();
 });
 
 test('gespielte karten zeigen ausgang und verantwortliches team', async ({ page }) => {

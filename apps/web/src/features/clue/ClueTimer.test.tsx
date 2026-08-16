@@ -45,13 +45,13 @@ describe('bedenkzeit im frage-popup', () => {
     renderWithGame(<ClueDialog />, openedWithTimer(null));
 
     expect(screen.getByText('Welches Gas atmen Pflanzen bei der Fotosynthese auf?')).toBeVisible();
-    expect(screen.queryByText(/Bedenkzeit für/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Bedenkzeit Team/)).not.toBeInTheDocument();
   });
 
   it('zeigt die bedenkzeit für das team am zug', () => {
     renderWithGame(<ClueDialog />, openedWithTimer(20));
 
-    expect(screen.getByText('Bedenkzeit für Team A')).toBeVisible();
+    expect(screen.getByText('Bedenkzeit Team A')).toBeVisible();
     expect(screen.getByText('20')).toBeVisible();
     expect(screen.getByText('noch 20 Sekunden')).toBeInTheDocument();
   });
@@ -118,14 +118,14 @@ describe('bedenkzeit im frage-popup', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Veto: Team B' }));
 
     expect(transport.getState().activeTeamId).toBe('team-b');
-    expect(screen.getByText('Veto-Zeit für Team B')).toBeVisible();
+    expect(screen.getByText('Veto-Zeit Team B')).toBeVisible();
     expect(screen.getByText('20')).toBeVisible();
   });
 
   it('zeigt im übungsmodus keine veto-auswahl', () => {
     renderWithGame(<ClueDialog />, openedWithTimer(20, 1));
 
-    expect(screen.getByText('Bedenkzeit für Team A')).toBeVisible();
+    expect(screen.getByText('Bedenkzeit Team A')).toBeVisible();
     expect(screen.queryByRole('button', { name: /^Veto:/ })).not.toBeInTheDocument();
 
     advance(20_000);
@@ -140,7 +140,7 @@ describe('bedenkzeit im frage-popup', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' }));
 
     expect(transport.getState().timerEndsAt).toBeNull();
-    expect(screen.queryByText(/Bedenkzeit für/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Bedenkzeit Team/)).not.toBeInTheDocument();
     expect(screen.getByText('Kohlenstoffdioxid')).toBeVisible();
   });
 

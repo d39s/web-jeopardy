@@ -29,6 +29,12 @@ function formatRemaining(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
+/** Beschriftung der Uhr – groß genug, um im Raum gelesen zu werden. */
+const LABEL = {
+  roomy: 'text-[clamp(1.05rem,min(2.2vw,3.4vh),1.6rem)]',
+  compact: 'text-[clamp(0.95rem,min(1.8vw,2.8vh),1.25rem)]',
+} as const;
+
 export interface ClueTimerProps {
   /** Bei vielen Teams rücken Ziffern und Innenabstände eine Stufe kleiner. */
   compact?: boolean;
@@ -136,28 +142,30 @@ export function ClueTimer({ compact = false }: ClueTimerProps) {
     if (!selectIsTimeUp(state)) return null;
 
     return (
-      <section role="status" className={cn('flex w-full flex-col', compact ? 'gap-1.5' : 'gap-2')}>
-        <h3
-          className={cn(
-            'truncate font-semibold text-text',
-            compact ? 'text-base' : 'text-lg sm:text-xl',
-          )}
-        >
-          {label}
-        </h3>
-
-        <div
-          className={cn(
-            'flex w-full flex-col gap-1 rounded-card border-2 border-negative bg-negative-soft px-5',
-            compact ? 'py-3' : 'py-4',
-          )}
-        >
+      <section
+        role="status"
+        className={cn(
+          'flex w-full flex-col gap-1 rounded-card border-2 border-negative bg-negative-soft px-5',
+          compact ? 'py-3' : 'py-4',
+        )}
+      >
+        {/* Gleiche Zeile wie bei laufender Uhr: links wer, rechts der Stand. */}
+        <div className="flex items-center justify-between gap-4">
           <p
             className={cn(
-              'font-bold text-negative',
+              'min-w-0 truncate font-semibold text-text',
+              LABEL[compact ? 'compact' : 'roomy'],
+            )}
+          >
+            {label}
+          </p>
+
+          <p
+            className={cn(
+              'shrink-0 font-bold text-negative',
               compact
-                ? 'text-[clamp(1.25rem,min(3vw,4.5vh),1.9rem)]'
-                : 'text-[clamp(1.5rem,min(4vw,6vh),2.5rem)]',
+                ? 'text-[clamp(1.1rem,min(2.6vw,4vh),1.6rem)]'
+                : 'text-[clamp(1.25rem,min(3.2vw,5vh),2rem)]',
             )}
           >
             <span aria-hidden="true" className="mr-2">
@@ -165,8 +173,9 @@ export function ClueTimer({ compact = false }: ClueTimerProps) {
             </span>
             {de.clue.timeUp}
           </p>
-          <p className="text-sm text-text-muted sm:text-base">{de.clue.timeUpHint}</p>
         </div>
+
+        <p className="text-sm text-text-muted sm:text-base">{de.clue.timeUpHint}</p>
       </section>
     );
   }
@@ -177,51 +186,51 @@ export function ClueTimer({ compact = false }: ClueTimerProps) {
   const digits = (compact ? DIGITS.compact : DIGITS.roomy)[urgent ? 'urgent' : 'calm'];
 
   return (
-    <section className={cn('flex w-full flex-col', compact ? 'gap-1.5' : 'gap-2')}>
-      {/* Wer gerade dran ist, steht als Überschrift über der Uhr – nicht klein
-          daneben. Das ist die Information, die im Raum zählt. */}
-      <h3
-        className={cn(
-          'truncate font-semibold text-text',
-          compact ? 'text-base' : 'text-lg sm:text-xl',
-        )}
-      >
-        {label}
-      </h3>
+    <section
+      className={cn(
+        'flex w-full flex-col rounded-card border bg-surface-hi px-5',
+        compact ? 'gap-2 py-3' : 'gap-3 py-4',
+        urgent ? 'border-negative/60' : 'border-border',
+      )}
+    >
+      {/*
+        Wer dran ist und wie lange noch – beides in einer Zeile, damit im Raum
+        auf einen Blick klar ist, wem die Uhr läuft. Die Beschriftung trägt
+        dabei dasselbe Gewicht wie die Ziffern, nur kleiner.
+      */}
+      <div className="flex items-center justify-between gap-4">
+        <p
+          className={cn(
+            'min-w-0 truncate font-semibold text-text',
+            LABEL[compact ? 'compact' : 'roomy'],
+          )}
+        >
+          {label}
+        </p>
 
-      <div
-        className={cn(
-          'flex w-full flex-col rounded-card border bg-surface-hi px-5',
-          compact ? 'gap-2 py-3' : 'gap-3 py-4',
-          urgent ? 'border-negative/60' : 'border-border',
-        )}
-      >
         {/*
           Die Ziffern sind reine Optik – vorgelesen wird die verbleibende Zeit
           nicht, sonst spräche der Screenreader im Sekundentakt dazwischen.
         */}
         <p
           aria-hidden="true"
-          className={cn(
-            'text-center font-bold leading-none tabular-nums transition-colors',
-            digits,
-          )}
+          className={cn('shrink-0 font-bold leading-none tabular-nums transition-colors', digits)}
         >
           {formatRemaining(seconds)}
         </p>
-        <span className="sr-only">{de.clue.timerRemaining(seconds)}</span>
+      </div>
+      <span className="sr-only">{de.clue.timerRemaining(seconds)}</span>
 
-        <div className="h-2 overflow-hidden rounded-full bg-surface-mut" aria-hidden="true">
-          {/*
-            Die Breite wird nicht im Takt nachgezogen – das ruckelt, weil Takt und
-            Übergang gegeneinander laufen. Stattdessen bekommt der Balken je Frist
-            genau eine Animation, die der Browser flüssig durchzieht (siehe Effekt).
-          */}
-          <div
-            ref={barRef}
-            className={cn('h-full rounded-full', urgent ? 'bg-negative' : 'bg-cat-1')}
-          />
-        </div>
+      <div className="h-2 overflow-hidden rounded-full bg-surface-mut" aria-hidden="true">
+        {/*
+          Die Breite wird nicht im Takt nachgezogen – das ruckelt, weil Takt und
+          Übergang gegeneinander laufen. Stattdessen bekommt der Balken je Frist
+          genau eine Animation, die der Browser flüssig durchzieht (siehe Effekt).
+        */}
+        <div
+          ref={barRef}
+          className={cn('h-full rounded-full', urgent ? 'bg-negative' : 'bg-cat-1')}
+        />
       </div>
     </section>
   );

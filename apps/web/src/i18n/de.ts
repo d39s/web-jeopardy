@@ -144,8 +144,8 @@ export const de = {
     settleHintKeep: 'Die übrigen beteiligten Teams erhalten keine Punkte.',
 
     // Bedenkzeit
-    timerLabel: (teamName: string) => `Bedenkzeit für ${teamName}`,
-    vetoTimerLabel: (teamName: string) => `Veto-Zeit für ${teamName}`,
+    timerLabel: (teamName: string) => `Bedenkzeit ${teamName}`,
+    vetoTimerLabel: (teamName: string) => `Veto-Zeit ${teamName}`,
     timeUp: 'Zeit abgelaufen',
     /** Zeichen neben „Zeit abgelaufen" – der Zustand hängt nicht an der Farbe. */
     timeUpMark: '⏱',
