@@ -599,8 +599,10 @@ Entscheidungen fest, die dabei zu treffen waren.
 
 ### 16.1 Bedenkzeit je Frage
 
-- **Einstellbar auf der Startseite:** aus, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300
-  Sekunden (`TIMER_OPTIONS`). Die Zeit gilt **je Frage und Team**.
+- **Einstellbar auf der Startseite** über einen Schieberegler: aus, 10, 15, 20, 30, 45, 60, 90,
+  120, 180, 240, 300 Sekunden (`TIMER_OPTIONS`). Die Stufen sind ungleich verteilt, deshalb
+  trägt der Regler den Index und nennt die gewählte Zeit im Klartext darüber sowie in
+  `aria-valuetext`. Die Zeit gilt **je Frage und Team**.
 - **Frist statt Zähler:** Der Spielstand hält mit `timerEndsAt` einen Zeitpunkt, keinen
   laufenden Zähler. Der Reducer bleibt dadurch rein, die Anzeige rechnet nur die Differenz
   aus – und in Phase 2 sehen alle Beteiligten dieselbe Frist, ohne Uhren abzugleichen.
@@ -653,7 +655,9 @@ weil er dort nichts unterscheidet.
 ### 16.5 Punktabzug abschaltbar
 
 `deductOnWrong` entscheidet, ob eine falsche Antwort die Punktzahl der Frage kostet oder den
-Stand unverändert lässt. Standard bleibt der Abzug. Der Ausgang der Frage bleibt in beiden
+Stand unverändert lässt. Standard bleibt der Abzug. Die Auswahl erfolgt über zwei Karten in
+derselben Optik wie die Themenauswahl – eine Einstellung mit zwei benannten Möglichkeiten
+liest sich besser als ein Häkchen, dessen Gegenteil man sich denken muss. Der Ausgang der Frage bleibt in beiden
 Fällen „falsch" – nur das Delta ist dann 0. Die Klammerung bei null gilt unverändert.
 
 ### 16.6 Auswirkung auf die Persistenz

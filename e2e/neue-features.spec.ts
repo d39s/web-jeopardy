@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { clueCard, playClue, scoreButton, scoredClueCard, startGame } from './helpers';
+import { clueCard, playClue, scoreButton, scoredClueCard, setTimer, startGame } from './helpers';
 
 test('bedenkzeit läuft und gibt den zugriff an das nächste team weiter', async ({ page }) => {
   await page.goto('/');
-  await page.getByLabel('Bedenkzeit je Frage').selectOption('10');
+  await setTimer(page, 10);
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
   await clueCard(page, 'Erdkunde', 100).click();
@@ -16,7 +16,7 @@ test('bedenkzeit läuft und gibt den zugriff an das nächste team weiter', async
 
 test('unbeantwortete frage gilt nach ablauf bei allen teams als gespielt', async ({ page }) => {
   await page.goto('/');
-  await page.getByLabel('Bedenkzeit je Frage').selectOption('10');
+  await setTimer(page, 10);
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
   await clueCard(page, 'Erdkunde', 100).click();
@@ -62,7 +62,7 @@ test('ohne abzugsregel bleibt der punktestand bei einer falschen antwort stehen'
   page,
 }) => {
   await page.goto('/');
-  await page.getByLabel('Falsche Antwort kostet Punkte').uncheck();
+  await page.getByRole('button', { name: /Punktestand bleibt/ }).click();
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
   await playClue(page, 'Erdkunde', 100, 'Team A richtig');
@@ -87,8 +87,11 @@ test('geteilter link belegt thema, teams, bedenkzeit und regel vor', async ({ pa
 
   await expect(page.getByRole('textbox', { name: 'Name von Team 1' })).toHaveValue('Rote Riesen');
   await expect(page.getByRole('textbox', { name: 'Name von Team 2' })).toHaveValue('Blaue Riesen');
-  await expect(page.getByLabel('Bedenkzeit je Frage')).toHaveValue('45');
-  await expect(page.getByLabel('Falsche Antwort kostet Punkte')).not.toBeChecked();
+  await expect(page.getByText('45 Sekunden')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Punktestand bleibt/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
 
   // Die Parameter verschwinden aus der Adresse, ein Neuladen zeigt den Dialog nicht erneut.
   expect(new URL(page.url()).search).toBe('');

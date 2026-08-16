@@ -24,16 +24,20 @@ export const de = {
       'antwortet niemand, gilt die Frage als gespielt.',
     timerLabel: 'Bedenkzeit je Frage',
     timerOff: 'Ohne Zeitbegrenzung',
+    timerScaleOff: 'Aus',
     timerSeconds: (seconds: number) => `${seconds} Sekunden`,
     timerMinutes: (minutes: number) => (minutes === 1 ? '1 Minute' : `${minutes} Minuten`),
     timerMinutesSeconds: (minutes: number, seconds: number) =>
       `${minutes}:${String(seconds).padStart(2, '0')} Minuten`,
 
     rulesHeading: 'Spielregeln',
-    rulesDeductLabel: 'Falsche Antwort kostet Punkte',
-    rulesDeductHintOn:
-      'Bei einer falschen Antwort wird die Punktzahl der Frage abgezogen – nie unter null.',
-    rulesDeductHintOff: 'Bei einer falschen Antwort bleibt der Punktestand unverändert.',
+    rulesHint: 'Was passiert bei einer falschen Antwort?',
+    rulesGroupLabel: 'Verhalten bei falscher Antwort',
+    rulesDeductTitle: 'Punkte werden abgezogen',
+    rulesDeductDescription:
+      'Die Punktzahl der Frage wird abgezogen – der Stand fällt nie unter null.',
+    rulesKeepTitle: 'Punktestand bleibt',
+    rulesKeepDescription: 'Eine falsche Antwort ändert den Punktestand nicht.',
     sharedRuleDeduct: 'Falsche Antwort kostet Punkte',
     sharedRuleNoDeduct: 'Falsche Antwort kostet keine Punkte',
 

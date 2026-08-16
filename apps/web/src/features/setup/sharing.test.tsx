@@ -1,10 +1,11 @@
 import { initialGameState, sampleDefinition } from '@jeopardy/game-core';
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithGame } from '../../test/renderWithGame';
 import { SetupPage } from './SetupPage';
+import { timerSliderValue } from './TimerSetup';
 
 const topicIndex = {
   schemaVersion: 1,
@@ -75,7 +76,9 @@ describe('spiel teilen', () => {
       `${window.location.origin}/?thema=testthema&teams=Team%20A,Team%20B`,
     );
 
-    await userEvent.selectOptions(screen.getByLabelText('Bedenkzeit je Frage'), '45');
+    fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
+      target: { value: String(timerSliderValue(45)) },
+    });
 
     expect(linkField()).toHaveValue(
       `${window.location.origin}/?thema=testthema&teams=Team%20A,Team%20B&timer=45`,
@@ -178,7 +181,7 @@ describe('geteilten link öffnen', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Adler');
     expect(screen.getByLabelText('Name von Team 2')).toHaveValue('Die Falken');
-    expect(screen.getByLabelText('Bedenkzeit je Frage')).toHaveValue('45');
+    expect(screen.getByLabelText('Bedenkzeit je Frage')).toHaveValue(String(timerSliderValue(45)));
     expect(screen.getByRole('button', { name: 'Zweites Thema' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -203,7 +206,9 @@ describe('geteilten link öffnen', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Team A');
-    expect(screen.getByLabelText('Bedenkzeit je Frage')).toHaveValue('');
+    expect(screen.getByLabelText('Bedenkzeit je Frage')).toHaveValue(
+      String(timerSliderValue(null)),
+    );
   });
 
   it('ignoriert ein unbekanntes thema und eine unzulässige bedenkzeit', async () => {

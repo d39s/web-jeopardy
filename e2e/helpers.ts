@@ -53,3 +53,17 @@ export async function playClue(
   await scoreButton(page, buttonLabel).click();
   await expect(scoredClueCard(page, category, points)).toBeVisible();
 }
+
+/**
+ * Stellt die Bedenkzeit über den Schieberegler ein. Die Stufen sind ungleich
+ * verteilt, deshalb trägt der Regler den Index; Position 0 heißt „ohne Zeit".
+ * Die Liste entspricht TIMER_OPTIONS aus @jeopardy/game-core.
+ */
+const TIMER_STEPS = [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300];
+
+export async function setTimer(page: Page, seconds: number | null): Promise<void> {
+  const position = seconds === null ? 0 : TIMER_STEPS.indexOf(seconds) + 1;
+  if (position < 0) throw new Error(`Keine Bedenkzeit-Stufe für ${String(seconds)} Sekunden.`);
+
+  await page.getByLabel('Bedenkzeit je Frage').fill(String(position));
+}
