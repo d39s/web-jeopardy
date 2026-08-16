@@ -21,11 +21,16 @@
   --color-text: #eef1f7;
   --color-text-muted: #8d97ae;
 
-  /* Zustandsfarben für die Punktebuttons */
-  --color-positive: #7ae582;
-  --color-positive-soft: #1c3326;
-  --color-negative: #ff7f50;
-  --color-negative-soft: #38221c;
+  /*
+   * Zustandsfarben für richtig und falsch. Bewusst eigene Werte statt der
+   * Kategoriefarben: Wären sie gleich, läse sich die Wertung wie eine Kategorie.
+   * Das Grün ist tiefer und satter als das Kategoriegrün, das Rot ein echtes
+   * Rot statt des Korallentons aus der Palette.
+   */
+  --color-positive: #3fe08a;
+  --color-positive-soft: #12301f;
+  --color-negative: #ff5a5f;
+  --color-negative-soft: #351a1d;
 
   /* Form */
   --radius-card: 16px;

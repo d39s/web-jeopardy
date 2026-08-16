@@ -81,7 +81,7 @@ export function ClueCard({
         'flex flex-col items-center justify-center gap-1 overflow-hidden px-1 transition-colors',
         'text-[clamp(1.4rem,3.4vw,2.75rem)] font-bold tabular-nums',
         scored
-          ? 'cursor-default border-transparent bg-surface-mut text-text-muted opacity-50'
+          ? 'cursor-default border-transparent bg-surface-mut text-text-muted opacity-65'
           : 'cursor-pointer hover:bg-surface-hi',
       )}
       style={scored ? undefined : { color }}
@@ -92,9 +92,7 @@ export function ClueCard({
             {mark}
           </span>
         ) : null}
-        <span className={cn(outcomeColor, result && !result.winner && 'line-through')}>
-          {points}
-        </span>
+        <span className={outcomeColor ?? undefined}>{points}</span>
       </span>
 
       {caption ? (

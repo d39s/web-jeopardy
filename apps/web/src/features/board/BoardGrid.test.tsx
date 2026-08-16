@@ -65,15 +65,16 @@ describe('spielfeld', () => {
     expect(within(card).getByText('Team B · 2 Teams')).toBeInTheDocument();
   });
 
-  it('zeigt „niemand richtig" in rot und durchgestrichen', () => {
+  it('zeigt „niemand richtig" in rot mit kreuz', () => {
     renderWithGame(<BoardGrid />, playClue(startedState(), CLUE_ID, null, ['team-b']));
 
     const card = scoredCard('Niemand richtig, 100 Punkte');
     expect(within(card).getByText('✗')).toBeInTheDocument();
 
+    // Das Kreuz trägt die Aussage – durchgestrichen wird nicht zusätzlich.
     const punkte = within(card).getByText('100');
     expect(punkte).toHaveClass('text-negative');
-    expect(punkte).toHaveClass('line-through');
+    expect(punkte).not.toHaveClass('line-through');
 
     expect(within(card).getByText('Niemand richtig · 2 Teams')).toBeInTheDocument();
   });

@@ -345,9 +345,12 @@ export function selectClueSummary(
 
 Die Karte zeigt den Ausgang aus Sicht des Gewinners: Häkchen, grüne Punktzahl, Name. Waren
 mehrere Teams beteiligt, ergänzt eine dezente Angabe die Beteiligtenzahl („Rote Riesen ·
-3 Teams"). Lag niemand richtig, erscheinen Kreuz und durchgestrichene Punktzahl mit der Anzahl
-der Versuche. Ist die Abzugsregel aus, entfällt die Durchstreichung, weil nichts abgezogen
-wurde.
+3 Teams"). Lag niemand richtig, erscheinen Kreuz und rote Punktzahl mit der Anzahl der
+Versuche.
+
+Für richtig und falsch gelten **eigene Signalfarben**, nicht die Kategoriefarben: Wären sie
+gleich, läse sich die Wertung wie eine Kategorie. Eine Durchstreichung kommt nicht hinzu –
+Zeichen und Farbe genügen, und weniger Auszeichnung liest sich auf dem Beamer ruhiger.
 
 ---
 
