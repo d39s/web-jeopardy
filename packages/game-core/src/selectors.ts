@@ -37,6 +37,11 @@ export function selectScoredCount(state: GameState): number {
   return new Set(state.events.map((event) => event.clueId)).size;
 }
 
+/** Noch nicht gewertete Karten – Grundlage für das Funkeln am Spielende. */
+export function selectOpenClueCount(state: GameState): number {
+  return Math.max(0, selectClueCount(state) - selectScoredCount(state));
+}
+
 export function selectIsFinished(state: GameState): boolean {
   const total = selectClueCount(state);
   return total > 0 && selectScoredCount(state) >= total;

@@ -1,3 +1,5 @@
+import { sampleDefinition } from '@jeopardy/game-core';
+import type { GameState } from '@jeopardy/game-core';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -5,6 +7,24 @@ import { openClue, playClue, renderWithGame, startedState } from '../../test/ren
 import { BoardGrid } from './BoardGrid';
 
 const CLUE_ID = 'wissenschaft-100';
+
+/**
+ * Spielt die ersten `count` Karten durch. Gewertet wird jeweils das Team, das
+ * reihum beginnt – ein anderes wäre gar nicht beteiligt.
+ */
+function stateWithPlayed(count: number): GameState {
+  let state = startedState();
+  const clueIds = sampleDefinition.categories.flatMap((category) =>
+    category.clues.map((clue) => clue.id),
+  );
+
+  for (const clueId of clueIds.slice(0, count)) {
+    const starter = state.teams[state.startingTeamIndex % state.teams.length];
+    if (!starter) throw new Error('Team fehlt.');
+    state = playClue(state, clueId, starter.id);
+  }
+  return state;
+}
 
 function scoredCard(suffix: string): HTMLElement {
   return screen.getByRole('button', {
@@ -77,6 +97,30 @@ describe('spielfeld', () => {
     expect(punkte).not.toHaveClass('line-through');
 
     expect(within(card).getByText('Niemand richtig · 2 Teams')).toBeInTheDocument();
+  });
+
+  it('lässt die letzten offenen karten funkeln', () => {
+    // 17 gespielte Karten lassen 8 offen – genau die Schwelle.
+    renderWithGame(<BoardGrid />, stateWithPlayed(17));
+
+    const karten = screen.getAllByRole('button');
+    const offen = karten.filter((karte) => !(karte as HTMLButtonElement).disabled);
+    expect(offen).toHaveLength(8);
+    expect(offen.every((karte) => karte.className.includes('animate-funkeln'))).toBe(true);
+    // Gespielte Karten bleiben ruhig.
+    expect(
+      karten
+        .filter((karte) => (karte as HTMLButtonElement).disabled)
+        .every((karte) => !karte.className.includes('animate-funkeln')),
+    ).toBe(true);
+  });
+
+  it('funkelt bei neun offenen karten noch nicht', () => {
+    renderWithGame(<BoardGrid />, stateWithPlayed(16));
+
+    expect(
+      screen.getAllByRole('button').every((karte) => !karte.className.includes('animate-funkeln')),
+    ).toBe(true);
   });
 
   it('nennt im übungsmodus kein team auf der karte', () => {

@@ -16,6 +16,10 @@ export interface ClueCardProps {
   result?: ClueSummary | null;
   /** Im Übungsmodus sagt der Teamname nichts aus und entfällt auf der Karte. */
   showTeamName?: boolean;
+  /** Funkeln auf der Zielgeraden – nur für noch offene Karten. */
+  sparkle?: boolean;
+  /** Versetzt den Takt des Funkelns, damit nicht alle Karten im Gleichschritt blinken. */
+  sparkleDelayMs?: number;
   onOpen: () => void;
 }
 
@@ -59,6 +63,8 @@ export function ClueCard({
   scored,
   result = null,
   showTeamName = true,
+  sparkle = false,
+  sparkleDelayMs = 0,
   onOpen,
 }: ClueCardProps) {
   // Farbe trägt die Aussage nie allein – Zeichen und Text kommen hinzu.
@@ -83,8 +89,9 @@ export function ClueCard({
         scored
           ? 'cursor-default border-transparent bg-surface-mut text-text-muted opacity-65'
           : 'cursor-pointer hover:bg-surface-hi',
+        sparkle && !scored && 'animate-funkeln',
       )}
-      style={scored ? undefined : { color }}
+      style={scored ? undefined : { color, animationDelay: `${sparkleDelayMs}ms` }}
     >
       <span className="flex max-w-full items-baseline justify-center gap-1 leading-none">
         {mark ? (

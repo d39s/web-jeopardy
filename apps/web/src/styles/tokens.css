@@ -39,4 +39,30 @@
 
   /* Typografie – ausschließlich Systemschriften, keine externen Fonts */
   --font-sans: system-ui, Arial, Helvetica, sans-serif;
+
+  /*
+   * Funkeln der letzten offenen Karten. Der Schein nutzt `currentColor` und
+   * trägt damit die Farbe der jeweiligen Kategorie. Bewusst langsam und ohne
+   * Bewegung: Auf dem Beamer soll es locken, nicht flackern. Bei
+   * `prefers-reduced-motion` greift die Regel in global.css.
+   */
+  --animate-funkeln: funkeln 2.6s ease-in-out infinite;
+
+  /*
+   * Beide Stufen tragen gleich viele Schatten: Nur dann blendet der Browser
+   * weich über. Bei unterschiedlich langen Listen springt der Wert bei 50 %.
+   */
+  @keyframes funkeln {
+    0%,
+    100% {
+      box-shadow:
+        var(--shadow-card),
+        0 0 0 transparent;
+    }
+    50% {
+      box-shadow:
+        var(--shadow-card),
+        0 0 22px currentColor;
+    }
+  }
 }
