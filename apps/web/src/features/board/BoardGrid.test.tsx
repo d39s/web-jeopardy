@@ -12,11 +12,14 @@ function openClue(state: GameState, clueId = CLUE_ID): GameState {
   return gameReducer(state, { type: 'clue/open', clueId, at: 0 });
 }
 
-/** Bedenkzeit bei allen Teams abgelaufen: die Frage gilt als gespielt, ohne Punkte. */
+/**
+ * Bedenkzeit bei allen Teams abgelaufen: die Frage gilt als gespielt, ohne Punkte.
+ * Der Ablauf zählt erst zum Fristende, daher die Zeitstempel nach 30 bzw. 60 Sekunden.
+ */
 function unansweredState(): GameState {
   const opened = openClue({ ...startedState(2), timerSeconds: 30 });
-  const nextTeam = gameReducer(opened, { type: 'clue/timerExpired', at: 1_000 });
-  return gameReducer(nextTeam, { type: 'clue/timerExpired', at: 2_000 });
+  const nextTeam = gameReducer(opened, { type: 'clue/timerExpired', at: 30_000 });
+  return gameReducer(nextTeam, { type: 'clue/timerExpired', at: 60_000 });
 }
 
 function scoredCard(suffix: string): HTMLElement {
