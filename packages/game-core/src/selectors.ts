@@ -1,7 +1,7 @@
 import { categoryColorAt } from './colors';
 import type { CategoryColor } from './colors';
 import { findClue } from './reducer';
-import type { Category, Clue, GameState, ScoreEvent, Team } from './types';
+import type { Category, Clue, ClueOutcome, GameState, ScoreEvent, Team } from './types';
 
 /**
  * Punktestand eines Teams. Die Klammerung auf null erfolgt **schrittweise** je
@@ -51,8 +51,45 @@ export function selectTeamStats(
   teamId: string,
 ): { correct: number; wrong: number } {
   const events = state.events.filter((event) => event.teamId === teamId);
-  const correct = events.filter((event) => event.correct).length;
-  return { correct, wrong: events.length - correct };
+  return {
+    correct: events.filter((event) => event.outcome === 'correct').length,
+    wrong: events.filter((event) => event.outcome === 'wrong').length,
+  };
+}
+
+export interface ClueResult {
+  outcome: ClueOutcome;
+  /** Null, wenn die Zeit bei allen Teams abgelaufen ist. */
+  team: Team | null;
+  delta: number;
+}
+
+/** Ausgang einer gespielten Frage – Grundlage für die Markierung im Spielfeld. */
+export function selectClueResult(state: GameState, clueId: string): ClueResult | null {
+  const event = state.events.find((entry) => entry.clueId === clueId);
+  if (!event) return null;
+
+  return {
+    outcome: event.outcome,
+    team: state.teams.find((team) => team.id === event.teamId) ?? null,
+    delta: event.delta,
+  };
+}
+
+/** Team, das bei der geöffneten Frage gerade den Zugriff hat. */
+export function selectActiveTeam(state: GameState): Team | null {
+  if (state.teams.length === 0) return null;
+  return state.teams[state.activeTeamIndex % state.teams.length] ?? null;
+}
+
+/** Team mit dem ersten Zugriff auf die nächste Frage. */
+export function selectStartingTeam(state: GameState): Team | null {
+  if (state.teams.length === 0) return null;
+  return state.teams[state.startingTeamIndex % state.teams.length] ?? null;
+}
+
+export function selectIsTimerRunning(state: GameState): boolean {
+  return state.timerEndsAt !== null;
 }
 
 export interface RankedTeam {

@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { clueCard, scoredClueCard, startGame } from './helpers';
+import { clueCard, scoreButton, scoredClueCard, startGame } from './helpers';
 
 test('spielfeld passt ohne scrollen auf einen bildschirm', async ({ page }) => {
   await startGame(page);
@@ -32,15 +32,15 @@ test('teamname lässt sich am spielfeld ändern und wirkt auf die punktebuttons'
   await clueCard(page, 'Erdkunde', 100).click();
   await page.getByRole('button', { name: 'Antwort anzeigen' }).click();
 
-  await expect(page.getByRole('button', { name: 'Die Adler richtig' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Team A richtig' })).toHaveCount(0);
+  await expect(scoreButton(page, 'Die Adler richtig')).toBeVisible();
+  await expect(scoreButton(page, 'Team A richtig')).toHaveCount(0);
 });
 
 test('laufendes spiel übersteht neuladen und lässt sich fortsetzen', async ({ page }) => {
   await startGame(page);
   await clueCard(page, 'Erdkunde', 100).click();
   await page.getByRole('button', { name: 'Antwort anzeigen' }).click();
-  await page.getByRole('button', { name: 'Team A richtig' }).click();
+  await scoreButton(page, 'Team A richtig').click();
 
   // Auf das entprellte Speichern warten.
   await page.waitForFunction(() => localStorage.getItem('jeopardy:v1:state') !== null);

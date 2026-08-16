@@ -33,6 +33,14 @@ export function scoredClueCard(page: Page, category: string, points: number) {
   return page.getByRole('button', { name: `${category}, ${points} Punkte – bereits gespielt` });
 }
 
+/**
+ * Punktebutton im geöffneten Popup. Die Suche bleibt bewusst auf den Dialog
+ * beschränkt: Gewertete Karten nennen denselben Wortlaut in ihrem aria-label.
+ */
+export function scoreButton(page: Page, label: string) {
+  return page.getByRole('dialog').getByRole('button', { name: label, exact: true });
+}
+
 /** Öffnet eine Karte, deckt die Antwort auf und wertet sie. */
 export async function playClue(
   page: Page,
@@ -42,6 +50,20 @@ export async function playClue(
 ): Promise<void> {
   await clueCard(page, category, points).click();
   await page.getByRole('button', { name: 'Antwort anzeigen' }).click();
-  await page.getByRole('button', { name: buttonLabel }).click();
+  await scoreButton(page, buttonLabel).click();
   await expect(scoredClueCard(page, category, points)).toBeVisible();
+}
+
+/**
+ * Stellt die Bedenkzeit über den Schieberegler ein. Die Stufen sind ungleich
+ * verteilt, deshalb trägt der Regler den Index; Position 0 heißt „ohne Zeit".
+ * Die Liste entspricht TIMER_OPTIONS aus @jeopardy/game-core.
+ */
+const TIMER_STEPS = [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300];
+
+export async function setTimer(page: Page, seconds: number | null): Promise<void> {
+  const position = seconds === null ? 0 : TIMER_STEPS.indexOf(seconds) + 1;
+  if (position < 0) throw new Error(`Keine Bedenkzeit-Stufe für ${String(seconds)} Sekunden.`);
+
+  await page.getByLabel('Bedenkzeit je Frage').fill(String(position));
 }

@@ -107,8 +107,8 @@ export const teamSchema = z.strictObject({
 export const scoreEventSchema = z.strictObject({
   id: z.string().min(1),
   clueId: idSchema,
-  teamId: idSchema,
-  correct: z.boolean(),
+  teamId: idSchema.nullable(),
+  outcome: z.enum(['correct', 'wrong', 'unanswered']),
   delta: z.number().int(),
   at: z.number().int().nonnegative(),
 });
@@ -121,6 +121,11 @@ export const gameStateSchema = z.strictObject({
   events: z.array(scoreEventSchema),
   openClueId: z.string().min(1).nullable(),
   answerRevealed: z.boolean(),
+  timerSeconds: z.number().int().positive().nullable(),
+  startingTeamIndex: z.number().int().nonnegative(),
+  activeTeamIndex: z.number().int().nonnegative(),
+  timerEndsAt: z.number().int().nonnegative().nullable(),
+  deductOnWrong: z.boolean(),
 });
 
 // ---------------------------------------------------------------------------

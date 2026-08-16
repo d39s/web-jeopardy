@@ -58,7 +58,8 @@ describe('anwendung', () => {
     // Karte ist jetzt gesperrt, Punktestand steht
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Wissenschaft, 100 Punkte – bereits gespielt' }),
+        // Der Name beginnt mit dem gespielt-Hinweis und nennt danach den Ausgang.
+        screen.getByRole('button', { name: /^Wissenschaft, 100 Punkte – bereits gespielt/ }),
       ).toBeDisabled(),
     );
     expect(screen.getByText('Team A: 100 Punkte')).toBeInTheDocument();

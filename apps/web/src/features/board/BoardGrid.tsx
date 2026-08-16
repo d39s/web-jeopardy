@@ -1,4 +1,9 @@
-import { resolveCategoryColor, selectIsClueScored } from '@jeopardy/game-core';
+import {
+  resolveCategoryColor,
+  selectClueResult,
+  selectIsClueScored,
+  selectIsPracticeMode,
+} from '@jeopardy/game-core';
 import { useDispatch, useGameState } from '../../state/GameProvider';
 import { CategoryHeader } from './CategoryHeader';
 import { ClueCard } from './ClueCard';
@@ -15,6 +20,8 @@ export function BoardGrid() {
   if (!state.definition) return null;
   const { categories } = state.definition;
   const rowCount = categories[0]?.clues.length ?? 0;
+  // Bei einem einzigen Team sagt der Teamname auf der Karte nichts aus.
+  const showTeamName = !selectIsPracticeMode(state);
 
   return (
     <div
@@ -44,7 +51,9 @@ export function BoardGrid() {
               points={clue.points}
               color={resolveCategoryColor(category, index)}
               scored={selectIsClueScored(state, clue.id)}
-              onOpen={() => dispatch({ type: 'clue/open', clueId: clue.id })}
+              result={selectClueResult(state, clue.id)}
+              showTeamName={showTeamName}
+              onOpen={() => dispatch({ type: 'clue/open', clueId: clue.id, at: Date.now() })}
             />
           );
         }),

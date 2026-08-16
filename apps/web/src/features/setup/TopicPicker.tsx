@@ -49,7 +49,7 @@ export function TopicPicker({
         <p className="text-text-muted">{de.setup.topicsEmpty}</p>
       ) : null}
 
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="grid items-stretch gap-3 sm:grid-cols-2">
         {topics.map((topic) => {
           const selected = !uploaded && topic.id === selectedId;
           return (
@@ -59,7 +59,8 @@ export function TopicPicker({
                 aria-pressed={selected}
                 onClick={() => onSelect(topic.id)}
                 className={cn(
-                  'w-full rounded-card border bg-surface p-4 text-left transition-colors',
+                  // h-full: nebeneinanderliegende Karten bleiben gleich hoch.
+                  'h-full w-full rounded-card border bg-surface p-4 text-left transition-colors',
                   selected ? 'border-cat-1 bg-surface-hi' : 'border-border hover:bg-surface-hi',
                 )}
               >

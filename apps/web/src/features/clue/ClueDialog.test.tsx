@@ -7,7 +7,7 @@ import { renderWithGame, startedState } from '../../test/renderWithGame';
 import { ClueDialog } from './ClueDialog';
 
 function openedState(teamCount = 2, clueId = 'wissenschaft-100'): GameState {
-  return gameReducer(startedState(teamCount), { type: 'clue/open', clueId });
+  return gameReducer(startedState(teamCount), { type: 'clue/open', clueId, at: 0 });
 }
 
 function revealedState(teamCount = 2): GameState {
@@ -109,7 +109,11 @@ describe('frage-popup', () => {
     const withNote = withNoteOnFirstClue('Nicht mit dem Switch verwechseln.');
     renderWithGame(
       <ClueDialog />,
-      gameReducer(startedState(2, withNote), { type: 'clue/open', clueId: 'wissenschaft-100' }),
+      gameReducer(startedState(2, withNote), {
+        type: 'clue/open',
+        clueId: 'wissenschaft-100',
+        at: 0,
+      }),
     );
 
     expect(screen.queryByText(/Nicht mit dem Switch verwechseln/)).not.toBeInTheDocument();
