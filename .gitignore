@@ -13,3 +13,6 @@ blob-report/
 .DS_Store
 .idea/
 *.local
+
+# Arbeitskopien und Werkzeugdaten
+.claude/
