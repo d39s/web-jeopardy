@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "id": "allgemeinwissen-fortgeschritten",
+  "title": "Allgemeinwissen – Fortgeschritten",
+  "category": "allgemeinwissen",
+  "difficulty": 2,
+  "description": "Eine Stufe über dem Klassiker: Länder, Weltgeschichte, Naturwissenschaft, Kunst und der menschliche Körper.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "pointSteps": [100, 200, 300, 400, 500],
+  "categories": [
+    {
+      "id": "laender-und-fluesse",
+      "name": "Länder und Flüsse",
+      "clues": [
+        {
+          "id": "laender-und-fluesse-100",
+          "points": 100,
+          "question": "Welcher Fluss fließt durch Wien, Budapest und Belgrad?",
+          "answer": "Die Donau"
+        },
+        {
+          "id": "laender-und-fluesse-200",
+          "points": 200,
+          "question": "Wie heißt die Hauptstadt Australiens?",
+          "answer": "Canberra",
+          "note": "Sydney und Melbourne sind größer, aber nicht Hauptstadt."
+        },
+        {
+          "id": "laender-und-fluesse-300",
+          "points": 300,
+          "question": "Welcher Fluss ist der längste Europas?",
+          "answer": "Die Wolga"
+        },
+        {
+          "id": "laender-und-fluesse-400",
+          "points": 400,
+          "question": "Welches Land Afrikas ist das flächengrößte?",
+          "answer": "Algerien"
+        },
+        {
+          "id": "laender-und-fluesse-500",
+          "points": 500,
+          "question": "Welcher See in Zentralasien war einst der viertgrößte der Erde und ist seit den 1960er-Jahren weitgehend ausgetrocknet?",
+          "answer": "Der Aralsee"
+        }
+      ]
+    },
+    {
+      "id": "weltgeschichte",
+      "name": "Weltgeschichte",
+      "clues": [
+        {
+          "id": "weltgeschichte-100",
+          "points": 100,
+          "question": "In welchem Jahr begann der Erste Weltkrieg?",
+          "answer": "1914"
+        },
+        {
+          "id": "weltgeschichte-200",
+          "points": 200,
+          "question": "In welcher Schlacht wurde Napoleon 1815 endgültig besiegt?",
+          "answer": "In der Schlacht bei Waterloo"
+        },
+        {
+          "id": "weltgeschichte-300",
+          "points": 300,
+          "question": "Welche französische Königin wurde 1793 mit der Guillotine hingerichtet?",
+          "answer": "Marie-Antoinette"
+        },
+        {
+          "id": "weltgeschichte-400",
+          "points": 400,
+          "question": "In welchem Jahr eroberten die Osmanen Konstantinopel?",
+          "answer": "1453"
+        },
+        {
+          "id": "weltgeschichte-500",
+          "points": 500,
+          "question": "Wie heißt der Friedensschluss von 1648, der den Dreißigjährigen Krieg beendete?",
+          "answer": "Der Westfälische Friede"
+        }
+      ]
+    },
+    {
+      "id": "naturwissenschaft",
+      "name": "Naturwissenschaft",
+      "clues": [
+        {
+          "id": "naturwissenschaft-100",
+          "points": 100,
+          "question": "Für welches Element steht das chemische Symbol Fe?",
+          "answer": "Eisen"
+        },
+        {
+          "id": "naturwissenschaft-200",
+          "points": 200,
+          "question": "Welches Element hat im Periodensystem die Ordnungszahl 1?",
+          "answer": "Wasserstoff"
+        },
+        {
+          "id": "naturwissenschaft-300",
+          "points": 300,
+          "question": "Wie heißt die SI-Einheit der Kraft?",
+          "answer": "Das Newton"
+        },
+        {
+          "id": "naturwissenschaft-400",
+          "points": 400,
+          "question": "Wie viele Planeten zählt das Sonnensystem, seit Pluto 2006 zum Zwergplaneten erklärt wurde?",
+          "answer": "Acht"
+        },
+        {
+          "id": "naturwissenschaft-500",
+          "points": 500,
+          "question": "Wie heißt das Gasgesetz, nach dem Druck und Volumen bei gleichbleibender Temperatur umgekehrt proportional sind?",
+          "answer": "Das Gesetz von Boyle-Mariotte"
+        }
+      ]
+    },
+    {
+      "id": "kunst-und-literatur",
+      "name": "Kunst und Literatur",
+      "clues": [
+        {
+          "id": "kunst-und-literatur-100",
+          "points": 100,
+          "question": "Wer schrieb das Drama \"Faust\"?",
+          "answer": "Johann Wolfgang von Goethe"
+        },
+        {
+          "id": "kunst-und-literatur-200",
+          "points": 200,
+          "question": "In welchem Museum hängt die Mona Lisa?",
+          "answer": "Im Louvre in Paris"
+        },
+        {
+          "id": "kunst-und-literatur-300",
+          "points": 300,
+          "question": "Welcher niederländische Maler trennte sich 1888 einen Teil seines linken Ohrs ab?",
+          "answer": "Vincent van Gogh"
+        },
+        {
+          "id": "kunst-und-literatur-400",
+          "points": 400,
+          "question": "Wer schrieb den Roman \"Die Blechtrommel\"?",
+          "answer": "Günter Grass"
+        },
+        {
+          "id": "kunst-und-literatur-500",
+          "points": 500,
+          "question": "Welche Kunstrichtung begründeten Pablo Picasso und Georges Braque um 1907?",
+          "answer": "Den Kubismus"
+        }
+      ]
+    },
+    {
+      "id": "mensch-und-medizin",
+      "name": "Mensch und Medizin",
+      "clues": [
+        {
+          "id": "mensch-und-medizin-100",
+          "points": 100,
+          "question": "Welches Organ bildet das Hormon Insulin?",
+          "answer": "Die Bauchspeicheldrüse"
+        },
+        {
+          "id": "mensch-und-medizin-200",
+          "points": 200,
+          "question": "Welches ist der längste Knochen des menschlichen Körpers?",
+          "answer": "Der Oberschenkelknochen"
+        },
+        {
+          "id": "mensch-und-medizin-300",
+          "points": 300,
+          "question": "Wie heißt der rote Blutfarbstoff, der den Sauerstoff transportiert?",
+          "answer": "Hämoglobin"
+        },
+        {
+          "id": "mensch-und-medizin-400",
+          "points": 400,
+          "question": "Aus wie vielen Knochen besteht das Skelett eines erwachsenen Menschen üblicherweise?",
+          "answer": "206",
+          "note": "Neugeborene haben deutlich mehr; gefragt ist der Erwachsene."
+        },
+        {
+          "id": "mensch-und-medizin-500",
+          "points": 500,
+          "question": "Welcher Teil des Gehirns steuert Gleichgewicht und Feinabstimmung der Bewegungen?",
+          "answer": "Das Kleinhirn"
+        }
+      ]
+    }
+  ]
+}

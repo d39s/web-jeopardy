@@ -9,16 +9,31 @@ import { timerSliderValue } from './TimerSetup';
 
 const topicIndex = {
   schemaVersion: 1,
+  categories: [{ id: 'testkategorie', title: 'Testkategorie', description: 'Zum Ausprobieren.' }],
   topics: [
     {
       id: 'testthema',
       title: 'Testthema',
       description: 'Zum Ausprobieren.',
+      category: 'testkategorie',
+      difficulty: 1,
       file: 'testthema.json',
     },
-    { id: 'zweites', title: 'Zweites Thema', file: 'zweites.json' },
+    {
+      id: 'zweites',
+      title: 'Zweites Thema',
+      category: 'testkategorie',
+      difficulty: 3,
+      file: 'zweites.json',
+    },
   ],
 };
+
+/** Zwei Stufen: erst die Kategorie, dann das Fragenset. */
+async function chooseTopic(title = 'Testthema'): Promise<void> {
+  await userEvent.click(await screen.findByRole('button', { name: /Testkategorie/ }));
+  await userEvent.click(screen.getByRole('button', { name: new RegExp(title) }));
+}
 
 function mockTopicRequests(): void {
   vi.stubGlobal(
@@ -41,7 +56,14 @@ async function renderSetup(entry = '/') {
     </MemoryRouter>,
     initialGameState,
   );
-  await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+  return result;
+}
+
+/** Startseite rendern und gleich ein Fragenset wählen. */
+async function renderWithTopic(entry = '/') {
+  const result = await renderSetup(entry);
+  await chooseTopic();
   return result;
 }
 
@@ -70,7 +92,7 @@ afterEach(() => {
 
 describe('spiel teilen', () => {
   it('zeigt einen link mit thema, teams und bedenkzeit', async () => {
-    await renderSetup();
+    await renderWithTopic();
 
     expect(linkField()).toHaveValue(
       `${window.location.origin}/?thema=testthema&teams=Team%20A,Team%20B`,
@@ -86,7 +108,7 @@ describe('spiel teilen', () => {
   });
 
   it('nimmt eine eigene veto-zeit auf und lässt die kopplung weg', async () => {
-    await renderSetup();
+    await renderWithTopic();
 
     fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
       target: { value: String(timerSliderValue(45)) },
@@ -104,11 +126,11 @@ describe('spiel teilen', () => {
   });
 
   it('übernimmt geänderte teamnamen und das gewählte thema in den link', async () => {
-    await renderSetup();
+    await renderWithTopic();
 
     await userEvent.clear(screen.getByLabelText('Name von Team 1'));
     await userEvent.type(screen.getByLabelText('Name von Team 1'), 'Die Grünen Füchse');
-    await userEvent.click(screen.getByRole('button', { name: 'Zweites Thema' }));
+    await userEvent.click(screen.getByRole('button', { name: /Zweites Thema/ }));
 
     expect(linkField()).toHaveValue(
       `${window.location.origin}/?thema=zweites&teams=Die%20Gr%C3%BCnen%20F%C3%BCchse,Team%20B`,
@@ -116,7 +138,7 @@ describe('spiel teilen', () => {
   });
 
   it('kopiert den link in die zwischenablage und meldet den erfolg', async () => {
-    await renderSetup();
+    await renderWithTopic();
     const writeText = stubClipboard();
     const erwartet = linkField().value;
 
@@ -129,7 +151,7 @@ describe('spiel teilen', () => {
   });
 
   it('meldet, wenn der link nicht kopiert werden kann', async () => {
-    await renderSetup();
+    await renderWithTopic();
     stubClipboard('fehler');
 
     await userEvent.click(screen.getByRole('button', { name: 'Link kopieren' }));
@@ -155,7 +177,7 @@ describe('spiel teilen', () => {
   });
 
   it('weist bei einem eigenen fragenset darauf hin, dass der link entfällt', async () => {
-    await renderSetup();
+    await renderWithTopic();
     const file = new File([JSON.stringify(sampleDefinition)], 'thema.json', {
       type: 'application/json',
     });
@@ -200,7 +222,7 @@ describe('geteilten link öffnen', () => {
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Adler');
     expect(screen.getByLabelText('Name von Team 2')).toHaveValue('Die Falken');
     expect(screen.getByLabelText('Bedenkzeit je Frage')).toHaveValue(String(timerSliderValue(45)));
-    expect(screen.getByRole('button', { name: 'Zweites Thema' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Zweites Thema/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -271,13 +293,12 @@ describe('geteilten link öffnen', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Namen übernehmen' }));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    // Das Thema bleibt bei der Vorauswahl, die Namen kommen trotzdem an.
-    expect(screen.getByRole('button', { name: /Testthema/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    // Ohne brauchbares Thema bleibt die Auswahl bei den Kategorien stehen; die
+    // Namen aus dem Link kommen trotzdem an.
+    expect(screen.getByRole('button', { name: /Testkategorie/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Testthema/ })).not.toBeInTheDocument();
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Adler');
-    expect(screen.getByRole('button', { name: 'Spiel starten' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Spiel starten' })).toBeDisabled();
   });
 
   it('begrenzt zu viele geteilte teams auf die obergrenze der oberfläche', async () => {
@@ -296,7 +317,9 @@ describe('geteilten link öffnen', () => {
     expect(
       screen.getByText('Der geteilte Link ist unvollständig oder fehlerhaft.'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Spiel starten' })).toBeEnabled();
+    // Die Seite bleibt bedienbar: Kategorien stehen bereit, gestartet wird nach
+    // der Wahl eines Fragensets.
+    expect(screen.getByRole('button', { name: /Testkategorie/ })).toBeInTheDocument();
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Team A');
   });
 });

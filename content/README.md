@@ -14,6 +14,8 @@ npm run validate:content
   "schemaVersion": 1,
   "id": "mein-thema",
   "title": "Mein Thema",
+  "category": "allgemeinwissen",
+  "difficulty": 2,
   "description": "Ein Satz, der auf der Startseite erscheint.",
   "author": "Optional",
   "locale": "de-DE",
@@ -38,31 +40,62 @@ npm run validate:content
 
 ## Regeln
 
-| Regel                                                | Warum                                                                       |
-| ---------------------------------------------------- | --------------------------------------------------------------------------- |
-| Genau 5 Kategorien mit je genau 5 Fragen             | Das Spielfeld ist ein 5×5-Raster.                                           |
-| `points` folgt der Reihenfolge aus `pointSteps`      | Sonst passt die Karte nicht zu ihrer Zeile.                                 |
-| `pointSteps` aufsteigend                             | Leichte Fragen oben, schwere unten.                                         |
-| Alle `id`-Werte sind innerhalb der Datei eindeutig   | IDs identifizieren Karten und Wertungen.                                    |
-| Bewährtes Muster: `<kategorie>-<punkte>`             | Leicht zu lesen und automatisch eindeutig.                                  |
-| `color` ist optional und nur aus der Palette erlaubt | Farben sind gestalterisch vorgegeben; ohne Angabe entscheidet die Position. |
-| `question` und `answer` maximal 500 Zeichen          | Damit die Karte auf dem Beamer lesbar bleibt.                               |
-| Keine zusätzlichen Felder                            | Tippfehler fallen so sofort auf.                                            |
+| Regel                                                | Warum                                                                          |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Genau 5 Kategorien mit je genau 5 Fragen             | Das Spielfeld ist ein 5×5-Raster.                                              |
+| `points` folgt der Reihenfolge aus `pointSteps`      | Sonst passt die Karte nicht zu ihrer Zeile.                                    |
+| `pointSteps` aufsteigend                             | Leichte Fragen oben, schwere unten.                                            |
+| Alle `id`-Werte sind innerhalb der Datei eindeutig   | IDs identifizieren Karten und Wertungen.                                       |
+| Bewährtes Muster: `<kategorie>-<punkte>`             | Leicht zu lesen und automatisch eindeutig.                                     |
+| `color` ist optional und nur aus der Palette erlaubt | Farben sind gestalterisch vorgegeben; ohne Angabe entscheidet die Position.    |
+| `question` und `answer` maximal 500 Zeichen          | Damit die Karte auf dem Beamer lesbar bleibt.                                  |
+| Keine zusätzlichen Felder                            | Tippfehler fallen so sofort auf.                                               |
+| `category` verweist auf eine Kategorie aus dem Index | Die Startseite führt in zwei Stufen: erst Kategorie, dann Fragenset.           |
+| `difficulty` ist 1, 2 oder 3                         | Wird als drei Fragezeichen angezeigt, von denen die ersten hervorgehoben sind. |
 
 Erlaubte Farben: `#2EC4B6`, `#FF7F50`, `#B388EB`, `#7AE582`, `#FFD166`.
 
 ## Eintrag im Index
 
+`content/topics/index.json` führt zuerst die Kategorien und darunter die Fragensets:
+
 ```json
 {
-  "id": "mein-thema",
-  "title": "Mein Thema",
-  "description": "Ein Satz, der auf der Startseite erscheint.",
-  "file": "mein-thema.json"
+  "schemaVersion": 1,
+  "categories": [
+    {
+      "id": "allgemeinwissen",
+      "title": "Allgemeinwissen",
+      "description": "Steht auf der ersten Auswahlseite."
+    }
+  ],
+  "topics": [
+    {
+      "id": "mein-thema",
+      "title": "Mein Thema",
+      "description": "Ein Satz, der auf der Startseite erscheint.",
+      "category": "allgemeinwissen",
+      "difficulty": 2,
+      "file": "mein-thema.json"
+    }
+  ]
 }
 ```
 
-`id` und `title` müssen mit der Themendatei übereinstimmen – die Prüfung meldet Abweichungen.
+`id`, `title`, `category` und `difficulty` müssen mit der Themendatei übereinstimmen – die
+Prüfung meldet Abweichungen. Eine Kategorie ohne Fragensets wird ebenfalls beanstandet, weil
+sie auf der Startseite eine leere Sackgasse wäre.
+
+## Schwierigkeit wählen
+
+| Stufe | Gedacht für                                                    |
+| ----- | -------------------------------------------------------------- |
+| 1     | Breites Publikum, Antworten sind vielen geläufig.              |
+| 2     | Wer sich für das Thema interessiert, kommt gut durch.          |
+| 3     | Verlangt echtes Fachwissen; auch die 100er-Frage darf fordern. |
+
+Innerhalb eines Fragensets steigt die Schwierigkeit weiterhin von 100 nach 500 – die Stufe
+verschiebt das ganze Set, sie ersetzt die Staffelung nicht.
 
 ## Ohne Neubau ausliefern
 

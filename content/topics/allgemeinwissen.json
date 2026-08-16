@@ -2,6 +2,8 @@
   "schemaVersion": 1,
   "id": "allgemeinwissen",
   "title": "Allgemeinwissen",
+  "category": "allgemeinwissen",
+  "difficulty": 1,
   "description": "Erdkunde, Geschichte, Natur, Sprache und Zahlen – für jede Runde geeignet.",
   "author": "Projektteam",
   "locale": "de-DE",

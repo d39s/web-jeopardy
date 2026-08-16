@@ -2,6 +2,8 @@
   "schemaVersion": 1,
   "id": "popkultur",
   "title": "Popkultur",
+  "category": "popkultur",
+  "difficulty": 1,
   "description": "Kino, Musik, Serien, Games und Internet – der lockere Abendklassiker.",
   "author": "Projektteam",
   "locale": "de-DE",

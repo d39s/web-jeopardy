@@ -6,7 +6,16 @@ import { App } from './App';
 
 const topicIndex = {
   schemaVersion: 1,
-  topics: [{ id: 'testthema', title: 'Testthema', file: 'testthema.json' }],
+  categories: [{ id: 'testkategorie', title: 'Testkategorie', description: 'Zum Ausprobieren.' }],
+  topics: [
+    {
+      id: 'testthema',
+      title: 'Testthema',
+      category: 'testkategorie',
+      difficulty: 1,
+      file: 'testthema.json',
+    },
+  ],
 };
 
 beforeEach(() => {
@@ -27,17 +36,21 @@ afterEach(() => {
 });
 
 describe('anwendung', () => {
-  it('zeigt zunächst die startseite', async () => {
+  it('zeigt zunächst die startseite mit den kategorien', async () => {
     render(<App />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Jeopardy' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+    // Erste Stufe der Auswahl: die Fragensets stehen erst hinter der Kategorie.
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+    expect(screen.queryByText('Testthema')).not.toBeInTheDocument();
   });
 
   it('führt von der startseite über das spielfeld bis zur wertung', async () => {
     render(<App />);
-    await waitFor(() => expect(screen.getByText('Testthema')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
 
+    await userEvent.click(screen.getByRole('button', { name: /Testkategorie/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Testthema/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
 
     // Spielfeld mit Kategorien und Teamleiste

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  chooseTopic,
   clueCard,
   playClue,
   revealAnswer,
@@ -13,6 +14,7 @@ import {
 test('bedenkzeit läuft ab, ohne von selbst weiterzurücken', async ({ page }) => {
   await page.goto('/');
   await setTimer(page, 10);
+  await chooseTopic(page);
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
   await clueCard(page, 'Erdkunde', 100).click();
@@ -28,6 +30,7 @@ test('bedenkzeit läuft ab, ohne von selbst weiterzurücken', async ({ page }) =
 test('veto startet die zeit für das übernehmende team neu', async ({ page }) => {
   await page.goto('/');
   await setTimer(page, 10);
+  await chooseTopic(page);
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
   await clueCard(page, 'Erdkunde', 100).click();
@@ -74,6 +77,7 @@ test('ohne abzugsregel bleibt der punktestand bei einer falschen antwort stehen'
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Punktestand bleibt/ }).click();
+  await chooseTopic(page);
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
   await playClue(page, 'Erdkunde', 100, 'Team A');

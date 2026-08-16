@@ -19,7 +19,16 @@ describe('themenindex laden', () => {
       json: () =>
         Promise.resolve({
           schemaVersion: 1,
-          topics: [{ id: 'testthema', title: 'Testthema', file: 'testthema.json' }],
+          categories: [{ id: 'testkategorie', title: 'Testkategorie' }],
+          topics: [
+            {
+              id: 'testthema',
+              title: 'Testthema',
+              category: 'testkategorie',
+              difficulty: 2,
+              file: 'testthema.json',
+            },
+          ],
         }),
     });
 
@@ -36,7 +45,9 @@ describe('themenindex laden', () => {
   });
 
   it('meldet einen ungültigen index', async () => {
-    mockFetch({ json: () => Promise.resolve({ schemaVersion: 1, topics: [{ id: 'x' }] }) });
+    mockFetch({
+      json: () => Promise.resolve({ schemaVersion: 1, categories: [], topics: [{ id: 'x' }] }),
+    });
 
     const result = await fetchTopicIndex();
     expect(result.ok).toBe(false);

@@ -23,6 +23,8 @@ export const sampleDefinition: GameDefinition = {
   schemaVersion: 1,
   id: 'testthema',
   title: 'Testthema',
+  category: 'testkategorie',
+  difficulty: 1,
   description: 'Fragenset für Tests und Entwicklung.',
   author: 'Projektteam',
   locale: 'de-DE',
@@ -143,6 +145,9 @@ export const invalidDefinitionSamples: { name: string; value: unknown }[] = [
     },
   },
   { name: 'falsche schema-version', value: { ...sampleDefinition, schemaVersion: 2 } },
+  { name: 'schwierigkeit außerhalb 1 bis 3', value: { ...sampleDefinition, difficulty: 4 } },
+  { name: 'schwierigkeit als text', value: { ...sampleDefinition, difficulty: '2' } },
+  { name: 'fehlende themenkategorie', value: { ...sampleDefinition, category: undefined } },
 ];
 
 /** Alle Frage-IDs des Beispielsets in Spielfeld-Reihenfolge. */

@@ -71,6 +71,30 @@ for (const topic of index.topics) {
   if (result.data.title !== topic.title) {
     report(topic.file, [`Titel weicht vom Index-Eintrag "${topic.title}" ab.`]);
   }
+  if (result.data.category !== topic.category) {
+    report(topic.file, [
+      `Themenkategorie "${result.data.category}" weicht vom Index-Eintrag "${topic.category}" ab.`,
+    ]);
+  }
+  if (result.data.difficulty !== topic.difficulty) {
+    report(topic.file, [
+      `Schwierigkeit ${result.data.difficulty} weicht vom Index-Eintrag ${topic.difficulty} ab.`,
+    ]);
+  }
+}
+
+if (problems.length > 0) {
+  console.error(`${problems.length} Problem(e) in den Fragensets gefunden:\n`);
+  console.error(problems.map((problem) => `  - ${problem}`).join('\n'));
+  process.exit(1);
+}
+
+// Eine Kategorie ohne Fragensets wäre auf der Startseite eine leere Sackgasse.
+for (const category of index.categories) {
+  const count = index.topics.filter((topic) => topic.category === category.id).length;
+  if (count === 0) {
+    report(indexFile, [`Die Themenkategorie "${category.id}" enthält kein Fragenset.`]);
+  }
 }
 
 if (problems.length > 0) {
@@ -80,4 +104,7 @@ if (problems.length > 0) {
 }
 
 const clueCount = index.topics.length * 25;
-console.log(`${index.topics.length} Fragenset(s) mit insgesamt ${clueCount} Fragen sind gültig.`);
+console.log(
+  `${index.categories.length} Kategorie(n) mit ${index.topics.length} Fragenset(s) und ` +
+    `insgesamt ${clueCount} Fragen sind gültig.`,
+);

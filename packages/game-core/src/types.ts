@@ -26,10 +26,18 @@ export interface Category {
   clues: Clue[];
 }
 
+/** Schwierigkeitsstufen eines Fragensets. */
+export const DIFFICULTIES = [1, 2, 3] as const;
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
 export interface GameDefinition {
   schemaVersion: 1;
   id: string;
   title: string;
+  /** Themenkategorie, in der das Fragenset zur Auswahl steht. */
+  category: string;
+  /** 1 bis 3 – wird auf der Startseite als Fragezeichen angezeigt. */
+  difficulty: Difficulty;
   description?: string;
   author?: string;
   locale?: string;
@@ -37,16 +45,31 @@ export interface GameDefinition {
   categories: Category[];
 }
 
+/**
+ * Themenkategorie der Startseite – nicht zu verwechseln mit `Category`, den
+ * fünf Spalten des Spielfelds. Eine Themenkategorie bündelt Fragensets
+ * unterschiedlicher Schwierigkeit.
+ */
+export interface TopicCategory {
+  id: string;
+  title: string;
+  description?: string;
+}
+
 export interface TopicIndexEntry {
   id: string;
   title: string;
   description?: string;
+  /** Verweis auf eine Themenkategorie im selben Index. */
+  category: string;
+  difficulty: Difficulty;
   /** Dateiname relativ zum Themenverzeichnis. */
   file: string;
 }
 
 export interface TopicIndex {
   schemaVersion: 1;
+  categories: TopicCategory[];
   topics: TopicIndexEntry[];
 }
 
