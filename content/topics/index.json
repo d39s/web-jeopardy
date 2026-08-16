@@ -73,6 +73,22 @@
       "category": "popkultur",
       "difficulty": 3,
       "file": "popkultur-experten.json"
+    },
+    {
+      "id": "it-fortgeschritten",
+      "title": "IT für Fortgeschrittene",
+      "description": "Netzwerke, Web, Datenbanken, Programmierung und Sicherheit für alle, die schon etwas tiefer stecken.",
+      "category": "it",
+      "difficulty": 2,
+      "file": "it-fortgeschritten.json"
+    },
+    {
+      "id": "it-experten",
+      "title": "IT für Experten",
+      "description": "Rechnerarchitektur, Betriebssysteme, verteilte Systeme, Kryptografie und Protokolle – hier ist Fachwissen gefragt.",
+      "category": "it",
+      "difficulty": 3,
+      "file": "it-experten.json"
     }
   ]
 }
