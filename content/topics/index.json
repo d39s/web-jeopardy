@@ -49,6 +49,14 @@
       "category": "popkultur",
       "difficulty": 2,
       "file": "popkultur-fortgeschritten.json"
+    },
+    {
+      "id": "popkultur-experten",
+      "title": "Popkultur – Experten",
+      "description": "Regiehandschriften, Plattenlabels, Serien-Details, Spieleschmieden und Comic-Geschichte – hier fordert schon die erste Frage.",
+      "category": "popkultur",
+      "difficulty": 3,
+      "file": "popkultur-experten.json"
     }
   ]
 }
