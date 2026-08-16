@@ -31,6 +31,7 @@ export const de = {
 
     shareHeading: 'Spiel teilen',
     shareHint: 'Der Link enthält Thema, Teams und Bedenkzeit.',
+    shareLinkLabel: 'Link zur Spielkonfiguration',
     shareCopy: 'Link kopieren',
     shareCopied: 'Link kopiert.',
     shareFailed: 'Der Link konnte nicht kopiert werden.',
@@ -41,6 +42,7 @@ export const de = {
     sharedTopic: (title: string) => `Thema: ${title}`,
     sharedTimer: (label: string) => `Bedenkzeit: ${label}`,
     sharedConfirm: 'Namen übernehmen',
+    sharedDiscard: 'Nicht übernehmen',
     sharedInvalid: 'Der geteilte Link ist unvollständig oder fehlerhaft.',
 
     topicsHeading: 'Thema',
