@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "id": "popkultur",
+  "title": "Popkultur",
+  "description": "Kino, Musik, Serien, Games und Internet – der lockere Abendklassiker.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "pointSteps": [100, 200, 300, 400, 500],
+  "categories": [
+    {
+      "id": "kino",
+      "name": "Kino",
+      "clues": [
+        {
+          "id": "kino-100",
+          "points": 100,
+          "question": "Wie heißt der Zauberschüler mit der Blitznarbe auf der Stirn?",
+          "answer": "Harry Potter"
+        },
+        {
+          "id": "kino-200",
+          "points": 200,
+          "question": "In welcher Filmreihe kämpfen Jedi gegen die dunkle Seite der Macht?",
+          "answer": "Star Wars"
+        },
+        {
+          "id": "kino-300",
+          "points": 300,
+          "question": "Wie heißt das Königreich in \"Die Eiskönigin\"?",
+          "answer": "Arendelle"
+        },
+        {
+          "id": "kino-400",
+          "points": 400,
+          "question": "Wer führte Regie bei \"Jurassic Park\" und \"E.T.\"?",
+          "answer": "Steven Spielberg"
+        },
+        {
+          "id": "kino-500",
+          "points": 500,
+          "question": "Welcher Film gewann 2020 als erster nicht englischsprachiger den Oscar als bester Film?",
+          "answer": "Parasite"
+        }
+      ]
+    },
+    {
+      "id": "musik",
+      "name": "Musik",
+      "clues": [
+        {
+          "id": "musik-100",
+          "points": 100,
+          "question": "Welche Band sang \"Bohemian Rhapsody\"?",
+          "answer": "Queen"
+        },
+        {
+          "id": "musik-200",
+          "points": 200,
+          "question": "Aus welchem Land stammt die Band ABBA?",
+          "answer": "Aus Schweden"
+        },
+        {
+          "id": "musik-300",
+          "points": 300,
+          "question": "Welches Instrument machte Jimi Hendrix berühmt?",
+          "answer": "Die E-Gitarre"
+        },
+        {
+          "id": "musik-400",
+          "points": 400,
+          "question": "Wie heißt der jährliche europäische Musikwettbewerb?",
+          "answer": "Der Eurovision Song Contest"
+        },
+        {
+          "id": "musik-500",
+          "points": 500,
+          "question": "Wie viele Saiten hat ein üblicher E-Bass?",
+          "answer": "Vier"
+        }
+      ]
+    },
+    {
+      "id": "serien",
+      "name": "Serien",
+      "clues": [
+        {
+          "id": "serien-100",
+          "points": 100,
+          "question": "Wie heißt die Heimatstadt der Simpsons?",
+          "answer": "Springfield"
+        },
+        {
+          "id": "serien-200",
+          "points": 200,
+          "question": "Wie heißt das Café, in dem sich die \"Friends\" ständig treffen?",
+          "answer": "Central Perk"
+        },
+        {
+          "id": "serien-300",
+          "points": 300,
+          "question": "In welcher Serie gehört das Haus Stark zu den großen Familien?",
+          "answer": "Game of Thrones"
+        },
+        {
+          "id": "serien-400",
+          "points": 400,
+          "question": "Welche Serie erzählt vom Chemielehrer Walter White?",
+          "answer": "Breaking Bad"
+        },
+        {
+          "id": "serien-500",
+          "points": 500,
+          "question": "In welcher Kleinstadt spielt \"Stranger Things\"?",
+          "answer": "In Hawkins, Indiana"
+        }
+      ]
+    },
+    {
+      "id": "games",
+      "name": "Games",
+      "clues": [
+        {
+          "id": "games-100",
+          "points": 100,
+          "question": "Welcher Klempner rettet Prinzessin Peach?",
+          "answer": "Mario"
+        },
+        {
+          "id": "games-200",
+          "points": 200,
+          "question": "In welchem Spiel baut man ganze Welten aus Blöcken?",
+          "answer": "Minecraft"
+        },
+        {
+          "id": "games-300",
+          "points": 300,
+          "question": "Wie heißt der blaue Igel von Sega?",
+          "answer": "Sonic"
+        },
+        {
+          "id": "games-400",
+          "points": 400,
+          "question": "Aus welchem Land stammt die Firma Nintendo?",
+          "answer": "Aus Japan"
+        },
+        {
+          "id": "games-500",
+          "points": 500,
+          "question": "Wie heißt das Puzzlespiel mit fallenden Klötzchen aus dem Jahr 1984?",
+          "answer": "Tetris"
+        }
+      ]
+    },
+    {
+      "id": "netzkultur",
+      "name": "Netzkultur",
+      "clues": [
+        {
+          "id": "netzkultur-100",
+          "points": 100,
+          "question": "Welches Videoportal hat ein rotes Symbol mit weißem Play-Dreieck?",
+          "answer": "YouTube"
+        },
+        {
+          "id": "netzkultur-200",
+          "points": 200,
+          "question": "Wie nennt man ein witziges Bild mit Text, das sich im Netz verbreitet?",
+          "answer": "Ein Meme"
+        },
+        {
+          "id": "netzkultur-300",
+          "points": 300,
+          "question": "Welches Zeichen leitet einen Hashtag ein?",
+          "answer": "Die Raute"
+        },
+        {
+          "id": "netzkultur-400",
+          "points": 400,
+          "question": "Wofür steht die Abkürzung LOL?",
+          "answer": "Laughing out loud"
+        },
+        {
+          "id": "netzkultur-500",
+          "points": 500,
+          "question": "Welche Plattform begrenzte Beiträge jahrelang auf 140 Zeichen?",
+          "answer": "Twitter, heute X"
+        }
+      ]
+    }
+  ]
+}

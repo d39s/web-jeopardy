@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "topics": [
+    {
+      "id": "allgemeinwissen",
+      "title": "Allgemeinwissen",
+      "description": "Erdkunde, Geschichte, Natur, Sprache und Zahlen – für jede Runde geeignet.",
+      "file": "allgemeinwissen.json"
+    },
+    {
+      "id": "popkultur",
+      "title": "Popkultur",
+      "description": "Kino, Musik, Serien, Games und Internet – der lockere Abendklassiker.",
+      "file": "popkultur.json"
+    },
+    {
+      "id": "it-grundlagen",
+      "title": "IT-Grundlagen",
+      "description": "Netzwerke, Hardware, Software, Sicherheit und ein Stück Internetgeschichte.",
+      "file": "it-grundlagen.json"
+    }
+  ]
+}

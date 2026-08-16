@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "id": "allgemeinwissen",
+  "title": "Allgemeinwissen",
+  "description": "Erdkunde, Geschichte, Natur, Sprache und Zahlen – für jede Runde geeignet.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "pointSteps": [100, 200, 300, 400, 500],
+  "categories": [
+    {
+      "id": "erdkunde",
+      "name": "Erdkunde",
+      "clues": [
+        {
+          "id": "erdkunde-100",
+          "points": 100,
+          "question": "Wie heißt die Hauptstadt von Italien?",
+          "answer": "Rom"
+        },
+        {
+          "id": "erdkunde-200",
+          "points": 200,
+          "question": "Welcher Kontinent ist der flächengrößte?",
+          "answer": "Asien"
+        },
+        {
+          "id": "erdkunde-300",
+          "points": 300,
+          "question": "Welcher Ozean liegt zwischen Europa und Amerika?",
+          "answer": "Der Atlantik"
+        },
+        {
+          "id": "erdkunde-400",
+          "points": 400,
+          "question": "Wie viele Bundesländer hat Deutschland?",
+          "answer": "16"
+        },
+        {
+          "id": "erdkunde-500",
+          "points": 500,
+          "question": "Welches Gebirge gilt als Grenze zwischen Europa und Asien?",
+          "answer": "Der Ural"
+        }
+      ]
+    },
+    {
+      "id": "geschichte",
+      "name": "Geschichte",
+      "clues": [
+        {
+          "id": "geschichte-100",
+          "points": 100,
+          "question": "In welchem Jahr fiel die Berliner Mauer?",
+          "answer": "1989"
+        },
+        {
+          "id": "geschichte-200",
+          "points": 200,
+          "question": "Wer betrat als erster Mensch den Mond?",
+          "answer": "Neil Armstrong"
+        },
+        {
+          "id": "geschichte-300",
+          "points": 300,
+          "question": "In welchem Jahr endete der Zweite Weltkrieg in Europa?",
+          "answer": "1945"
+        },
+        {
+          "id": "geschichte-400",
+          "points": 400,
+          "question": "Wer brachte den Buchdruck mit beweglichen Lettern nach Europa?",
+          "answer": "Johannes Gutenberg"
+        },
+        {
+          "id": "geschichte-500",
+          "points": 500,
+          "question": "Welches Reich regierte Julius Caesar?",
+          "answer": "Das Römische Reich"
+        }
+      ]
+    },
+    {
+      "id": "natur",
+      "name": "Natur",
+      "clues": [
+        {
+          "id": "natur-100",
+          "points": 100,
+          "question": "Wie viele Beine hat eine Spinne?",
+          "answer": "Acht"
+        },
+        {
+          "id": "natur-200",
+          "points": 200,
+          "question": "Welches ist das größte Tier der Erde?",
+          "answer": "Der Blauwal"
+        },
+        {
+          "id": "natur-300",
+          "points": 300,
+          "question": "Wie heißt der Vorgang, mit dem Pflanzen aus Licht Zucker gewinnen?",
+          "answer": "Fotosynthese"
+        },
+        {
+          "id": "natur-400",
+          "points": 400,
+          "question": "Wie viele Kammern hat das menschliche Herz insgesamt?",
+          "answer": "Vier: zwei Vorhöfe und zwei Herzkammern"
+        },
+        {
+          "id": "natur-500",
+          "points": 500,
+          "question": "Welches Gas macht den größten Anteil der Erdatmosphäre aus?",
+          "answer": "Stickstoff"
+        }
+      ]
+    },
+    {
+      "id": "sprache",
+      "name": "Sprache",
+      "clues": [
+        {
+          "id": "sprache-100",
+          "points": 100,
+          "question": "Wie viele Buchstaben hat das deutsche Alphabet ohne Umlaute und ß?",
+          "answer": "26"
+        },
+        {
+          "id": "sprache-200",
+          "points": 200,
+          "question": "Wie nennt man ein Wort, das vorwärts wie rückwärts gleich gelesen wird?",
+          "answer": "Ein Palindrom"
+        },
+        {
+          "id": "sprache-300",
+          "points": 300,
+          "question": "Welcher Fall antwortet auf die Frage \"wem?\"",
+          "answer": "Der Dativ"
+        },
+        {
+          "id": "sprache-400",
+          "points": 400,
+          "question": "Wie lautet die Mehrzahl von \"Atlas\"?",
+          "answer": "Atlanten"
+        },
+        {
+          "id": "sprache-500",
+          "points": 500,
+          "question": "Wie nennt man ein Wort, das eine Tätigkeit beschreibt?",
+          "answer": "Ein Verb oder Tuwort"
+        }
+      ]
+    },
+    {
+      "id": "zahlen",
+      "name": "Zahlen",
+      "clues": [
+        {
+          "id": "zahlen-100",
+          "points": 100,
+          "question": "Wie viel ergibt 7 mal 8?",
+          "answer": "56"
+        },
+        {
+          "id": "zahlen-200",
+          "points": 200,
+          "question": "Wie viele Minuten hat ein Tag?",
+          "answer": "1440"
+        },
+        {
+          "id": "zahlen-300",
+          "points": 300,
+          "question": "Wie lautet die Kreiszahl Pi auf zwei Nachkommastellen?",
+          "answer": "3,14"
+        },
+        {
+          "id": "zahlen-400",
+          "points": 400,
+          "question": "Wie viele Nullen hat eine Milliarde?",
+          "answer": "Neun"
+        },
+        {
+          "id": "zahlen-500",
+          "points": 500,
+          "question": "Was ergibt die Quersumme von 9999?",
+          "answer": "36"
+        }
+      ]
+    }
+  ]
+}
