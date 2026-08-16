@@ -24,6 +24,14 @@ describe('validierung der fragensets', () => {
     expect(formatIssues(result.issues)[0]).toMatch(/^categories\.2\.clues\.4\.answer:/);
   });
 
+  it('lehnt nicht aufsteigende punktestufen ab', () => {
+    const result = validateGameDefinition({
+      ...sampleDefinition,
+      pointSteps: [100, 100, 300, 400, 500],
+    });
+    expect(result.ok).toBe(false);
+  });
+
   it('akzeptiert einen gültigen themenindex', () => {
     const result = validateTopicIndex({
       schemaVersion: 1,
