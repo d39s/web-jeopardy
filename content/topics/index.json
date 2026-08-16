@@ -15,6 +15,11 @@
       "id": "it",
       "title": "IT und Technik",
       "description": "Netzwerke, Hardware, Software, Sicherheit und Internetgeschichte."
+    },
+    {
+      "id": "historische-persoenlichkeiten",
+      "title": "Historische Persönlichkeiten",
+      "description": "Aussagen statt Fragen: Gesucht sind Menschen aus fünf Epochen deutscher Geschichte."
     }
   ],
   "topics": [
@@ -89,6 +94,30 @@
       "category": "it",
       "difficulty": 3,
       "file": "it-experten.json"
+    },
+    {
+      "id": "persoenlichkeiten-einstieg",
+      "title": "Historische Persönlichkeiten – Einstieg",
+      "description": "Namen, die im Geschichtsunterricht fallen: von der Paulskirche bis zur Wiedervereinigung.",
+      "category": "historische-persoenlichkeiten",
+      "difficulty": 1,
+      "file": "persoenlichkeiten-einstieg.json"
+    },
+    {
+      "id": "persoenlichkeiten-fortgeschritten",
+      "title": "Historische Persönlichkeiten – Fortgeschritten",
+      "description": "Zweite Reihe der Geschichtsbücher: Wegbereiter, Erfinder, Widerständige und Wortführer.",
+      "category": "historische-persoenlichkeiten",
+      "difficulty": 2,
+      "file": "persoenlichkeiten-fortgeschritten.json"
+    },
+    {
+      "id": "persoenlichkeiten-experten",
+      "title": "Historische Persönlichkeiten – Experten",
+      "description": "Für Runden mit Geschichtsstudium: Paulskirchenlinke, Kulturkampf, Verfassungsväter, Kreisauer Kreis und Ostpolitik.",
+      "category": "historische-persoenlichkeiten",
+      "difficulty": 3,
+      "file": "persoenlichkeiten-experten.json"
     }
   ]
 }
