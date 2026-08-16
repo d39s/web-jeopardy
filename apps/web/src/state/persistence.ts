@@ -4,10 +4,16 @@ import type { GameState, Team } from '@jeopardy/game-core';
 const STATE_KEY = 'jeopardy:v1:state';
 const TEAMS_KEY = 'jeopardy:v1:lastTeams';
 
-/** localStorage kann fehlen oder gesperrt sein (privater Modus, Kiosk). */
+/**
+ * localStorage kann fehlen, gesperrt sein (privater Modus, Kiosk) oder – etwa in
+ * Testumgebungen – nur unvollständig existieren. Daher wird die Schnittstelle
+ * geprüft, bevor sie genutzt wird.
+ */
 function getStorage(): Storage | null {
   try {
-    return typeof localStorage === 'undefined' ? null : localStorage;
+    const candidate: Storage | undefined = globalThis.localStorage;
+    if (!candidate || typeof candidate.getItem !== 'function') return null;
+    return candidate;
   } catch {
     return null;
   }
