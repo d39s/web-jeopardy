@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "id": "persoenlichkeiten-einstieg",
+  "title": "Historische Persönlichkeiten – Einstieg",
+  "category": "historische-persoenlichkeiten",
+  "difficulty": 1,
+  "description": "Namen, die im Geschichtsunterricht fallen: von der Paulskirche bis zur Wiedervereinigung.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "pointSteps": [100, 200, 300, 400, 500],
+  "categories": [
+    {
+      "id": "vormaerz",
+      "name": "Vormärz und 1848",
+      "clues": [
+        {
+          "id": "vormaerz-100",
+          "points": 100,
+          "question": "Dieser Dichter aus Düsseldorf schrieb \"Die schlesischen Weber\" und lebte ab 1831 im Pariser Exil.",
+          "answer": "Heinrich Heine"
+        },
+        {
+          "id": "vormaerz-200",
+          "points": 200,
+          "question": "Dieser gebürtige Trierer verfasste gemeinsam mit Friedrich Engels das 1848 erschienene \"Manifest der Kommunistischen Partei\".",
+          "answer": "Karl Marx"
+        },
+        {
+          "id": "vormaerz-300",
+          "points": 300,
+          "question": "Dieser Fabrikantensohn aus Barmen beschrieb 1845 \"Die Lage der arbeitenden Klasse in England\".",
+          "answer": "Friedrich Engels"
+        },
+        {
+          "id": "vormaerz-400",
+          "points": 400,
+          "question": "Dieser Abgeordnete der Frankfurter Nationalversammlung wurde im November 1848 in Wien standrechtlich erschossen.",
+          "answer": "Robert Blum"
+        },
+        {
+          "id": "vormaerz-500",
+          "points": 500,
+          "question": "Dieser badische Revolutionär rief im April 1848 in Konstanz die deutsche Republik aus und floh später in die Vereinigten Staaten.",
+          "answer": "Friedrich Hecker",
+          "note": "Gustav Struve rief die Republik erst im September 1848 in Lörrach aus – häufige Verwechslung."
+        }
+      ]
+    },
+    {
+      "id": "kaiserreich",
+      "name": "Kaiserreich",
+      "clues": [
+        {
+          "id": "kaiserreich-100",
+          "points": 100,
+          "question": "Dieser Reichskanzler einigte 1871 das Deutsche Reich und ging als \"Eiserner Kanzler\" in die Geschichte ein.",
+          "answer": "Otto von Bismarck"
+        },
+        {
+          "id": "kaiserreich-200",
+          "points": 200,
+          "question": "Dieser letzte deutsche Kaiser dankte im November 1918 ab und ging ins niederländische Exil.",
+          "answer": "Wilhelm II."
+        },
+        {
+          "id": "kaiserreich-300",
+          "points": 300,
+          "question": "Dieser Arzt entdeckte 1882 den Erreger der Tuberkulose und erhielt 1905 den Nobelpreis für Medizin.",
+          "answer": "Robert Koch"
+        },
+        {
+          "id": "kaiserreich-400",
+          "points": 400,
+          "question": "Dieser Physiker entdeckte 1895 eine unbekannte Strahlung und erhielt 1901 den ersten Nobelpreis für Physik.",
+          "answer": "Wilhelm Conrad Röntgen"
+        },
+        {
+          "id": "kaiserreich-500",
+          "points": 500,
+          "question": "Dieser Mannheimer erhielt 1886 das Patent auf ein \"Fahrzeug mit Gasmotorenbetrieb\".",
+          "answer": "Carl Benz"
+        }
+      ]
+    },
+    {
+      "id": "weimar",
+      "name": "Weimarer Republik",
+      "clues": [
+        {
+          "id": "weimar-100",
+          "points": 100,
+          "question": "Dieser Sozialdemokrat war von 1919 bis zu seinem Tod 1925 der erste Reichspräsident.",
+          "answer": "Friedrich Ebert"
+        },
+        {
+          "id": "weimar-200",
+          "points": 200,
+          "question": "Dieser Physiker erhielt 1921 den Nobelpreis und verließ Deutschland 1933 für immer.",
+          "answer": "Albert Einstein"
+        },
+        {
+          "id": "weimar-300",
+          "points": 300,
+          "question": "Diese Mitbegründerin der KPD wurde im Januar 1919 in Berlin von Freikorpssoldaten ermordet.",
+          "answer": "Rosa Luxemburg"
+        },
+        {
+          "id": "weimar-400",
+          "points": 400,
+          "question": "Dieser Generalfeldmarschall wurde 1925 Reichspräsident und ernannte im Januar 1933 Hitler zum Reichskanzler.",
+          "answer": "Paul von Hindenburg"
+        },
+        {
+          "id": "weimar-500",
+          "points": 500,
+          "question": "Diese Berliner Schauspielerin wurde 1930 mit dem Film \"Der blaue Engel\" weltberühmt und nahm später die US-Staatsbürgerschaft an.",
+          "answer": "Marlene Dietrich"
+        }
+      ]
+    },
+    {
+      "id": "ns",
+      "name": "Nationalsozialismus",
+      "clues": [
+        {
+          "id": "ns-100",
+          "points": 100,
+          "question": "Diese Münchner Studentin verteilte Flugblätter der \"Weißen Rose\" und wurde im Februar 1943 hingerichtet.",
+          "answer": "Sophie Scholl",
+          "note": "Ihr Bruder Hans Scholl wurde am selben Tag hingerichtet – gefragt ist die Studentin."
+        },
+        {
+          "id": "ns-200",
+          "points": 200,
+          "question": "Dieses jüdische Mädchen schrieb im Amsterdamer Hinterhaus Tagebuch und starb 1945 im Lager Bergen-Belsen.",
+          "answer": "Anne Frank"
+        },
+        {
+          "id": "ns-300",
+          "points": 300,
+          "question": "Dieser Oberst deponierte am 20. Juli 1944 eine Bombe in Hitlers Lagebesprechung in der Wolfsschanze.",
+          "answer": "Claus Schenk Graf von Stauffenberg"
+        },
+        {
+          "id": "ns-400",
+          "points": 400,
+          "question": "Dieser Reichsminister für Volksaufklärung und Propaganda kontrollierte ab 1933 Presse, Rundfunk und Film.",
+          "answer": "Joseph Goebbels"
+        },
+        {
+          "id": "ns-500",
+          "points": 500,
+          "question": "Dieser Oberbefehlshaber der Luftwaffe war zeitweise als Hitlers Nachfolger vorgesehen und wurde in Nürnberg zum Tode verurteilt.",
+          "answer": "Hermann Göring"
+        }
+      ]
+    },
+    {
+      "id": "nachkriegszeit",
+      "name": "DDR und Bundesrepublik",
+      "clues": [
+        {
+          "id": "nachkriegszeit-100",
+          "points": 100,
+          "question": "Dieser erste Bundeskanzler regierte von 1949 bis 1963 und war zuvor Oberbürgermeister von Köln.",
+          "answer": "Konrad Adenauer"
+        },
+        {
+          "id": "nachkriegszeit-200",
+          "points": 200,
+          "question": "Dieser Bundeskanzler kniete 1970 vor dem Denkmal der Helden des Warschauer Ghettos.",
+          "answer": "Willy Brandt"
+        },
+        {
+          "id": "nachkriegszeit-300",
+          "points": 300,
+          "question": "Dieser Bundeskanzler wird als \"Kanzler der Einheit\" bezeichnet und regierte sechzehn Jahre.",
+          "answer": "Helmut Kohl"
+        },
+        {
+          "id": "nachkriegszeit-400",
+          "points": 400,
+          "question": "Dieser Staats- und Parteichef führte die DDR von 1971 bis zu seinem Rücktritt im Oktober 1989.",
+          "answer": "Erich Honecker"
+        },
+        {
+          "id": "nachkriegszeit-500",
+          "points": 500,
+          "question": "Diese in Hamburg geborene Physikerin wuchs in der DDR auf und wurde 2005 die erste Bundeskanzlerin.",
+          "answer": "Angela Merkel"
+        }
+      ]
+    }
+  ]
+}

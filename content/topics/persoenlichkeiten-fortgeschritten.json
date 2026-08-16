@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "id": "persoenlichkeiten-fortgeschritten",
+  "title": "Historische Persönlichkeiten – Fortgeschritten",
+  "category": "historische-persoenlichkeiten",
+  "difficulty": 2,
+  "description": "Zweite Reihe der Geschichtsbücher: Wegbereiter, Erfinder, Widerständige und Wortführer.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "pointSteps": [100, 200, 300, 400, 500],
+  "categories": [
+    {
+      "id": "vormaerz",
+      "name": "Vormärz und 1848",
+      "clues": [
+        {
+          "id": "vormaerz-100",
+          "points": 100,
+          "question": "Dieser hessische Dichter und Mediziner verfasste 1834 die Flugschrift \"Der Hessische Landbote\" mit dem Ruf \"Friede den Hütten! Krieg den Palästen!\".",
+          "answer": "Georg Büchner"
+        },
+        {
+          "id": "vormaerz-200",
+          "points": 200,
+          "question": "Dieser Dichter schrieb 1841 auf Helgoland das \"Lied der Deutschen\".",
+          "answer": "August Heinrich Hoffmann von Fallersleben"
+        },
+        {
+          "id": "vormaerz-300",
+          "points": 300,
+          "question": "Dieser hessische Jurist führte als Präsident die Verhandlungen der Frankfurter Nationalversammlung in der Paulskirche.",
+          "answer": "Heinrich von Gagern"
+        },
+        {
+          "id": "vormaerz-400",
+          "points": 400,
+          "question": "Diese Leipzigerin gab ab 1849 die \"Frauen-Zeitung\" heraus und gründete später den Allgemeinen Deutschen Frauenverein.",
+          "answer": "Louise Otto-Peters"
+        },
+        {
+          "id": "vormaerz-500",
+          "points": 500,
+          "question": "Dieser gescheiterte Achtundvierziger wurde in den USA General im Bürgerkrieg und später Innenminister.",
+          "answer": "Carl Schurz"
+        }
+      ]
+    },
+    {
+      "id": "kaiserreich",
+      "name": "Kaiserreich",
+      "clues": [
+        {
+          "id": "kaiserreich-100",
+          "points": 100,
+          "question": "Dieser Mitbegründer der Sozialdemokratie führte die Partei bis zu seinem Tod 1913 und stritt im Reichstag mit Bismarck.",
+          "answer": "August Bebel"
+        },
+        {
+          "id": "kaiserreich-200",
+          "points": 200,
+          "question": "Dieser Berliner Arzt begründete die Zellularpathologie und saß als linksliberaler Abgeordneter im Reichstag.",
+          "answer": "Rudolf Virchow"
+        },
+        {
+          "id": "kaiserreich-300",
+          "points": 300,
+          "question": "Dieser Erfinder entdeckte 1866 das dynamoelektrische Prinzip und gab einem Elektrokonzern seinen Namen.",
+          "answer": "Werner von Siemens"
+        },
+        {
+          "id": "kaiserreich-400",
+          "points": 400,
+          "question": "Dieser Graf ließ im Juli 1900 über dem Bodensee sein erstes Starrluftschiff aufsteigen.",
+          "answer": "Ferdinand Graf von Zeppelin"
+        },
+        {
+          "id": "kaiserreich-500",
+          "points": 500,
+          "question": "Dieser Großadmiral trieb ab 1897 als Staatssekretär den Ausbau der deutschen Schlachtflotte voran.",
+          "answer": "Alfred von Tirpitz"
+        }
+      ]
+    },
+    {
+      "id": "weimar",
+      "name": "Weimarer Republik",
+      "clues": [
+        {
+          "id": "weimar-100",
+          "points": 100,
+          "question": "Dieser Außenminister erhielt 1926 gemeinsam mit Aristide Briand den Friedensnobelpreis.",
+          "answer": "Gustav Stresemann"
+        },
+        {
+          "id": "weimar-200",
+          "points": 200,
+          "question": "Dieser Industrielle und Außenminister wurde 1922 in Berlin von Rechtsextremen ermordet.",
+          "answer": "Walther Rathenau"
+        },
+        {
+          "id": "weimar-300",
+          "points": 300,
+          "question": "Diese Künstlerin schuf den Zyklus \"Ein Weberaufstand\" und war die erste Frau in der Preußischen Akademie der Künste.",
+          "answer": "Käthe Kollwitz"
+        },
+        {
+          "id": "weimar-400",
+          "points": 400,
+          "question": "Dieser Regisseur drehte 1927 den Stummfilm \"Metropolis\".",
+          "answer": "Fritz Lang"
+        },
+        {
+          "id": "weimar-500",
+          "points": 500,
+          "question": "Dieser Schriftsteller veröffentlichte 1929 den Antikriegsroman \"Im Westen nichts Neues\".",
+          "answer": "Erich Maria Remarque"
+        }
+      ]
+    },
+    {
+      "id": "ns",
+      "name": "Nationalsozialismus",
+      "clues": [
+        {
+          "id": "ns-100",
+          "points": 100,
+          "question": "Dieser evangelische Theologe der Bekennenden Kirche wurde im April 1945 im KZ Flossenbürg hingerichtet.",
+          "answer": "Dietrich Bonhoeffer"
+        },
+        {
+          "id": "ns-200",
+          "points": 200,
+          "question": "Dieser schwäbische Schreiner verübte im November 1939 im Münchner Bürgerbräukeller ein Sprengstoffattentat auf Hitler.",
+          "answer": "Georg Elser"
+        },
+        {
+          "id": "ns-300",
+          "points": 300,
+          "question": "Dieser Unternehmer beschäftigte in seiner Fabrik über tausend jüdische Zwangsarbeiter und bewahrte sie so vor der Ermordung.",
+          "answer": "Oskar Schindler"
+        },
+        {
+          "id": "ns-400",
+          "points": 400,
+          "question": "Dieser Reichsführer SS baute den SS-Apparat auf und organisierte das System der Konzentrations- und Vernichtungslager.",
+          "answer": "Heinrich Himmler"
+        },
+        {
+          "id": "ns-500",
+          "points": 500,
+          "question": "Dieser Generaloberst außer Dienst war als Kopf des militärischen Widerstands nach dem 20. Juli 1944 als Staatsoberhaupt vorgesehen.",
+          "answer": "Ludwig Beck"
+        }
+      ]
+    },
+    {
+      "id": "nachkriegszeit",
+      "name": "DDR und Bundesrepublik",
+      "clues": [
+        {
+          "id": "nachkriegszeit-100",
+          "points": 100,
+          "question": "Dieser Wirtschaftsminister gilt als Vater der sozialen Marktwirtschaft und wurde 1963 Bundeskanzler.",
+          "answer": "Ludwig Erhard"
+        },
+        {
+          "id": "nachkriegszeit-200",
+          "points": 200,
+          "question": "Dieser SED-Chef erklärte im Juni 1961: \"Niemand hat die Absicht, eine Mauer zu errichten.\"",
+          "answer": "Walter Ulbricht"
+        },
+        {
+          "id": "nachkriegszeit-300",
+          "points": 300,
+          "question": "Dieser spätere Bundeskanzler organisierte 1962 als Hamburger Senator die Rettungseinsätze bei der Sturmflut.",
+          "answer": "Helmut Schmidt"
+        },
+        {
+          "id": "nachkriegszeit-400",
+          "points": 400,
+          "question": "Dieser Liedermacher wurde 1976 nach einem Konzert in Köln aus der DDR ausgebürgert.",
+          "answer": "Wolf Biermann"
+        },
+        {
+          "id": "nachkriegszeit-500",
+          "points": 500,
+          "question": "Dieser Wortführer des Sozialistischen Deutschen Studentenbundes überlebte 1968 in Berlin ein Attentat schwer verletzt.",
+          "answer": "Rudi Dutschke"
+        }
+      ]
+    }
+  ]
+}
