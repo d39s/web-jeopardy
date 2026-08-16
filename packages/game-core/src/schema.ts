@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { CATEGORY_COLORS } from './colors';
+import { MAX_TEAM_NAME_LENGTH } from './teams';
 import { CATEGORY_COUNT, CLUES_PER_CATEGORY } from './types';
-import type { GameDefinition, TopicIndex } from './types';
+import type { GameDefinition, GameState, TopicIndex } from './types';
 
 const idSchema = z
   .string()
@@ -98,6 +99,30 @@ export const topicIndexSchema = z.strictObject({
   ),
 });
 
+export const teamSchema = z.strictObject({
+  id: idSchema,
+  name: z.string().trim().min(1).max(MAX_TEAM_NAME_LENGTH),
+});
+
+export const scoreEventSchema = z.strictObject({
+  id: z.string().min(1),
+  clueId: idSchema,
+  teamId: idSchema,
+  correct: z.boolean(),
+  delta: z.number().int(),
+  at: z.number().int().nonnegative(),
+});
+
+/** Schema des laufenden Spielstands – Grundlage für das Wiederherstellen aus dem Speicher. */
+export const gameStateSchema = z.strictObject({
+  phase: z.enum(['setup', 'playing', 'finished']),
+  definition: gameDefinitionSchema.nullable(),
+  teams: z.array(teamSchema),
+  events: z.array(scoreEventSchema),
+  openClueId: z.string().min(1).nullable(),
+  answerRevealed: z.boolean(),
+});
+
 // ---------------------------------------------------------------------------
 // Validierung mit feldgenauen, anzeigbaren Meldungen
 // ---------------------------------------------------------------------------
@@ -128,6 +153,13 @@ export function validateTopicIndex(input: unknown): ValidationResult<TopicIndex>
   const result = topicIndexSchema.safeParse(input);
   return result.success
     ? { ok: true, data: result.data as TopicIndex }
+    : { ok: false, issues: toIssues(result.error) };
+}
+
+export function validateGameState(input: unknown): ValidationResult<GameState> {
+  const result = gameStateSchema.safeParse(input);
+  return result.success
+    ? { ok: true, data: result.data as GameState }
     : { ok: false, issues: toIssues(result.error) };
 }
 
