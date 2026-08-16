@@ -40,8 +40,29 @@ npm run dev          # http://localhost:5173
 | `npm run typecheck`        | TypeScript-Prüfung aller Projekte            |
 | `npm test`                 | Unit- und Komponententests (Vitest)          |
 | `npm run test:coverage`    | Tests mit Coverage-Schwellen für `game-core` |
+| `npm run test:junit`       | Wie oben, zusätzlich JUnit-Bericht für CI    |
 | `npm run test:e2e`         | End-to-End-Tests (Playwright)                |
 | `npm run validate:content` | Prüft alle Fragensets in `content/topics`    |
+
+## Continuous Integration
+
+Gebaut und geprüft wird auf **jenkins.d39s.de**; die Pipeline steht im `Jenkinsfile` und nutzt
+die gemeinsame [jenkins-library](https://jenkins.d39s.de). Zwei Stufen:
+
+1. **Prüfen** im `playwright`-Pod: `npm ci`, Formatprüfung, Lint, Typecheck, Fragensets,
+   Unit- und Komponententests, End-to-End-Tests. Die Testberichte entstehen als JUnit unter
+   `reports/` und laufen über `publishChecks`/`withChecks` als GitHub-Check zurück; der
+   Playwright-Bericht wird als Artefakt gesichert.
+2. **Image bauen** im `kaniko`-Pod über den Library-Schritt `kaniko`. Gebaut wird
+   `docker/Dockerfile` mit dem Repository-Wurzelverzeichnis als Kontext, das Ergebnis landet
+   in `harbor.d39s.de/library/web-jeopardy`.
+
+Die Tags vergibt die Library: `br-<zweig>` auf Zweigen, `pr-<nummer>` bei Pull Requests,
+`latest` auf dem Hauptzweig und Versionsnummern aus Git-Tags. Gibt es kein Ziel, baut kaniko
+mit `--no-push` – der Build wird also auch dort geprüft, wo nichts veröffentlicht wird.
+
+Eine GitHub-Action gibt es nicht mehr; Jenkins meldet die Ergebnisse als Check nach GitHub
+zurück.
 
 ## Betrieb im Container
 

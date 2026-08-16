@@ -151,7 +151,7 @@ web-jeopardy/
 ├─ docker/                      # Dockerfile, nginx.conf, compose
 ├─ docs/                        # dieses Konzept, Arbeitsplan, ADRs
 ├─ e2e/                         # Playwright
-└─ .github/workflows/           # CI
+└─ Jenkinsfile                  # Pipeline für jenkins.d39s.de
 ```
 
 `packages/game-core` hat **keine Runtime-Dependencies außer Zod** und ist damit sowohl im Browser als auch später im Node-Server lauffähig.

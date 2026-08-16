@@ -46,7 +46,7 @@ Parallelarbeit funktioniert nur, wenn die **Schnittstellen vor der Implementieru
 - ESLint (flat config, `typescript-eslint`, `react-hooks`, `jsx-a11y`), Prettier, ESLint-Regel „keine rohen Hex-Farben in `apps/web/src/**`"
 - Vitest-Setup, `husky` + `lint-staged` + `commitlint` (Conventional Commits)
 - npm-Skripte: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`, `test:e2e`, `validate:content`
-- GitHub-Actions-Workflow (Skelett): install → lint → typecheck → test → build
+- Pipeline (`Jenkinsfile`) für jenkins.d39s.de: install → format → lint → typecheck → content → test → E2E → Image
 - `README.md` mit Quickstart, `.gitignore`, `.editorconfig`, `LICENSE`
 
 **DoD:** `npm install && npm run lint && npm run typecheck && npm test && npm run build` läuft lokal und in CI grün; ein Commit mit falschem Format wird vom Hook abgelehnt.
@@ -105,11 +105,11 @@ Alle folgenden Tasks starten **gleichzeitig** nach Phase 0. Innerhalb eines Stre
 
 ### Stream E – Infrastruktur
 
-| ID     | Task                                                                                                                                                                                                                                              | Dateihoheit          | Abh. | Aufwand |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ---- | ------- |
-| **E1** | **Docker**: Multi-Stage-Dockerfile, `nginx.conf` (SPA-Fallback, Caching-Regeln, `no-cache` für `index.html` und `/topics/*`), `docker-compose.yml` mit Topics-Volume, Entrypoint für `/config.json`, `.dockerignore`, Healthcheck, Doku im README | `docker/`            | T00  | 1 PT    |
-| **E2** | **CI/CD-Ausbau**: Jobs lint/typecheck/unit/content/build/docker-build/E2E, Caching, Artefakt-Upload (`dist`), Branch-Protection-Empfehlung, optional Image-Push in eine Registry                                                                  | `.github/workflows/` | T00  | 0,5 PT  |
-| **E3** | **E2E-Tests**: Playwright-Setup + Happy Path (n = 2) + Solo-Durchlauf (n = 1) + die **sechs** verbindlichen Regressionstests (Konzept Kap. 13) + `@axe-core/playwright`-Checks                                                                    | `e2e/`               | I1   | 1 PT    |
+| ID     | Task                                                                                                                                                                                                                                              | Dateihoheit   | Abh. | Aufwand |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---- | ------- |
+| **E1** | **Docker**: Multi-Stage-Dockerfile, `nginx.conf` (SPA-Fallback, Caching-Regeln, `no-cache` für `index.html` und `/topics/*`), `docker-compose.yml` mit Topics-Volume, Entrypoint für `/config.json`, `.dockerignore`, Healthcheck, Doku im README | `docker/`     | T00  | 1 PT    |
+| **E2** | **CI/CD**: Prüfungen und Image-Bau in einer Pipeline; Testberichte als JUnit, Ergebnis als GitHub-Check                                                                                                                                           | `Jenkinsfile` | T00  | 0,5 PT  |
+| **E3** | **E2E-Tests**: Playwright-Setup + Happy Path (n = 2) + Solo-Durchlauf (n = 1) + die **sechs** verbindlichen Regressionstests (Konzept Kap. 13) + `@axe-core/playwright`-Checks                                                                    | `e2e/`        | I1   | 1 PT    |
 
 ### Stream F – Dokumentation
 
@@ -217,7 +217,7 @@ graph LR
 | `pre-commit` (lint-staged) | Prettier, `eslint --max-warnings=0` auf geänderte Dateien, `validate:content` bei Änderungen in `content/**` |
 | `commit-msg`               | commitlint (Conventional Commits)                                                                            |
 | `pre-push`                 | `tsc --noEmit` + betroffene Vitest-Tests                                                                     |
-| CI (PR)                    | install → lint → typecheck → unit → content → build → docker build → E2E                                     |
+| Jenkins (Zweig und PR)     | install → format → lint → typecheck → content → unit → E2E → Image über kaniko                               |
 
 ---
 
