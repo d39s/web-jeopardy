@@ -16,3 +16,7 @@ blob-report/
 
 # Arbeitskopien und Werkzeugdaten
 .claude/
+
+# Ablage für Kontext an Claude (Screenshots, Notizen, Testdaten).
+# Bewusst vollständig ausgenommen – nichts daraus gehört ins Repository.
+kontext/
