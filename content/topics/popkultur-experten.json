@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "id": "popkultur-experten",
+  "title": "Popkultur – Experten",
+  "category": "popkultur",
+  "difficulty": 3,
+  "description": "Regiehandschriften, Plattenlabels, Serien-Details, Spieleschmieden und Comic-Geschichte – hier fordert schon die erste Frage.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "pointSteps": [100, 200, 300, 400, 500],
+  "categories": [
+    {
+      "id": "regie",
+      "name": "Regie",
+      "clues": [
+        {
+          "id": "regie-100",
+          "points": 100,
+          "question": "Welcher Regisseur drehte \"2001: Odyssee im Weltraum\" und \"Shining\"?",
+          "answer": "Stanley Kubrick"
+        },
+        {
+          "id": "regie-200",
+          "points": 200,
+          "question": "Welcher japanische Regisseur drehte 1954 \"Die sieben Samurai\"?",
+          "answer": "Akira Kurosawa"
+        },
+        {
+          "id": "regie-300",
+          "points": 300,
+          "question": "Welche Regisseurin gewann 2010 für \"Tödliches Kommando\" als erste Frau den Regie-Oscar?",
+          "answer": "Kathryn Bigelow"
+        },
+        {
+          "id": "regie-400",
+          "points": 400,
+          "question": "Wie heißt die französische Filmbewegung, die François Truffaut und Jean-Luc Godard ab Ende der 1950er prägten?",
+          "answer": "Die Nouvelle Vague"
+        },
+        {
+          "id": "regie-500",
+          "points": 500,
+          "question": "Welcher Stummfilm wurde bei der ersten Oscar-Verleihung 1929 als bester Film ausgezeichnet?",
+          "answer": "Wings",
+          "note": "\"Sunrise\" erhielt im selben Jahr den separaten Preis für die künstlerischste Produktion."
+        }
+      ]
+    },
+    {
+      "id": "musik-detail",
+      "name": "Musik im Detail",
+      "clues": [
+        {
+          "id": "musik-detail-100",
+          "points": 100,
+          "question": "Welches Album von Pink Floyd aus dem Jahr 1973 zeigt auf dem Cover ein Prisma?",
+          "answer": "The Dark Side of the Moon"
+        },
+        {
+          "id": "musik-detail-200",
+          "points": 200,
+          "question": "Welche Band veröffentlichte 1977 mit \"Never Mind the Bollocks\" ihr einziges Studioalbum?",
+          "answer": "Sex Pistols"
+        },
+        {
+          "id": "musik-detail-300",
+          "points": 300,
+          "question": "Welcher Produzent gilt als \"fünfter Beatle\", weil er fast alle Alben der Band produzierte?",
+          "answer": "George Martin"
+        },
+        {
+          "id": "musik-detail-400",
+          "points": 400,
+          "question": "Welcher Soulsänger veröffentlichte 1971 das Album \"What's Going On\"?",
+          "answer": "Marvin Gaye"
+        },
+        {
+          "id": "musik-detail-500",
+          "points": 500,
+          "question": "Wer gründete in Detroit das Plattenlabel Motown?",
+          "answer": "Berry Gordy"
+        }
+      ]
+    },
+    {
+      "id": "serien-detail",
+      "name": "Serien im Detail",
+      "clues": [
+        {
+          "id": "serien-detail-100",
+          "points": 100,
+          "question": "Welche HBO-Miniserie von 2019 erzählt von der Reaktorkatastrophe des Jahres 1986?",
+          "answer": "Chernobyl"
+        },
+        {
+          "id": "serien-detail-200",
+          "points": 200,
+          "question": "In welcher fiktiven Kleinstadt spielt die deutsche Netflix-Serie \"Dark\"?",
+          "answer": "In Winden"
+        },
+        {
+          "id": "serien-detail-300",
+          "points": 300,
+          "question": "Wessen Leiche wird zu Beginn von \"Twin Peaks\" in Plastik gewickelt am Seeufer gefunden?",
+          "answer": "Die von Laura Palmer"
+        },
+        {
+          "id": "serien-detail-400",
+          "points": 400,
+          "question": "Welcher Schauspieler verkörperte von 2005 bis 2010 den zehnten Doctor in \"Doctor Who\"?",
+          "answer": "David Tennant"
+        },
+        {
+          "id": "serien-detail-500",
+          "points": 500,
+          "question": "Welche Zahlenfolge muss in \"Lost\" immer wieder in den Computer der Luke eingegeben werden?",
+          "answer": "4, 8, 15, 16, 23, 42"
+        }
+      ]
+    },
+    {
+      "id": "spieleschmieden",
+      "name": "Spieleschmieden",
+      "clues": [
+        {
+          "id": "spieleschmieden-100",
+          "points": 100,
+          "question": "Welches polnische Studio entwickelte \"The Witcher 3: Wild Hunt\"?",
+          "answer": "CD Projekt Red"
+        },
+        {
+          "id": "spieleschmieden-200",
+          "points": 200,
+          "question": "Welchen Ego-Shooter veröffentlichte id Software im Dezember 1993?",
+          "answer": "Doom"
+        },
+        {
+          "id": "spieleschmieden-300",
+          "points": 300,
+          "question": "Welches japanische Studio entwickelte \"Dark Souls\" und \"Bloodborne\"?",
+          "answer": "FromSoftware"
+        },
+        {
+          "id": "spieleschmieden-400",
+          "points": 400,
+          "question": "Welcher japanische Spieleentwickler schuf die Reihe \"Metal Gear\"?",
+          "answer": "Hideo Kojima"
+        },
+        {
+          "id": "spieleschmieden-500",
+          "points": 500,
+          "question": "Unter welchem Namen trat die Figur Mario 1981 in \"Donkey Kong\" erstmals auf?",
+          "answer": "Jumpman"
+        }
+      ]
+    },
+    {
+      "id": "comic-anime",
+      "name": "Comic und Anime",
+      "clues": [
+        {
+          "id": "comic-anime-100",
+          "points": 100,
+          "question": "Welches japanische Studio produzierte \"Chihiros Reise ins Zauberland\"?",
+          "answer": "Studio Ghibli"
+        },
+        {
+          "id": "comic-anime-200",
+          "points": 200,
+          "question": "Welcher Anime-Film von 1988 spielt in Neo-Tokyo und beruht auf einem Manga von Katsuhiro Otomo?",
+          "answer": "Akira"
+        },
+        {
+          "id": "comic-anime-300",
+          "points": 300,
+          "question": "Wer schrieb die Texte der Asterix-Bände bis zu seinem Tod im Jahr 1977?",
+          "answer": "René Goscinny",
+          "note": "Gezeichnet wurden die Bände von Albert Uderzo."
+        },
+        {
+          "id": "comic-anime-400",
+          "points": 400,
+          "question": "Welcher Zeichner gilt als \"Gott des Manga\" und schuf \"Astro Boy\"?",
+          "answer": "Osamu Tezuka"
+        },
+        {
+          "id": "comic-anime-500",
+          "points": 500,
+          "question": "In welchem Jahr hatte Batman seinen ersten Auftritt in \"Detective Comics\" Nr. 27?",
+          "answer": "1939"
+        }
+      ]
+    }
+  ]
+}
