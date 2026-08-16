@@ -65,6 +65,11 @@ pipeline {
 
                 stage('End-to-End-Tests') {
                     steps {
+                        // Der Pod bringt Browser mit, aber nicht zwingend den Build,
+                        // den die hier festgelegte Playwright-Version erwartet. Der
+                        // Aufruf holt nur Fehlendes und ist sonst schnell durch.
+                        // Nur chromium – andere Browser nutzt die Testsuite nicht.
+                        sh 'npx playwright install chromium'
                         sh 'npm run test:e2e'
                     }
                 }
