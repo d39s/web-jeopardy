@@ -3,12 +3,13 @@ import { MAX_TEAMS_UI, MAX_TEAM_NAME_LENGTH, TIMER_OPTIONS } from '@jeopardy/gam
 /**
  * Spielkonfiguration als lesbarer Link.
  *
- * Format: `?thema=<themen-id>&teams=<Name1,Name2>&timer=<sekunden>&abzug=<0|1>`
+ * Format: `?thema=<themen-id>&teams=<Name1,Name2>&timer=<sekunden>&vetozeit=<sekunden>&abzug=<0|1>`
  *
  * Bewusst kein Base64: Der Link bleibt lesbar und lässt sich notfalls von Hand
  * tippen. Die Teamnamen werden einzeln URL-kodiert und mit einem echten Komma
  * verbunden – ein Komma im Namen wird dabei zu `%2C` und kollidiert daher nicht
- * mit dem Trennzeichen. `timer` entfällt, wenn ohne Zeitbegrenzung gespielt wird.
+ * mit dem Trennzeichen. `timer` entfällt, wenn ohne Zeitbegrenzung gespielt wird,
+ * `vetozeit` entfällt, solange die Veto-Zeit an die Bedenkzeit gekoppelt ist.
  *
  * Ein eigenes, hochgeladenes Fragenset lässt sich nicht abbilden (zu groß für
  * eine Adresszeile) – dafür gibt es nur die Themen aus dem Index.
@@ -17,6 +18,7 @@ import { MAX_TEAMS_UI, MAX_TEAM_NAME_LENGTH, TIMER_OPTIONS } from '@jeopardy/gam
 export const SHARE_PARAM_TOPIC = 'thema';
 export const SHARE_PARAM_TEAMS = 'teams';
 export const SHARE_PARAM_TIMER = 'timer';
+export const SHARE_PARAM_VETO = 'vetozeit';
 export const SHARE_PARAM_DEDUCT = 'abzug';
 
 /** Trennt die Teamnamen im Link – im Namen selbst erscheint es nur kodiert. */
@@ -42,6 +44,8 @@ export interface SharedConfig {
   teamNames: string[];
   /** Bedenkzeit je Frage in Sekunden; null bedeutet ohne Zeitbegrenzung. */
   timerSeconds: number | null;
+  /** Veto-Zeit in Sekunden; null koppelt sie an die Bedenkzeit. */
+  vetoSeconds: number | null;
   /** Ob eine falsche Antwort Punkte kostet. */
   deductOnWrong: boolean;
 }
@@ -115,7 +119,12 @@ function parseDeduct(raw: string | null): boolean {
   return !['0', 'false', 'nein', 'aus'].includes(decoded);
 }
 
-function parseTimer(raw: string | null): number | null {
+/**
+ * Sekunden aus dem Link – für `timer` wie für `vetozeit`. Nur die Stufen aus
+ * `TIMER_OPTIONS` sind zulässig; alles andere fällt auf null zurück und damit
+ * auf den jeweiligen Standard (ohne Zeitbegrenzung bzw. gekoppelt).
+ */
+function parseTimerOption(raw: string | null): number | null {
   if (raw === null) return null;
   const decoded = decodeComponent(raw)?.trim() ?? '';
   if (decoded === '') return null;
@@ -145,6 +154,11 @@ export function buildShareQuery(config: SharedConfig): string {
     parts.push(`${SHARE_PARAM_TIMER}=${config.timerSeconds}`);
   }
 
+  // Die Kopplung an die Bedenkzeit ist der Standard und steht daher nicht im Link.
+  if (config.vetoSeconds !== null && isTimerOption(config.vetoSeconds)) {
+    parts.push(`${SHARE_PARAM_VETO}=${config.vetoSeconds}`);
+  }
+
   // Nur die abweichende Regel steht im Link; Abzug ist der Standard.
   if (!config.deductOnWrong) {
     parts.push(`${SHARE_PARAM_DEDUCT}=0`);
@@ -169,16 +183,24 @@ export function parseShareParams(search: string): ShareParseResult {
   const rawTopic = readRawParam(search, SHARE_PARAM_TOPIC);
   const rawTeams = readRawParam(search, SHARE_PARAM_TEAMS);
   const rawTimer = readRawParam(search, SHARE_PARAM_TIMER);
+  const rawVeto = readRawParam(search, SHARE_PARAM_VETO);
   const rawDeduct = readRawParam(search, SHARE_PARAM_DEDUCT);
 
-  if (rawTopic === null && rawTeams === null && rawTimer === null && rawDeduct === null) {
+  if (
+    rawTopic === null &&
+    rawTeams === null &&
+    rawTimer === null &&
+    rawVeto === null &&
+    rawDeduct === null
+  ) {
     return { status: 'none' };
   }
 
   const config: SharedConfig = {
     topicId: sanitizeTopicId(rawTopic === null ? null : decodeComponent(rawTopic)),
     teamNames: parseTeamNames(rawTeams),
-    timerSeconds: parseTimer(rawTimer),
+    timerSeconds: parseTimerOption(rawTimer),
+    vetoSeconds: parseTimerOption(rawVeto),
     deductOnWrong: parseDeduct(rawDeduct),
   };
 

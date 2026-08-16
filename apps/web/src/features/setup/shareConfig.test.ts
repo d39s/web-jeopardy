@@ -7,6 +7,7 @@ const basis: SharedConfig = {
   topicId: 'it-grundlagen',
   teamNames: ['Team A', 'Team B'],
   timerSeconds: 30,
+  vetoSeconds: null,
   deductOnWrong: true,
 };
 
@@ -44,6 +45,7 @@ describe('teilen-link lesen', () => {
       topicId: 'popkultur-90er',
       teamNames: ['Die Füchse & Co.', 'Über, Team', 'Grüße 100% 🎉', 'a+b=c?'],
       timerSeconds: 45,
+      vetoSeconds: null,
       deductOnWrong: true,
     };
 
@@ -60,7 +62,13 @@ describe('teilen-link lesen', () => {
 
     expect(result).toEqual({
       status: 'ok',
-      config: { topicId: 'it-grundlagen', teamNames: [], timerSeconds: null, deductOnWrong: true },
+      config: {
+        topicId: 'it-grundlagen',
+        teamNames: [],
+        timerSeconds: null,
+        vetoSeconds: null,
+        deductOnWrong: true,
+      },
     });
   });
 
@@ -75,7 +83,13 @@ describe('teilen-link lesen', () => {
 
     expect(result).toEqual({
       status: 'ok',
-      config: { topicId: null, teamNames: ['Adler'], timerSeconds: null, deductOnWrong: true },
+      config: {
+        topicId: null,
+        teamNames: ['Adler'],
+        timerSeconds: null,
+        vetoSeconds: null,
+        deductOnWrong: true,
+      },
     });
   });
 
@@ -103,13 +117,55 @@ describe('teilen-link lesen', () => {
 
     expect(result).toEqual({
       status: 'ok',
-      config: { topicId: null, teamNames: ['Adler'], timerSeconds: null, deductOnWrong: true },
+      config: {
+        topicId: null,
+        teamNames: ['Adler'],
+        timerSeconds: null,
+        vetoSeconds: null,
+        deductOnWrong: true,
+      },
     });
   });
 
   it('meldet einen link ohne verwertbare angaben als fehlerhaft', () => {
     expect(parseShareParams('?thema=&teams=').status).toBe('invalid');
     expect(parseShareParams('?timer=30').status).toBe('invalid');
+  });
+});
+
+describe('veto-zeit im link', () => {
+  it('lässt die kopplung weg und liest sie als kopplung zurück', () => {
+    const query = buildShareQuery(basis);
+
+    expect(query).not.toContain('vetozeit');
+    expect(rundlauf(basis)).toEqual(basis);
+  });
+
+  it('schreibt eine eigene veto-zeit hinter die bedenkzeit', () => {
+    const config: SharedConfig = { ...basis, vetoSeconds: 20 };
+
+    expect(buildShareQuery(config)).toBe(
+      'thema=it-grundlagen&teams=Team%20A,Team%20B&timer=30&vetozeit=20',
+    );
+    expect(rundlauf(config)).toEqual(config);
+  });
+
+  it('ignoriert eine veto-zeit, die nicht zur auswahl gehört', () => {
+    const result = parseShareParams('?thema=it-grundlagen&timer=30&vetozeit=7');
+
+    expect(result.status === 'ok' && result.config.vetoSeconds).toBeNull();
+  });
+
+  it('ignoriert eine unbrauchbare veto-zeit', () => {
+    const kaputt = parseShareParams('?thema=it-grundlagen&vetozeit=gleich');
+    const leer = parseShareParams('?thema=it-grundlagen&vetozeit=');
+
+    expect(kaputt.status === 'ok' && kaputt.config.vetoSeconds).toBeNull();
+    expect(leer.status === 'ok' && leer.config.vetoSeconds).toBeNull();
+  });
+
+  it('reicht allein nicht für einen brauchbaren link', () => {
+    expect(parseShareParams('?vetozeit=20').status).toBe('invalid');
   });
 });
 

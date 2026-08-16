@@ -93,6 +93,7 @@ export function SetupPage() {
             topicId: selectedId,
             teamNames: normalizeTeams(teams).map((team) => team.name),
             timerSeconds,
+            vetoSeconds: startVetoSeconds,
             deductOnWrong,
           },
           globalThis.location?.href ?? '',
@@ -110,6 +111,7 @@ export function SetupPage() {
     }
     setTeams(result.teams);
     setTimerSeconds(result.timerSeconds);
+    setVetoSeconds(result.vetoSeconds);
     setDeductOnWrong(result.deductOnWrong);
     closeShared();
   };
