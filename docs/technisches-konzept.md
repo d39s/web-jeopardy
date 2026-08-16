@@ -42,12 +42,12 @@ Online-Mehrspielerbetrieb: Räume mit Code, getrennte Moderator-/Spieler-Ansicht
 
 Die Vorgaben aus `details.md` sind bindend. An vier Stellen ergänzen sie sich nicht widerspruchsfrei – hier die getroffene Auflösung, damit alle Teilteams identisch implementieren:
 
-| # | Sachverhalt | Konflikt / Lücke | Entscheidung |
-|---|---|---|---|
-| K1 | Punktebuttons heißen exakt „Team A richtig / Team A falsch / Team B richtig / Team B falsch"; die Startseite erlaubt aber **beliebig viele Teams mit frei wählbaren Namen** | Feste Buttonbeschriftung vs. variable Teamanzahl | **Generische Regel für beliebig viele Teams:** Für jedes Team `t` werden genau zwei Buttons erzeugt – `` `${t.name} richtig` `` und `` `${t.name} falsch` `` – in Teamreihenfolge, also **2 × n Buttons**. Bei der Standardkonfiguration (n = 2, „Team A"/„Team B") ergibt das **wortwörtlich** die vier geforderten Buttons. Dieselbe Regel gilt unverändert für n = 1 (Übungsmodus → 2 Buttons) und n > 2 (z. B. n = 4 → 8 Buttons). **Kein Sonderfall im Code, keine hartkodierte Beschriftung** – siehe K4. |
-| K2 | „Karten werden erst grau, wenn ein Punktebutton gedrückt wurde – nicht beim bloßen Öffnen." | Verhalten nach der Wertung ungeklärt | Ein Klick auf einen Punktebutton **wertet, schließt das Popup und graut die Karte**. Graue Karten sind danach **nicht mehr anklickbar** (`disabled`, `aria-disabled`). Mehrfachwertung derselben Frage und „Wertung rückgängig" sind als optionale Erweiterung vorgesehen (Backlog `BL-1`/`BL-2`), das Datenmodell (Event-Log) unterstützt beides bereits. |
-| K3 | „Punkte … niemals unter 0" | Unklar, ob die Summe oder jeder Schritt geklammert wird | Die Klammerung erfolgt **schrittweise beim Falten des Event-Logs**: `score = events.reduce((s, e) => Math.max(0, s + e.delta), 0)`. Beispiel: Stand 100, falsche Antwort auf 200er-Frage → **0** (nicht −100). Ein anschließendes „richtig" auf 300 → 300. |
-| K4 | „Anzahl der Teams … kann gewählt werden" | Unter-/Obergrenze und Solo-Betrieb ungeklärt | **n ≥ 1**, Default **2**. **n = 1 ist der Übungsmodus (Solo/Training):** identische Spiellogik (richtig/falsch, Klammerung bei 0, Karte wird grau), aber **kein Ranking und kein Sieger** – der Endstand zeigt Punktestand und Trefferquote („18 von 25 Fragen richtig"). Logik und Datenmodell kennen **keine Obergrenze**; die Oberfläche bietet aus Layoutgründen 1–8 Teams an. |
+| #   | Sachverhalt                                                                                                                                                                 | Konflikt / Lücke                                        | Entscheidung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| K1  | Punktebuttons heißen exakt „Team A richtig / Team A falsch / Team B richtig / Team B falsch"; die Startseite erlaubt aber **beliebig viele Teams mit frei wählbaren Namen** | Feste Buttonbeschriftung vs. variable Teamanzahl        | **Generische Regel für beliebig viele Teams:** Für jedes Team `t` werden genau zwei Buttons erzeugt – `` `${t.name} richtig` `` und `` `${t.name} falsch` `` – in Teamreihenfolge, also **2 × n Buttons**. Bei der Standardkonfiguration (n = 2, „Team A"/„Team B") ergibt das **wortwörtlich** die vier geforderten Buttons. Dieselbe Regel gilt unverändert für n = 1 (Übungsmodus → 2 Buttons) und n > 2 (z. B. n = 4 → 8 Buttons). **Kein Sonderfall im Code, keine hartkodierte Beschriftung** – siehe K4. |
+| K2  | „Karten werden erst grau, wenn ein Punktebutton gedrückt wurde – nicht beim bloßen Öffnen."                                                                                 | Verhalten nach der Wertung ungeklärt                    | Ein Klick auf einen Punktebutton **wertet, schließt das Popup und graut die Karte**. Graue Karten sind danach **nicht mehr anklickbar** (`disabled`, `aria-disabled`). Mehrfachwertung derselben Frage und „Wertung rückgängig" sind als optionale Erweiterung vorgesehen (Backlog `BL-1`/`BL-2`), das Datenmodell (Event-Log) unterstützt beides bereits.                                                                                                                                                      |
+| K3  | „Punkte … niemals unter 0"                                                                                                                                                  | Unklar, ob die Summe oder jeder Schritt geklammert wird | Die Klammerung erfolgt **schrittweise beim Falten des Event-Logs**: `score = events.reduce((s, e) => Math.max(0, s + e.delta), 0)`. Beispiel: Stand 100, falsche Antwort auf 200er-Frage → **0** (nicht −100). Ein anschließendes „richtig" auf 300 → 300.                                                                                                                                                                                                                                                      |
+| K4  | „Anzahl der Teams … kann gewählt werden"                                                                                                                                    | Unter-/Obergrenze und Solo-Betrieb ungeklärt            | **n ≥ 1**, Default **2**. **n = 1 ist der Übungsmodus (Solo/Training):** identische Spiellogik (richtig/falsch, Klammerung bei 0, Karte wird grau), aber **kein Ranking und kein Sieger** – der Endstand zeigt Punktestand und Trefferquote („18 von 25 Fragen richtig"). Logik und Datenmodell kennen **keine Obergrenze**; die Oberfläche bietet aus Layoutgründen 1–8 Teams an.                                                                                                                              |
 
 Weitere Festlegungen:
 
@@ -65,21 +65,23 @@ Vorgabe: „modernes CSS-/JavaScript-Framework", später Multiplayer, Auslieferu
 
 ### Gewählter Stack
 
-| Bereich | Wahl | Begründung |
-|---|---|---|
-| Sprache | **TypeScript** (strict) | Der Schnittstellen-Vertrag (Kap. 6) ist die Voraussetzung für paralleles Arbeiten – nur mit Typen ist er maschinell durchsetzbar. |
-| UI-Framework | **React 19** | Größtes Ökosystem, problemlose Rekrutierung/Onboarding, `useSyncExternalStore` erlaubt die saubere Anbindung eines framework-fremden Cores (wichtig für Phase 2, in der derselbe Reducer serverseitig läuft). |
-| Build | **Vite** | Schnellster Dev-Loop, natives ESM, unkomplizierter Static-Build → passt exakt zu „dist läuft über einen Docker-Container". |
-| Styling | **Tailwind CSS v4** (CSS-first `@theme`) + CSS Custom Properties | Design-Tokens werden als CSS-Variablen definiert (die fünf Kategoriefarben, `#10141F`, Radien) und von Tailwind konsumiert. Keine externen Schriften (Tailwind lädt keine). Utility-Ansatz hält die Kartenoptik konsistent, ohne CSS-Wildwuchs. |
-| State | **Pure Reducer in `@jeopardy/game-core`** + dünner Zustand-Store im App-Layer | Der Reducer ist frei von React und DOM, deterministisch und mit serialisierbaren Actions – dadurch in Phase 2 unverändert im Node-Server einsetzbar. |
-| Validierung | **Zod** | Ein Schema erzeugt Laufzeitvalidierung *und* TS-Typ (`z.infer`) – nötig für hochgeladene/gemountete Fragensets. |
-| Routing | **React Router** (2 Routen) | Minimal, aber vorbereitet für spätere Routen (`/join/:roomCode`, `/host/:roomCode`). |
-| Dialog | **natives `<dialog>` + `showModal()`** | Fokusfalle, ESC-Handling, `::backdrop` und Top-Layer kostenlos – keine zusätzliche UI-Library für das Popup nötig. |
-| Tests | **Vitest** + Testing Library, **Playwright** für E2E | Vitest teilt die Vite-Config; E2E deckt die drei kritischen Regeln (grau erst nach Wertung, Antwort erst nach Klick, kein negativer Punktestand) ab. |
-| Monorepo | **pnpm Workspaces** | Trennt Spiel-Logik, Inhalte und App; ermöglicht es Streams, unabhängig voneinander zu bauen und zu testen; Phase-2-Server hängt sich ohne Umbau an. |
-| Package-Manager | **pnpm via corepack** (`corepack enable`) | Deterministische Lockfile, schnelle CI. Auf dem Zielrechner ist Node 25 vorhanden, pnpm ist noch zu aktivieren. |
+| Bereich         | Wahl                                                                          | Begründung                                                                                                                                                                                                                                                                               |
+| --------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sprache         | **TypeScript** (strict)                                                       | Der Schnittstellen-Vertrag (Kap. 6) ist die Voraussetzung für paralleles Arbeiten – nur mit Typen ist er maschinell durchsetzbar.                                                                                                                                                        |
+| UI-Framework    | **React 19**                                                                  | Größtes Ökosystem, problemlose Rekrutierung/Onboarding, `useSyncExternalStore` erlaubt die saubere Anbindung eines framework-fremden Cores (wichtig für Phase 2, in der derselbe Reducer serverseitig läuft).                                                                            |
+| Build           | **Vite**                                                                      | Schnellster Dev-Loop, natives ESM, unkomplizierter Static-Build → passt exakt zu „dist läuft über einen Docker-Container".                                                                                                                                                               |
+| Styling         | **Tailwind CSS v4** (CSS-first `@theme`) + CSS Custom Properties              | Design-Tokens werden als CSS-Variablen definiert (die fünf Kategoriefarben, `#10141F`, Radien) und von Tailwind konsumiert. Keine externen Schriften (Tailwind lädt keine). Utility-Ansatz hält die Kartenoptik konsistent, ohne CSS-Wildwuchs.                                          |
+| State           | **Pure Reducer in `@jeopardy/game-core`** + dünner Zustand-Store im App-Layer | Der Reducer ist frei von React und DOM, deterministisch und mit serialisierbaren Actions – dadurch in Phase 2 unverändert im Node-Server einsetzbar.                                                                                                                                     |
+| Validierung     | **Zod**                                                                       | Ein Schema erzeugt Laufzeitvalidierung _und_ TS-Typ (`z.infer`) – nötig für hochgeladene/gemountete Fragensets.                                                                                                                                                                          |
+| Routing         | **React Router** (2 Routen)                                                   | Minimal, aber vorbereitet für spätere Routen (`/join/:roomCode`, `/host/:roomCode`).                                                                                                                                                                                                     |
+| Dialog          | **natives `<dialog>` + `showModal()`**                                        | Fokusfalle, ESC-Handling, `::backdrop` und Top-Layer kostenlos – keine zusätzliche UI-Library für das Popup nötig.                                                                                                                                                                       |
+| Tests           | **Vitest** + Testing Library, **Playwright** für E2E                          | Vitest teilt die Vite-Config; E2E deckt die drei kritischen Regeln (grau erst nach Wertung, Antwort erst nach Klick, kein negativer Punktestand) ab.                                                                                                                                     |
+| Monorepo        | **npm Workspaces**                                                            | Trennt Spiel-Logik, Inhalte und App; ermöglicht es Streams, unabhängig voneinander zu bauen und zu testen; Phase-2-Server hängt sich ohne Umbau an.                                                                                                                                      |
+| Package-Manager | **npm** (mit Node ausgeliefert)                                               | Ursprünglich war pnpm über corepack vorgesehen; corepack ist jedoch nicht mehr Teil von Node 25 und ein globales Werkzeug soll nicht vorausgesetzt werden. npm-Workspaces decken den Bedarf vollständig ab und liefern mit `package-lock.json` ebenfalls reproduzierbare Installationen. |
 
-> **Versionspinning:** Exakte Versionen werden beim Scaffolding (Task `T00`) festgeschrieben und per Lockfile eingefroren; `.nvmrc` (Node 22 LTS oder 24 LTS) definiert die Build-Node-Version für CI und Docker – lokal genutztes Node 25 bleibt davon unberührt.
+> **Versionspinning:** Exakte Versionen sind beim Scaffolding (Task `T00`) festgeschrieben und über `package-lock.json` eingefroren; `.nvmrc` (Node 22) definiert die Build-Node-Version für CI und Docker – lokal genutztes Node 25 bleibt davon unberührt.
+>
+> **Zwei umgebungsbedingte Festlegungen:** TypeScript bleibt bei **5.9** (typescript-eslint unterstützt derzeit nur `<6.1`), ESLint bei **9** (`eslint-plugin-jsx-a11y` unterstützt ESLint 10 noch nicht).
 
 ### Verworfene Alternativen
 
@@ -189,15 +191,15 @@ web-jeopardy/
 
 **Validierungsregeln (Zod, hart):**
 
-| Regel | Begründung |
-|---|---|
-| `schemaVersion === 1` | Migrationspfad für spätere Formate. |
-| genau **5 Kategorien**, je genau **5 Clues** | Vorgabe „5×5-Grid". |
-| `points` einer Kategorie entsprechen `pointSteps` in aufsteigender Reihenfolge | Konsistente Board-Darstellung. |
-| `id` global eindeutig (Set, Kategorie + Clue) | Voraussetzung für Event-Log und Multiplayer. |
-| `color` optional, muss aus der 5er-Palette stammen | Design-Vorgabe „nicht abweichen". |
-| `question` / `answer` nicht leer, max. 500 Zeichen | Layout-Sicherheit auf dem Beamer. |
-| unbekannte Felder werden **abgelehnt** (`.strict()`) | Tippfehler in handgepflegten JSONs fallen sofort auf. |
+| Regel                                                                          | Begründung                                            |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| `schemaVersion === 1`                                                          | Migrationspfad für spätere Formate.                   |
+| genau **5 Kategorien**, je genau **5 Clues**                                   | Vorgabe „5×5-Grid".                                   |
+| `points` einer Kategorie entsprechen `pointSteps` in aufsteigender Reihenfolge | Konsistente Board-Darstellung.                        |
+| `id` global eindeutig (Set, Kategorie + Clue)                                  | Voraussetzung für Event-Log und Multiplayer.          |
+| `color` optional, muss aus der 5er-Palette stammen                             | Design-Vorgabe „nicht abweichen".                     |
+| `question` / `answer` nicht leer, max. 500 Zeichen                             | Layout-Sicherheit auf dem Beamer.                     |
+| unbekannte Felder werden **abgelehnt** (`.strict()`)                           | Tippfehler in handgepflegten JSONs fallen sofort auf. |
 
 ### 5.2 Themenindex (`content/topics/index.json`)
 
@@ -205,8 +207,18 @@ web-jeopardy/
 {
   "schemaVersion": 1,
   "topics": [
-    { "id": "it-grundlagen", "title": "IT-Grundlagen", "description": "…", "file": "it-grundlagen.json" },
-    { "id": "popkultur-90er", "title": "Popkultur der 90er", "description": "…", "file": "popkultur-90er.json" }
+    {
+      "id": "it-grundlagen",
+      "title": "IT-Grundlagen",
+      "description": "…",
+      "file": "it-grundlagen.json"
+    },
+    {
+      "id": "popkultur-90er",
+      "title": "Popkultur der 90er",
+      "description": "…",
+      "file": "popkultur-90er.json"
+    }
   ]
 }
 ```
@@ -225,8 +237,7 @@ Diese Typen sind das Herzstück des Konzepts: Sie werden in Task `T01` **zuerst*
 // packages/game-core/src/types.ts
 
 // ---------- Inhalte (aus JSON) ----------
-export type CategoryColor =
-  | '#2EC4B6' | '#FF7F50' | '#B388EB' | '#7AE582' | '#FFD166';
+export type CategoryColor = '#2EC4B6' | '#FF7F50' | '#B388EB' | '#7AE582' | '#FFD166';
 
 export interface Clue {
   id: string;
@@ -239,8 +250,8 @@ export interface Clue {
 export interface Category {
   id: string;
   name: string;
-  color?: CategoryColor;   // sonst per Index aus der Palette
-  clues: Clue[];           // exakt 5
+  color?: CategoryColor; // sonst per Index aus der Palette
+  clues: Clue[]; // exakt 5
 }
 
 export interface GameDefinition {
@@ -250,14 +261,14 @@ export interface GameDefinition {
   description?: string;
   author?: string;
   locale?: string;
-  pointSteps: number[];    // exakt 5
-  categories: Category[];  // exakt 5
+  pointSteps: number[]; // exakt 5
+  categories: Category[]; // exakt 5
 }
 
 // ---------- Laufender Spielstand ----------
 export interface Team {
-  id: string;              // 'team-a', 'team-b', …
-  name: string;            // editierbar
+  id: string; // 'team-a', 'team-b', …
+  name: string; // editierbar
 }
 // Beliebig viele Teams: GameState.teams ist eine Liste ohne feste Länge.
 // n === 1 ist der Übungsmodus – kein Sondertyp, nur ein Selektor (siehe unten).
@@ -267,8 +278,8 @@ export interface ScoreEvent {
   clueId: string;
   teamId: string;
   correct: boolean;
-  delta: number;           // +points | -points
-  at: number;              // epoch ms
+  delta: number; // +points | -points
+  at: number; // epoch ms
 }
 
 export type GamePhase = 'setup' | 'playing' | 'finished';
@@ -277,7 +288,7 @@ export interface GameState {
   phase: GamePhase;
   definition: GameDefinition | null;
   teams: Team[];
-  events: ScoreEvent[];    // Single Source of Truth für alle Punkte
+  events: ScoreEvent[]; // Single Source of Truth für alle Punkte
   openClueId: string | null;
   answerRevealed: boolean;
 }
@@ -295,18 +306,21 @@ export type GameAction =
 // ---------- Reducer & Selektoren ----------
 export function gameReducer(state: GameState, action: GameAction): GameState;
 
-export function selectScore(state: GameState, teamId: string): number;      // schrittweise auf >= 0 geklammert
+export function selectScore(state: GameState, teamId: string): number; // schrittweise auf >= 0 geklammert
 export function selectIsClueScored(state: GameState, clueId: string): boolean;
 export function selectOpenClue(state: GameState): { clue: Clue; category: Category } | null;
-export function selectIsFinished(state: GameState): boolean;                // alle 25 gewertet
+export function selectIsFinished(state: GameState): boolean; // alle 25 gewertet
 export function selectRanking(state: GameState): Array<{ team: Team; score: number; rank: number }>;
-export function selectIsPracticeMode(state: GameState): boolean;            // teams.length === 1
-export function selectTeamStats(state: GameState, teamId: string): { correct: number; wrong: number };
+export function selectIsPracticeMode(state: GameState): boolean; // teams.length === 1
+export function selectTeamStats(
+  state: GameState,
+  teamId: string,
+): { correct: number; wrong: number };
 export function categoryColorAt(index: number): CategoryColor;
 
 // Teamverwaltung – erzeugt beliebig viele Teams mit Default-Namen 'Team A', 'Team B', …
 export function createDefaultTeams(count: number): Team[];
-export const MAX_TEAMS_UI = 8;   // reine Layoutgrenze der Oberfläche, keine Logikgrenze
+export const MAX_TEAMS_UI = 8; // reine Layoutgrenze der Oberfläche, keine Logikgrenze
 
 // ---------- Transport (Phase-2-Naht) ----------
 export interface GameTransport {
@@ -341,8 +355,8 @@ stateDiagram-v2
 
 **Invarianten (durch Unit-Tests abgesichert, Task `B1`):**
 
-1. `clue/open` verändert **niemals** `events` → eine geöffnete, aber nicht gewertete Karte bleibt farbig. *(Kernanforderung)*
-2. `answerRevealed` ist nach `clue/open` immer `false`; Musterlösung **und** Punktebuttons rendern ausschließlich bei `answerRevealed === true`. *(Kernanforderung)*
+1. `clue/open` verändert **niemals** `events` → eine geöffnete, aber nicht gewertete Karte bleibt farbig. _(Kernanforderung)_
+2. `answerRevealed` ist nach `clue/open` immer `false`; Musterlösung **und** Punktebuttons rendern ausschließlich bei `answerRevealed === true`. _(Kernanforderung)_
 3. `score/award` wird ignoriert, wenn `selectIsClueScored(clueId)` bereits `true` ist (Doppelklick-/Race-Schutz).
 4. `selectScore` ist nie negativ, und die Klammerung erfolgt pro Event (siehe K3).
 5. Der Reducer ist **pur**: gleiche Eingaben → gleicher State, keine `Date.now()`-Aufrufe im Reducer (Zeitstempel kommt über die Action).
@@ -357,32 +371,32 @@ stateDiagram-v2
 ```css
 :root {
   /* Vorgegeben – nicht abweichen */
-  --color-bg:        #10141F;
-  --color-cat-1:     #2EC4B6;
-  --color-cat-2:     #FF7F50;
-  --color-cat-3:     #B388EB;
-  --color-cat-4:     #7AE582;
-  --color-cat-5:     #FFD166;
+  --color-bg: #10141f;
+  --color-cat-1: #2ec4b6;
+  --color-cat-2: #ff7f50;
+  --color-cat-3: #b388eb;
+  --color-cat-4: #7ae582;
+  --color-cat-5: #ffd166;
 
   /* Abgeleitet (Kartenoptik auf dunklem Grund) */
-  --color-surface:      #171C2B;  /* Karte */
-  --color-surface-hi:   #1E2436;  /* Karte hover */
-  --color-surface-mut:  #141826;  /* Karte gewertet/grau */
-  --color-border:       #2A3145;
-  --color-text:         #EEF1F7;
-  --color-text-muted:   #8D97AE;  /* Text auf gewerteter Karte */
+  --color-surface: #171c2b; /* Karte */
+  --color-surface-hi: #1e2436; /* Karte hover */
+  --color-surface-mut: #141826; /* Karte gewertet/grau */
+  --color-border: #2a3145;
+  --color-text: #eef1f7;
+  --color-text-muted: #8d97ae; /* Text auf gewerteter Karte */
 
   /* Form */
   --radius-card: 16px;
-  --radius-btn:  12px;
-  --shadow-card: 0 2px 0 rgba(0,0,0,.35), 0 10px 24px rgba(0,0,0,.28);
+  --radius-btn: 12px;
+  --shadow-card: 0 2px 0 rgba(0, 0, 0, 0.35), 0 10px 24px rgba(0, 0, 0, 0.28);
 
   /* Typografie – ausschließlich Systemschriften */
   --font-sans: system-ui, Arial, Helvetica, sans-serif;
 }
 ```
 
-Regeln: **keine** Hex-Werte in Komponenten, ausschließlich Tokens. Kein `@font-face`, kein Google-Fonts-Link, keine Icon-Webfont – Icons falls nötig als Inline-SVG. Ein ESLint-/Stylelint-Guard (`T00`) verbietet rohe Hex-Farben in `src/**`, damit die Palette nicht verwässert.
+Regeln: **keine** Hex-Werte in Komponenten, ausschließlich Tokens. Kein `@font-face`, kein Google-Fonts-Link, keine Icon-Webfont – Icons falls nötig als Inline-SVG. Ein ESLint-Guard (`T00`) verbietet rohe Hex-Farben in `apps/web/src/**`, damit die Palette nicht verwässert; die Palette selbst liegt ausschließlich in `packages/game-core/src/colors.ts`.
 
 ### 8.2 Optik
 
@@ -425,12 +439,20 @@ Natives `<dialog>`, geöffnet über `showModal()`.
 **Punktebuttons – generisch für beliebig viele Teams:** Die Liste entsteht ausschließlich aus `state.teams`:
 
 ```tsx
-{teams.map((team) => (
-  <div key={team.id} className="team-actions">
-    <Button variant="success" onClick={() => award(team.id, true)}>{`${team.name} richtig`}</Button>
-    <Button variant="danger"  onClick={() => award(team.id, false)}>{`${team.name} falsch`}</Button>
-  </div>
-))}
+{
+  teams.map((team) => (
+    <div key={team.id} className="team-actions">
+      <Button
+        variant="success"
+        onClick={() => award(team.id, true)}
+      >{`${team.name} richtig`}</Button>
+      <Button
+        variant="danger"
+        onClick={() => award(team.id, false)}
+      >{`${team.name} falsch`}</Button>
+    </div>
+  ));
+}
 ```
 
 - **n = 2 (Default):** ergibt exakt „Team A richtig", „Team A falsch", „Team B richtig", „Team B falsch".
@@ -475,10 +497,16 @@ Es wird in Phase 1 **kein** Server gebaut, aber die Naht wird gesetzt:
 FROM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY package.json package-lock.json ./
+COPY packages/game-core/package.json packages/game-core/
+COPY apps/web/package.json apps/web/
+RUN npm ci
+
+COPY tsconfig.base.json ./
 COPY packages ./packages
 COPY apps ./apps
-RUN pnpm install --frozen-lockfile && pnpm --filter @jeopardy/web build
+COPY content ./content
+RUN npm run build
 
 FROM nginx:alpine AS runtime
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
@@ -498,14 +526,14 @@ HEALTHCHECK CMD wget -qO- http://localhost/ || exit 1
 
 ## 13. Qualitätssicherung & Teststrategie
 
-| Ebene | Werkzeug | Umfang |
-|---|---|---|
-| Typprüfung | `tsc --noEmit`, strict | gesamtes Monorepo, blockierend in CI |
-| Unit | Vitest | `game-core`: Reducer-Invarianten (Kap. 7), Score-Klammerung, Selektoren; Zod-Schemas (gültige/ungültige Fixtures) |
-| Komponenten | Vitest + Testing Library | Board-Rendering, Karten-Status, Popup-Stufen, Punktebutton-Beschriftung |
-| Content | Node-Skript `pnpm validate:content` | validiert **jedes** JSON in `content/topics` + Index-Konsistenz; läuft in CI und als Pre-Commit-Hook |
-| E2E | Playwright | Happy Path Start→Board→Popup→Wertung→Endstand; die Kernregeln explizit als eigene Tests; je ein Durchlauf mit n = 1 (Übungsmodus) und n = 2 Teams |
-| A11y | `@axe-core/playwright` | Startseite, Board, geöffnetes Popup |
+| Ebene       | Werkzeug                               | Umfang                                                                                                                                            |
+| ----------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typprüfung  | `tsc --noEmit`, strict                 | gesamtes Monorepo, blockierend in CI                                                                                                              |
+| Unit        | Vitest                                 | `game-core`: Reducer-Invarianten (Kap. 7), Score-Klammerung, Selektoren; Zod-Schemas (gültige/ungültige Fixtures)                                 |
+| Komponenten | Vitest + Testing Library               | Board-Rendering, Karten-Status, Popup-Stufen, Punktebutton-Beschriftung                                                                           |
+| Content     | Node-Skript `npm run validate:content` | validiert **jedes** JSON in `content/topics` + Index-Konsistenz; läuft in CI und als Pre-Commit-Hook                                              |
+| E2E         | Playwright                             | Happy Path Start→Board→Popup→Wertung→Endstand; die Kernregeln explizit als eigene Tests; je ein Durchlauf mit n = 1 (Übungsmodus) und n = 2 Teams |
+| A11y        | `@axe-core/playwright`                 | Startseite, Board, geöffnetes Popup                                                                                                               |
 
 **Verbindliche Regressionstests für die Kernanforderungen** (dürfen nie entfernt werden):
 `karte-bleibt-farbig-nach-oeffnen-ohne-wertung`, `antwort-und-buttons-erst-nach-reveal`, `punktestand-faellt-nicht-unter-null`, `beschriftung-team-a-b-richtig-falsch`, `punktebuttons-fuer-beliebig-viele-teams`, `uebungsmodus-mit-einem-team`.
@@ -527,13 +555,13 @@ HEALTHCHECK CMD wget -qO- http://localhost/ || exit 1
 
 ## 15. Risiken
 
-| Risiko | Auswirkung | Gegenmaßnahme |
-|---|---|---|
-| Schnittstellen-Vertrag ändert sich spät | mehrere Streams müssen nacharbeiten | Vertrag in `T01` zuerst und vollständig; Änderungen nur per PR mit Cross-Review |
-| Viele Teams sprengen die Buttonleiste im Popup | Popup-Layout bricht | `auto-fit`-Grid mit Umbruch + Namenskürzung; Oberfläche begrenzt auf `MAX_TEAMS_UI = 8`; Layouttest mit n = 1, 2, 4 und 8 sowie mit 24-Zeichen-Namen |
-| Lange Fragetexte auf dem Beamer | Text wird abgeschnitten | 500-Zeichen-Limit im Schema + `clamp()`-Typografie + E2E-Snapshot mit Maximaltext |
-| Merge-Konflikte in `tokens.css` / gemeinsamen UI-Dateien | Reibung | `tokens.css` kommt aus `T01`, `C1` (Design-System) wird früh und allein gemerged; danach sind beide praktisch änderungsfrei |
-| Multiplayer-Annahmen tragen nicht | Umbau in Phase 2 | Action-/Transport-Naht + purer Core; Phase-2-Spike (`P2-1`) bereits vor Feature-Freeze einplanen |
+| Risiko                                                   | Auswirkung                          | Gegenmaßnahme                                                                                                                                        |
+| -------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schnittstellen-Vertrag ändert sich spät                  | mehrere Streams müssen nacharbeiten | Vertrag in `T01` zuerst und vollständig; Änderungen nur per PR mit Cross-Review                                                                      |
+| Viele Teams sprengen die Buttonleiste im Popup           | Popup-Layout bricht                 | `auto-fit`-Grid mit Umbruch + Namenskürzung; Oberfläche begrenzt auf `MAX_TEAMS_UI = 8`; Layouttest mit n = 1, 2, 4 und 8 sowie mit 24-Zeichen-Namen |
+| Lange Fragetexte auf dem Beamer                          | Text wird abgeschnitten             | 500-Zeichen-Limit im Schema + `clamp()`-Typografie + E2E-Snapshot mit Maximaltext                                                                    |
+| Merge-Konflikte in `tokens.css` / gemeinsamen UI-Dateien | Reibung                             | `tokens.css` kommt aus `T01`, `C1` (Design-System) wird früh und allein gemerged; danach sind beide praktisch änderungsfrei                          |
+| Multiplayer-Annahmen tragen nicht                        | Umbau in Phase 2                    | Action-/Transport-Naht + purer Core; Phase-2-Spike (`P2-1`) bereits vor Feature-Freeze einplanen                                                     |
 
 ---
 

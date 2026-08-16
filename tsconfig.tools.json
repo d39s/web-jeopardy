@@ -2,6 +2,9 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "types": ["node"],
+    // Playwright-Tests führen mit page.evaluate Code im Browser aus und
+    // greifen dort auf document und localStorage zu.
+    "lib": ["ES2022", "DOM"],
     "noEmit": true
   },
   "include": ["scripts/**/*.ts", "e2e/**/*.ts", "*.config.ts", "apps/web/vite.config.ts"]

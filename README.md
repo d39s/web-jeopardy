@@ -4,8 +4,23 @@ Jeopardy-Spiel für Moderation über Beamer oder Screenshare: Startseite mit Tea
 Themenauswahl, 5×5-Spielfeld, Frage-Popup mit Punktevergabe. Später ist ein Online-Modus
 vorgesehen; die Auslieferung erfolgt als Docker-Container.
 
-- [Technisches Konzept](docs/technisches-konzept.md)
-- [Arbeitsplan & Subtasks](docs/arbeitsplan.md)
+- [Technisches Konzept](docs/technisches-konzept.md) – Architektur, Datenmodell, Design, Betrieb
+- [Arbeitsplan & Subtasks](docs/arbeitsplan.md) – Aufgabenschnitt, Commit-Regeln, Umsetzungsstand
+- [Fragensets anlegen](content/README.md) – Aufbau und Regeln der JSON-Dateien
+- Architekturentscheidungen: [Schnittstellen-Vertrag](docs/adr/0001-schnittstellen-vertrag.md) ·
+  [Technologie-Stack](docs/adr/0002-technologie-stack.md) ·
+  [Transport-Naht](docs/adr/0003-transport-naht.md) ·
+  [Auslieferung im Container](docs/adr/0004-auslieferung-im-container.md)
+
+## Spielablauf
+
+Startseite: Teams festlegen (ein Team genügt – dann läuft das Spiel als Übungsmodus ohne
+Ranking) und Thema wählen, entweder aus den mitgelieferten Fragensets oder als eigene
+JSON-Datei. Auf dem Spielfeld öffnet ein Klick auf eine Karte die Frage; die Musterlösung und
+die Punktebuttons erscheinen erst nach „Antwort anzeigen". Erst ein Punktebutton wertet die
+Frage – dann wird die Karte grau. Punkte werden addiert oder abgezogen und fallen nie unter
+null. Teamnamen lassen sich jederzeit oben ändern, die Punktebuttons übernehmen den Namen
+sofort. Ein laufendes Spiel übersteht das Schließen des Browsers.
 
 ## Schnellstart
 
