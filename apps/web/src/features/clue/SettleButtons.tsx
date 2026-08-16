@@ -1,4 +1,5 @@
-import type { Team } from '@jeopardy/game-core';
+import { wrongPenaltyPoints } from '@jeopardy/game-core';
+import type { Team, WrongPenalty } from '@jeopardy/game-core';
 import { Button } from '../../components/ui/Button';
 import { de } from '../../i18n/de';
 
@@ -6,7 +7,7 @@ export interface SettleButtonsProps {
   /** Teams, die sich an dieser Frage beteiligt haben – nur sie werden gewertet. */
   participants: Team[];
   points: number;
-  deductOnWrong: boolean;
+  wrongPenalty: WrongPenalty;
   /** Bei vielen Beteiligten eine Stufe kleiner, damit die Wertung ohne Scrollen passt. */
   compact?: boolean;
   /** `null` bedeutet „keine richtige Antwort gegeben". */
@@ -24,11 +25,12 @@ export interface SettleButtonsProps {
 export function SettleButtons({
   participants,
   points,
-  deductOnWrong,
+  wrongPenalty,
   compact = false,
   onSettle,
 }: SettleButtonsProps) {
   const size = compact ? 'md' : 'lg';
+  const penalty = wrongPenaltyPoints(points, wrongPenalty);
 
   return (
     <section className="flex flex-col gap-2">
@@ -55,7 +57,7 @@ export function SettleButtons({
       </Button>
 
       <p className="text-sm text-text-muted">
-        {deductOnWrong ? de.clue.settleHintDeduct(points) : de.clue.settleHintKeep}
+        {penalty === 0 ? de.clue.settleHintKeep : de.clue.settleHintDeduct(penalty)}
       </p>
     </section>
   );

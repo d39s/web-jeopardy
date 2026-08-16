@@ -4,7 +4,7 @@ import {
   initialGameState,
   sampleDefinition,
 } from '@jeopardy/game-core';
-import type { GameDefinition, GameState, GameTransport } from '@jeopardy/game-core';
+import type { GameDefinition, GameState, GameTransport, WrongPenalty } from '@jeopardy/game-core';
 import { render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { GameProvider } from '../state/GameProvider';
@@ -17,7 +17,7 @@ export function startedState(
   options: {
     timerSeconds?: number | null;
     vetoSeconds?: number | null;
-    deductOnWrong?: boolean;
+    wrongPenalty?: WrongPenalty;
   } = {},
 ): GameState {
   return gameReducer(initialGameState, {
@@ -26,7 +26,7 @@ export function startedState(
     teams: createDefaultTeams(teamCount),
     timerSeconds: options.timerSeconds ?? null,
     vetoSeconds: options.vetoSeconds ?? null,
-    deductOnWrong: options.deductOnWrong ?? true,
+    wrongPenalty: options.wrongPenalty ?? 'full',
   });
 }
 

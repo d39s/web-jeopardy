@@ -49,13 +49,16 @@ export const de = {
     rulesHeading: 'Spielregeln',
     rulesHint: 'Was passiert bei einer falschen Antwort?',
     rulesGroupLabel: 'Verhalten bei falscher Antwort',
-    rulesDeductTitle: 'Punkte werden abgezogen',
-    rulesDeductDescription:
+    rulesFullTitle: 'Volle Punktzahl',
+    rulesFullDescription:
       'Die Punktzahl der Frage wird abgezogen – der Stand fällt nie unter null.',
+    rulesHalfTitle: 'Halbe Punktzahl',
+    rulesHalfDescription: 'Nur die Hälfte wird abgezogen: Eine 300er-Frage kostet 150 Punkte.',
     rulesKeepTitle: 'Punktestand bleibt',
     rulesKeepDescription: 'Eine falsche Antwort ändert den Punktestand nicht.',
-    sharedRuleDeduct: 'Falsche Antwort kostet Punkte',
-    sharedRuleNoDeduct: 'Falsche Antwort kostet keine Punkte',
+    sharedRuleFull: 'Falsche Antwort kostet die volle Punktzahl',
+    sharedRuleHalf: 'Falsche Antwort kostet die halbe Punktzahl',
+    sharedRuleNone: 'Falsche Antwort kostet keine Punkte',
 
     shareHeading: 'Spiel teilen',
     shareHint: 'Der Link enthält Thema, Teams, Bedenkzeit und Veto-Zeit.',

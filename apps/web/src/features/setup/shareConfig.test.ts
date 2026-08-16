@@ -8,7 +8,7 @@ const basis: SharedConfig = {
   teamNames: ['Team A', 'Team B'],
   timerSeconds: 30,
   vetoSeconds: null,
-  deductOnWrong: true,
+  wrongPenalty: 'full' as const,
 };
 
 /** Baut den Link und liest ihn sofort wieder ein. */
@@ -46,7 +46,7 @@ describe('teilen-link lesen', () => {
       teamNames: ['Die Füchse & Co.', 'Über, Team', 'Grüße 100% 🎉', 'a+b=c?'],
       timerSeconds: 45,
       vetoSeconds: null,
-      deductOnWrong: true,
+      wrongPenalty: 'full' as const,
     };
 
     expect(rundlauf(config)).toEqual(config);
@@ -67,7 +67,7 @@ describe('teilen-link lesen', () => {
         teamNames: [],
         timerSeconds: null,
         vetoSeconds: null,
-        deductOnWrong: true,
+        wrongPenalty: 'full' as const,
       },
     });
   });
@@ -88,7 +88,7 @@ describe('teilen-link lesen', () => {
         teamNames: ['Adler'],
         timerSeconds: null,
         vetoSeconds: null,
-        deductOnWrong: true,
+        wrongPenalty: 'full' as const,
       },
     });
   });
@@ -122,7 +122,7 @@ describe('teilen-link lesen', () => {
         teamNames: ['Adler'],
         timerSeconds: null,
         vetoSeconds: null,
-        deductOnWrong: true,
+        wrongPenalty: 'full' as const,
       },
     });
   });
@@ -171,28 +171,34 @@ describe('veto-zeit im link', () => {
 
 describe('abzugsregel im link', () => {
   it('lässt den standard weg und ergänzt ihn beim lesen', () => {
-    const query = buildShareQuery({ ...basis, deductOnWrong: true });
+    const query = buildShareQuery({ ...basis, wrongPenalty: 'full' });
 
     expect(query).not.toContain('abzug');
     expect(parseShareParams(`?${query}`)).toEqual({
       status: 'ok',
-      config: { ...basis, deductOnWrong: true },
+      config: { ...basis, wrongPenalty: 'full' },
     });
   });
 
-  it('überträgt die abgeschaltete regel', () => {
-    const config = { ...basis, deductOnWrong: false };
-    const query = buildShareQuery(config);
+  it('überträgt die halbe und die abgeschaltete regel', () => {
+    const halb = { ...basis, wrongPenalty: 'half' as const };
+    const keiner = { ...basis, wrongPenalty: 'none' as const };
 
-    expect(query).toContain('abzug=0');
-    expect(parseShareParams(`?${query}`)).toEqual({ status: 'ok', config });
+    expect(buildShareQuery(halb)).toContain('abzug=halb');
+    expect(parseShareParams(`?${buildShareQuery(halb)}`)).toEqual({ status: 'ok', config: halb });
+
+    expect(buildShareQuery(keiner)).toContain('abzug=0');
+    expect(parseShareParams(`?${buildShareQuery(keiner)}`)).toEqual({
+      status: 'ok',
+      config: keiner,
+    });
   });
 
-  it('nimmt bei fehlender oder unlesbarer angabe den abzug an', () => {
+  it('nimmt bei fehlender oder unlesbarer angabe den vollen abzug an', () => {
     const ohne = parseShareParams('?thema=it-grundlagen');
     const kaputt = parseShareParams('?thema=it-grundlagen&abzug=vielleicht');
 
-    expect(ohne.status === 'ok' && ohne.config.deductOnWrong).toBe(true);
-    expect(kaputt.status === 'ok' && kaputt.config.deductOnWrong).toBe(true);
+    expect(ohne.status === 'ok' && ohne.config.wrongPenalty).toBe('full');
+    expect(kaputt.status === 'ok' && kaputt.config.wrongPenalty).toBe('full');
   });
 });

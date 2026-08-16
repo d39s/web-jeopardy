@@ -217,11 +217,20 @@ describe('wertung', () => {
     unmount();
 
     const ohneAbzug = gameReducer(
-      openClue(startedState(3, undefined, { deductOnWrong: false }), CLUE_ID, ['team-c']),
+      openClue(startedState(3, undefined, { wrongPenalty: 'none' }), CLUE_ID, ['team-c']),
       { type: 'clue/revealAnswer' },
     );
-    renderWithGame(<ClueDialog />, ohneAbzug);
+    const { unmount: unmountOhne } = renderWithGame(<ClueDialog />, ohneAbzug);
     expect(screen.getByText('Die übrigen beteiligten Teams erhalten keine Punkte.')).toBeVisible();
+    unmountOhne();
+
+    // Die halbe Stufe nennt den tatsächlichen Abzug, nicht die Punktzahl der Frage.
+    const halberAbzug = gameReducer(
+      openClue(startedState(3, undefined, { wrongPenalty: 'half' }), CLUE_ID, ['team-c']),
+      { type: 'clue/revealAnswer' },
+    );
+    renderWithGame(<ClueDialog />, halberAbzug);
+    expect(screen.getByText('Die übrigen beteiligten Teams verlieren 50 Punkte.')).toBeVisible();
   });
 
   it('wertet nicht, wenn das popup ohne wahl geschlossen wird', async () => {

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CATEGORY_COLORS } from './colors';
 import { MAX_TEAM_NAME_LENGTH } from './teams';
-import { CATEGORY_COUNT, CLUES_PER_CATEGORY } from './types';
+import { CATEGORY_COUNT, CLUES_PER_CATEGORY, WRONG_PENALTIES } from './types';
 import type { GameDefinition, GameState, TopicIndex } from './types';
 
 const idSchema = z
@@ -154,6 +154,7 @@ export const scoreEventSchema = z.strictObject({
   teamId: idSchema,
   outcome: z.enum(['correct', 'wrong']),
   delta: z.number().int(),
+  viaVeto: z.boolean(),
   at: z.number().int().nonnegative(),
 });
 
@@ -171,7 +172,7 @@ export const gameStateSchema = z.strictObject({
   activeTeamId: idSchema.nullable(),
   answeringTeamIds: z.array(idSchema),
   timerEndsAt: z.number().int().nonnegative().nullable(),
-  deductOnWrong: z.boolean(),
+  wrongPenalty: z.enum(WRONG_PENALTIES),
 });
 
 // ---------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { sampleDefinition } from './fixtures';
-import { effectiveVetoSeconds, gameReducer, initialGameState } from './reducer';
+import { effectiveVetoSeconds, gameReducer, initialGameState, wrongPenaltyPoints } from './reducer';
 import { selectIsClueScored, selectScore, selectScoredCount } from './selectors';
 import { createDefaultTeams } from './teams';
-import type { GameAction, GameState } from './types';
+import type { GameAction, GameState, WrongPenalty } from './types';
 
 const CLUE_100 = 'wissenschaft-100';
 const CLUE_200 = 'wissenschaft-200';
@@ -13,14 +13,14 @@ interface StartOptions {
   teams?: number;
   timerSeconds?: number | null;
   vetoSeconds?: number | null;
-  deductOnWrong?: boolean;
+  wrongPenalty?: WrongPenalty;
 }
 
 function startedGame({
   teams = 2,
   timerSeconds = null,
   vetoSeconds = null,
-  deductOnWrong = true,
+  wrongPenalty = 'full',
 }: StartOptions = {}): GameState {
   return gameReducer(initialGameState, {
     type: 'game/start',
@@ -28,7 +28,7 @@ function startedGame({
     teams: createDefaultTeams(teams),
     timerSeconds,
     vetoSeconds,
-    deductOnWrong,
+    wrongPenalty,
   });
 }
 
@@ -255,12 +255,46 @@ describe('wertung', () => {
   });
 
   it('zieht ohne abzugsregel keine punkte ab', () => {
-    let state = startedGame({ teams: 3, timerSeconds: 30, deductOnWrong: false });
+    let state = startedGame({ teams: 3, timerSeconds: 30, wrongPenalty: 'none' });
     state = settle(reveal(openClue(state, CLUE_300)), 'team-a', CLUE_300);
     state = settle(reveal(openClue(state, CLUE_100)), null, CLUE_100);
 
     expect(selectScore(state, 'team-a')).toBe(300);
     expect(state.events.filter((event) => event.outcome === 'wrong')[0]?.delta).toBe(0);
+  });
+
+  it('zieht bei halber regel die hälfte der punktzahl ab', () => {
+    let state = startedGame({ teams: 3, wrongPenalty: 'half' });
+    state = settle(reveal(openClue(state, CLUE_300)), 'team-a', CLUE_300);
+
+    // Zweite Frage beginnt bei Team B, Team A steigt per Veto ein und verliert.
+    let zweite = openClue(state, CLUE_200);
+    zweite = veto(zweite, 'team-a');
+    state = settle(reveal(zweite), null, CLUE_200);
+
+    expect(selectScore(state, 'team-a')).toBe(200);
+    expect(state.events.filter((event) => event.clueId === CLUE_200)[0]?.delta).toBe(-100);
+  });
+
+  it('rundet den halben abzug auf ganze punkte', () => {
+    expect(wrongPenaltyPoints(50, 'half')).toBe(25);
+    expect(wrongPenaltyPoints(25, 'half')).toBe(13);
+    expect(wrongPenaltyPoints(300, 'none')).toBe(0);
+    expect(wrongPenaltyPoints(300, 'full')).toBe(300);
+  });
+
+  it('hält fest, wer per veto eingestiegen ist', () => {
+    let state = startedGame({ teams: 3 });
+    let offen = openClue(state, CLUE_100);
+    offen = veto(offen, 'team-c');
+    state = settle(reveal(offen), 'team-c');
+
+    const events = state.events.filter((event) => event.clueId === CLUE_100);
+    // Team A hat die Frage begonnen, Team C hat übernommen.
+    expect(events.map((event) => [event.teamId, event.viaVeto])).toEqual([
+      ['team-a', false],
+      ['team-c', true],
+    ]);
   });
 
   it('klammert den punktestand schrittweise bei null', () => {

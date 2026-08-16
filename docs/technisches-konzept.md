@@ -297,7 +297,7 @@ export interface GameState {
   startingTeamIndex: number; // erster Zugriff auf die nächste Frage, wandert reihum
   activeTeamIndex: number; // Team, das bei der offenen Frage am Zug ist
   timerEndsAt: number | null; // Zeitpunkt (epoch ms), zu dem die Frist endet
-  deductOnWrong: boolean; // ob eine falsche Antwort Punkte kostet
+  wrongPenalty: WrongPenalty; // 'full' | 'half' | 'none' – was eine falsche Antwort kostet
 }
 
 // ---------- Actions (serialisierbar, multiplayer-tauglich) ----------
@@ -307,7 +307,7 @@ export type GameAction =
       definition: GameDefinition;
       teams: Team[];
       timerSeconds?: number | null; // ohne Angabe: ohne Timer
-      deductOnWrong?: boolean; // ohne Angabe: Abzug an
+      wrongPenalty?: WrongPenalty; // ohne Angabe: volle Punktzahl
     }
   | { type: 'team/rename'; teamId: string; name: string }
   | { type: 'clue/open'; clueId: string; at: number }
@@ -645,7 +645,7 @@ weil er dort nichts unterscheidet.
 
 ### 16.4 Konfiguration per Link
 
-- **Format:** `?thema=<id>&teams=<Name1,Name2>&timer=<sekunden>&abzug=<0|1>` – lesbar statt
+- **Format:** `?thema=<id>&teams=<Name1,Name2>&timer=<sekunden>&abzug=<halb|0>` – lesbar statt
   Base64, notfalls von Hand tippbar. Teamnamen sind einzeln kodiert, ein Komma im Namen
   kollidiert daher nicht mit dem Trennzeichen. Weggelassen wird, was dem Standard entspricht.
 - **Robust beim Lesen:** Unbekanntes Thema, unzulässige Bedenkzeit, zu viele oder leere
@@ -657,13 +657,15 @@ weil er dort nichts unterscheidet.
 - **Grenze:** Ein selbst hochgeladenes Fragenset passt nicht in eine Adresszeile. In dem Fall
   erscheint statt des Links ein Hinweis, die Datei mitzugeben.
 
-### 16.5 Punktabzug abschaltbar
+### 16.5 Abzug bei falscher Antwort
 
-`deductOnWrong` entscheidet, ob eine falsche Antwort die Punktzahl der Frage kostet oder den
-Stand unverändert lässt. Standard bleibt der Abzug. Die Auswahl erfolgt über zwei Karten in
-derselben Optik wie die Themenauswahl – eine Einstellung mit zwei benannten Möglichkeiten
-liest sich besser als ein Häkchen, dessen Gegenteil man sich denken muss. Der Ausgang der Frage bleibt in beiden
-Fällen „falsch" – nur das Delta ist dann 0. Die Klammerung bei null gilt unverändert.
+`wrongPenalty` entscheidet, was eine falsche Antwort kostet: `full` die Punktzahl der Frage,
+`half` die Hälfte davon, `none` gar nichts. Standard bleibt der volle Abzug. Die Auswahl
+erfolgt über drei Karten in derselben Optik wie die Themenauswahl – benannte Möglichkeiten
+lesen sich besser als ein Häkchen, dessen Gegenteil man sich denken muss. Der Ausgang der
+Frage bleibt in allen Fällen „falsch" – nur das Delta unterscheidet sich. Die halbe Stufe
+wird gerundet, damit auch ungerade Punktwerte eines eigenen Fragensets ganze Punkte ergeben.
+Die Klammerung bei null gilt unverändert.
 
 ### 16.6 Auswirkung auf die Persistenz
 

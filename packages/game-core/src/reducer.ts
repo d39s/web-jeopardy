@@ -1,5 +1,13 @@
 import { MAX_TEAM_NAME_LENGTH, MIN_TEAMS } from './teams';
-import type { Category, Clue, GameAction, GameDefinition, GameState, ScoreEvent } from './types';
+import type {
+  Category,
+  Clue,
+  GameAction,
+  GameDefinition,
+  GameState,
+  ScoreEvent,
+  WrongPenalty,
+} from './types';
 
 export const initialGameState: GameState = {
   phase: 'setup',
@@ -14,7 +22,7 @@ export const initialGameState: GameState = {
   activeTeamId: null,
   answeringTeamIds: [],
   timerEndsAt: null,
-  deductOnWrong: true,
+  wrongPenalty: 'full',
 };
 
 export function findClue(
@@ -53,6 +61,21 @@ function deadline(seconds: number | null, at: number): number | null {
 }
 
 /**
+ * Abzug für eine falsche Antwort. Die halbe Stufe wird gerundet, damit auch bei
+ * ungeraden Punktwerten eines eigenen Fragensets ganze Punkte entstehen.
+ */
+export function wrongPenaltyPoints(points: number, penalty: WrongPenalty): number {
+  switch (penalty) {
+    case 'full':
+      return points;
+    case 'half':
+      return Math.round(points / 2);
+    case 'none':
+      return 0;
+  }
+}
+
+/**
  * Zentrale Spielregel. Rein und deterministisch: keine Zeit-, Zufalls- oder
  * Browser-Quellen – Zeitstempel und IDs kommen über die Action bzw. ergeben
  * sich aus dem Zustand. Dadurch kann derselbe Reducer in Phase 2
@@ -69,7 +92,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         teams: action.teams,
         timerSeconds: action.timerSeconds ?? null,
         vetoSeconds: action.vetoSeconds ?? null,
-        deductOnWrong: action.deductOnWrong ?? true,
+        wrongPenalty: action.wrongPenalty ?? 'full',
       };
     }
 
@@ -164,6 +187,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const points = found.clue.points;
+      const penalty = wrongPenaltyPoints(points, state.wrongPenalty);
       const events = [
         ...state.events,
         ...state.answeringTeamIds.map((teamId, index): ScoreEvent => {
@@ -173,7 +197,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             clueId: action.clueId,
             teamId,
             outcome: correct ? 'correct' : 'wrong',
-            delta: correct ? points : state.deductOnWrong ? -points : 0,
+            // `penalty === 0` bewusst ausgeschrieben: `-0` wäre zwar rechnerisch
+            // gleich, aber ein anderer Wert für Vergleiche und JSON.
+            delta: correct ? points : penalty === 0 ? 0 : -penalty,
+            // Das erste beteiligte Team hat die Frage regulär begonnen, jedes
+            // weitere ist per Veto eingestiegen.
+            viaVeto: index > 0,
             at: action.at,
           };
         }),

@@ -88,6 +88,20 @@ test('ohne abzugsregel bleibt der punktestand bei einer falschen antwort stehen'
   await expect(page.getByText('Team A: 100 Punkte')).toBeAttached();
 });
 
+test('bei halber abzugsregel kostet eine falsche antwort die hälfte', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Halbe Punktzahl/ }).click();
+  await chooseTopic(page);
+  await page.getByRole('button', { name: 'Spiel starten' }).click();
+
+  await playClue(page, 'Erdkunde', 500, 'Team A');
+  await expect(page.getByText('Team A: 500 Punkte')).toBeAttached();
+
+  // Team A steigt per Veto ein und verliert: 200er-Frage kostet 100 Punkte.
+  await playClue(page, 'Geschichte', 200, 'Team B', ['Team A']);
+  await expect(page.getByText('Team A: 400 Punkte')).toBeAttached();
+});
+
 test('geteilter link belegt thema, teams, bedenkzeit und regel vor', async ({ page }) => {
   await page.goto('/?thema=popkultur&teams=Rote%20Riesen,Blaue%20Zwerge&timer=45&abzug=0');
 

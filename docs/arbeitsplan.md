@@ -398,18 +398,18 @@ Drei Dinge zeigten sich erst in der Integration und sind behoben:
 
 ### Abnahmematrix Runde 2
 
-| #   | Anforderung                                                                       | Nachweis                                                                        |
-| --- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| R1a | Bedenkzeit auf der Startseite einstellbar, 10 s bis 5 min in sinnvollen Abständen | `TIMER_OPTIONS`, Auswahlfeld auf der Startseite                                 |
-| R1b | Zeit wird während der Frage angezeigt                                             | E2E `bedenkzeit läuft und gibt den zugriff an das nächste team weiter`          |
-| R1c | Nach Ablauf startet die Zeit für das nächste Team neu                             | derselbe Test, zusätzlich Reducer-Tests mit 1, 2 und 3 Teams                    |
-| R1d | Antwortet niemand, gilt die Frage als gespielt                                    | E2E `unbeantwortete frage gilt nach ablauf bei allen teams als gespielt`        |
-| R2a | Konfiguration als Link teilbar                                                    | Rundlauftests in `shareConfig.test.ts`, Teilen-Bereich auf der Startseite       |
-| R2b | Beim Öffnen eines geteilten Links lassen sich die Namen anpassen                  | E2E `geteilter link belegt thema, teams, bedenkzeit und regel vor`              |
-| R3a | Gespielte Karte zeigt, ob Punkte erzielt oder abgezogen wurden                    | E2E `gespielte karten zeigen ausgang und verantwortliches team`                 |
-| R3b | Bei mehreren Teams steht dabei, wer die Frage entschieden hat                     | derselbe Test; im Übungsmodus entfällt der Name (Komponententest)               |
-| R4  | Sichtbar, welches Team am Zug ist                                                 | E2E `anzeige des teams am zug wandert reihum weiter`                            |
-| R5  | Punktabzug bei falscher Antwort abschaltbar                                       | E2E `ohne abzugsregel bleibt der punktestand bei einer falschen antwort stehen` |
+| #   | Anforderung                                                                       | Nachweis                                                                                                                                            |
+| --- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1a | Bedenkzeit auf der Startseite einstellbar, 10 s bis 5 min in sinnvollen Abständen | `TIMER_OPTIONS`, Auswahlfeld auf der Startseite                                                                                                     |
+| R1b | Zeit wird während der Frage angezeigt                                             | E2E `bedenkzeit läuft und gibt den zugriff an das nächste team weiter`                                                                              |
+| R1c | Nach Ablauf startet die Zeit für das nächste Team neu                             | derselbe Test, zusätzlich Reducer-Tests mit 1, 2 und 3 Teams                                                                                        |
+| R1d | Antwortet niemand, gilt die Frage als gespielt                                    | E2E `unbeantwortete frage gilt nach ablauf bei allen teams als gespielt`                                                                            |
+| R2a | Konfiguration als Link teilbar                                                    | Rundlauftests in `shareConfig.test.ts`, Teilen-Bereich auf der Startseite                                                                           |
+| R2b | Beim Öffnen eines geteilten Links lassen sich die Namen anpassen                  | E2E `geteilter link belegt thema, teams, bedenkzeit und regel vor`                                                                                  |
+| R3a | Gespielte Karte zeigt, ob Punkte erzielt oder abgezogen wurden                    | E2E `gespielte karten zeigen ausgang und verantwortliches team`                                                                                     |
+| R3b | Bei mehreren Teams steht dabei, wer die Frage entschieden hat                     | derselbe Test; im Übungsmodus entfällt der Name (Komponententest)                                                                                   |
+| R4  | Sichtbar, welches Team am Zug ist                                                 | E2E `anzeige des teams am zug wandert reihum weiter`                                                                                                |
+| R5  | Punktabzug bei falscher Antwort wählbar (voll, halb, keiner)                      | E2E `ohne abzugsregel bleibt der punktestand bei einer falschen antwort stehen` und `bei halber abzugsregel kostet eine falsche antwort die hälfte` |
 
 ### Prüfstand nach Runde 2
 

@@ -90,6 +90,13 @@ export interface Team {
 export type ClueOutcome = 'correct' | 'wrong';
 
 /**
+ * Was eine falsche Antwort kostet: die volle Punktzahl der Frage, die halbe
+ * als Zwischenstufe oder gar nichts.
+ */
+export const WRONG_PENALTIES = ['full', 'half', 'none'] as const;
+export type WrongPenalty = (typeof WRONG_PENALTIES)[number];
+
+/**
  * Wertung eines Teams zu einer Frage. Eine Frage erzeugt eine Wertung je
  * beteiligtem Team: höchstens eine richtige, dazu je eine für die Unterlegenen.
  */
@@ -100,9 +107,14 @@ export interface ScoreEvent {
   outcome: ClueOutcome;
   /**
    * Positiv bei richtiger Antwort, negativ bei falscher – oder 0, wenn die
-   * Abzugsregel ausgeschaltet ist.
+   * Abzugsregel das vorsieht.
    */
   delta: number;
+  /**
+   * Ob das Team per Veto in die Frage eingestiegen ist. Das Team, das die Frage
+   * begonnen hat, ist es nie. Wird für Rückblick und Statistik gebraucht.
+   */
+  viaVeto: boolean;
   at: number;
 }
 
@@ -139,10 +151,10 @@ export interface GameState {
   /** Zeitpunkt (epoch ms), zu dem die laufende Frist endet. */
   timerEndsAt: number | null;
   /**
-   * Ob eine falsche Antwort Punkte kostet. Ist die Regel aus, bleibt der
-   * Punktestand bei einer falschen Antwort unverändert.
+   * Was eine falsche Antwort kostet – volle, halbe oder keine Punktzahl der
+   * Frage.
    */
-  deductOnWrong: boolean;
+  wrongPenalty: WrongPenalty;
 }
 
 // ---------------------------------------------------------------------------
@@ -158,8 +170,8 @@ export type GameAction =
       timerSeconds?: number | null;
       /** Ohne Angabe gilt für Übernahmen dieselbe Zeit wie für den Anfang. */
       vetoSeconds?: number | null;
-      /** Ohne Angabe kosten falsche Antworten Punkte. */
-      deductOnWrong?: boolean;
+      /** Ohne Angabe kostet eine falsche Antwort die volle Punktzahl. */
+      wrongPenalty?: WrongPenalty;
     }
   | { type: 'team/rename'; teamId: string; name: string }
   | { type: 'clue/open'; clueId: string; at: number }

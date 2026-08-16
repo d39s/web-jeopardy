@@ -1,5 +1,5 @@
 import { MAX_TEAM_NAME_LENGTH, createTeam, defaultTeamName } from '@jeopardy/game-core';
-import type { Team, TopicIndexEntry } from '@jeopardy/game-core';
+import type { Team, TopicIndexEntry, WrongPenalty } from '@jeopardy/game-core';
 import { useState } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -12,6 +12,12 @@ import type { SharedConfig } from './shareConfig';
 
 const TITLE_ID = 'geteiltes-spiel-titel';
 
+const RULE_LABELS: Record<WrongPenalty, string> = {
+  full: de.setup.sharedRuleFull,
+  half: de.setup.sharedRuleHalf,
+  none: de.setup.sharedRuleNone,
+};
+
 export interface SharedConfigResult {
   /** Themen-ID aus dem Link, sofern sie im Index vorkommt. */
   topicId: string | null;
@@ -19,8 +25,8 @@ export interface SharedConfigResult {
   timerSeconds: number | null;
   /** Veto-Zeit in Sekunden; null koppelt sie an die Bedenkzeit. */
   vetoSeconds: number | null;
-  /** Ob eine falsche Antwort Punkte kostet. */
-  deductOnWrong: boolean;
+  /** Was eine falsche Antwort kostet. */
+  wrongPenalty: WrongPenalty;
 }
 
 export interface SharedConfigDialogProps {
@@ -65,7 +71,7 @@ export function SharedConfigDialog({
       teams: names.map((name, index) => createTeam(index, name)),
       timerSeconds: config.timerSeconds,
       vetoSeconds: config.vetoSeconds,
-      deductOnWrong: config.deductOnWrong,
+      wrongPenalty: config.wrongPenalty,
     });
   };
 
@@ -85,9 +91,7 @@ export function SharedConfigDialog({
           <Badge>
             {de.setup.sharedVeto(vetoValueText(config.vetoSeconds, config.timerSeconds))}
           </Badge>
-          <Badge>
-            {config.deductOnWrong ? de.setup.sharedRuleDeduct : de.setup.sharedRuleNoDeduct}
-          </Badge>
+          <Badge>{RULE_LABELS[config.wrongPenalty]}</Badge>
         </div>
 
         {/* Unbekanntes Thema: der Rest des Links bleibt trotzdem nutzbar. */}
