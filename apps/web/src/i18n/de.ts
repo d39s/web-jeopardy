@@ -125,13 +125,20 @@ export const de = {
     noteHeading: 'Hinweis für die Moderation',
 
     // Veto-Runde
+    vetoHeading: 'Veto – wer übernimmt?',
+    vetoHint: 'Ein Veto startet die Frist neu.',
     vetoButton: (teamName: string) => `Veto: ${teamName}`,
     noVeto: 'Kein Veto – Antwort aufdecken',
     participants: (names: string) => `Bereits dran: ${names}`,
+    /** Nur für Screenreader – die Übernahme ist sonst rein visuell. */
+    vetoAnnouncement: (teamName: string) => `${teamName} hat übernommen und ist jetzt am Zug.`,
 
     // Wertung
     settleHeading: 'Wer lag richtig?',
     settleNobody: 'Keine richtige Antwort gegeben',
+    /** Zeichen auf den Wertungsknöpfen – Farbe allein darf die Wahl nicht tragen. */
+    settleMarkCorrect: '✓',
+    settleMarkNobody: '✗',
     settleHintDeduct: (points: number) =>
       `Die übrigen beteiligten Teams verlieren ${points} Punkte.`,
     settleHintKeep: 'Die übrigen beteiligten Teams erhalten keine Punkte.',
@@ -140,6 +147,9 @@ export const de = {
     timerLabel: (teamName: string) => `Bedenkzeit für ${teamName}`,
     vetoTimerLabel: (teamName: string) => `Veto-Zeit für ${teamName}`,
     timeUp: 'Zeit abgelaufen',
+    /** Zeichen neben „Zeit abgelaufen" – der Zustand hängt nicht an der Farbe. */
+    timeUpMark: '⏱',
+    timeUpHint: 'Es geht nichts von selbst weiter: Veto zulassen oder die Antwort aufdecken.',
     timerRemaining: (seconds: number) => `noch ${seconds} Sekunden`,
     timerExpiredForTeam: (teamName: string) => `Zeit für ${teamName} abgelaufen`,
     timerPause: 'Pause',
