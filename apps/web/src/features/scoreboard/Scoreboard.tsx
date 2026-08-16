@@ -4,6 +4,7 @@ import {
   selectIsPracticeMode,
   selectScore,
   selectStartingTeam,
+  selectStreak,
 } from '@jeopardy/game-core';
 import type { GameState, Team } from '@jeopardy/game-core';
 import { de } from '../../i18n/de';
@@ -49,6 +50,7 @@ export function Scoreboard() {
             team={team}
             score={selectScore(state, team.id)}
             isOnTurn={team.id === turnTeam?.id}
+            streak={selectStreak(state, team.id)}
           />
         ))}
       </div>

@@ -16,6 +16,7 @@ import {
   selectScore,
   selectScoredCount,
   selectStartingTeam,
+  selectStreak,
   selectTeamStats,
   selectVetoCandidates,
 } from './selectors';
@@ -222,5 +223,54 @@ describe('kategoriefarben', () => {
     const category = sampleDefinition.categories[0];
     if (!category) throw new Error('Fixture unvollständig.');
     expect(resolveCategoryColor({ ...category, color: '#FFD166' }, 0)).toBe('#FFD166');
+  });
+});
+
+describe('serien', () => {
+  it('meldet erst ab drei gleichen ausgängen in folge', () => {
+    let state = play(startedGame(), 'wissenschaft-100', 'team-a');
+    state = play(state, 'wissenschaft-200', 'team-a', ['team-a']);
+    expect(selectStreak(state, 'team-a')).toBeNull();
+
+    state = play(state, 'wissenschaft-300', 'team-a', ['team-a']);
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'correct', length: 3 });
+  });
+
+  it('zählt auch falsche antworten in folge', () => {
+    let state = startedGame(2);
+    // Niemand liegt richtig; Team A ist jedes Mal beteiligt.
+    state = play(state, 'wissenschaft-100', null);
+    state = play(state, 'wissenschaft-200', null, ['team-a']);
+    state = play(state, 'wissenschaft-300', null);
+
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'wrong', length: 3 });
+  });
+
+  it('zählt nur eigene beteiligungen – fremde fragen unterbrechen nicht', () => {
+    let state = startedGame();
+    // Team A gewinnt seine drei Beteiligungen; dazwischen spielen B und C unter sich.
+    state = play(state, 'wissenschaft-100', 'team-a');
+    state = play(state, 'geografie-100', 'team-b');
+    state = play(state, 'musik-100', 'team-c');
+    state = play(state, 'wissenschaft-200', 'team-a', ['team-a']);
+    state = play(state, 'geografie-200', 'team-b');
+    state = play(state, 'musik-200', 'team-a', ['team-a']);
+
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'correct', length: 3 });
+  });
+
+  it('bricht die serie beim ersten abweichenden ausgang', () => {
+    let state = startedGame(2);
+    for (const clueId of ['wissenschaft-100', 'wissenschaft-200', 'wissenschaft-300']) {
+      state = play(state, clueId, 'team-a', ['team-a']);
+    }
+    expect(selectStreak(state, 'team-a')).toEqual({ kind: 'correct', length: 3 });
+
+    state = play(state, 'wissenschaft-400', 'team-b', ['team-a']);
+    expect(selectStreak(state, 'team-a')).toBeNull();
+  });
+
+  it('kennt ohne beteiligung keine serie', () => {
+    expect(selectStreak(startedGame(), 'team-c')).toBeNull();
   });
 });

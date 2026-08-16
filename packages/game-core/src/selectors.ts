@@ -1,7 +1,7 @@
 import { categoryColorAt } from './colors';
 import type { CategoryColor } from './colors';
 import { findClue } from './reducer';
-import type { Category, Clue, GameState, ScoreEvent, Team } from './types';
+import type { Category, Clue, ClueOutcome, GameState, ScoreEvent, Team } from './types';
 
 /**
  * Punktestand eines Teams. Die Klammerung auf null erfolgt **schrittweise** je
@@ -56,6 +56,35 @@ export function selectTeamStats(
     correct: events.filter((event) => event.outcome === 'correct').length,
     wrong: events.filter((event) => event.outcome === 'wrong').length,
   };
+}
+
+/** Ab so vielen gleichen Ausgängen in Folge gilt eine Serie als Serie. */
+export const STREAK_MIN = 3;
+
+export interface TeamStreak {
+  /** Richtige oder falsche Antworten – gemischt gibt es keine Serie. */
+  kind: ClueOutcome;
+  /** Länge der Serie, mindestens `STREAK_MIN`. */
+  length: number;
+}
+
+/**
+ * Laufende Serie eines Teams, sonst null. Gezählt werden **nur eigene
+ * Beteiligungen**: Fragen, die andere Teams unter sich ausmachen, unterbrechen
+ * die Serie nicht – sonst käme bei vielen Teams kaum jemand auf drei in Folge.
+ */
+export function selectStreak(state: GameState, teamId: string): TeamStreak | null {
+  const own = state.events.filter((event) => event.teamId === teamId);
+  const last = own.at(-1);
+  if (!last) return null;
+
+  let length = 0;
+  for (let index = own.length - 1; index >= 0; index -= 1) {
+    if (own[index]?.outcome !== last.outcome) break;
+    length += 1;
+  }
+
+  return length >= STREAK_MIN ? { kind: last.outcome, length } : null;
 }
 
 export interface RankedTeam {

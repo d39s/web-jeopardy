@@ -88,6 +88,21 @@ test('ohne abzugsregel bleibt der punktestand bei einer falschen antwort stehen'
   await expect(page.getByText('Team A: 100 Punkte')).toBeAttached();
 });
 
+test('serie erscheint am teamnamen ab drei richtigen antworten in folge', async ({ page }) => {
+  await startGame(page, 2);
+
+  await playClue(page, 'Erdkunde', 100, 'Team A');
+  await playClue(page, 'Geschichte', 100, 'Team A', ['Team A']);
+  await expect(page.getByText('Team A: 3 richtige Antworten in Folge')).toHaveCount(0);
+
+  await playClue(page, 'Natur', 100, 'Team A');
+  await expect(page.getByText('Team A: 3 richtige Antworten in Folge')).toBeAttached();
+
+  // Eine verlorene Frage beendet die Serie.
+  await playClue(page, 'Sprache', 100, 'Team B', ['Team A']);
+  await expect(page.getByText(/Team A: \d+ richtige Antworten in Folge/)).toHaveCount(0);
+});
+
 test('bei halber abzugsregel kostet eine falsche antwort die hälfte', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Halbe Punktzahl/ }).click();

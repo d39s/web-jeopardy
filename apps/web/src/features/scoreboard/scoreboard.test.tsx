@@ -60,6 +60,44 @@ describe('teamleiste', () => {
   });
 });
 
+describe('serien in der teamleiste', () => {
+  /** Lässt ein Team `count` Fragen hintereinander gewinnen oder verlieren. */
+  function series(count: number, winnerTeamId: string | null): GameState {
+    let state = startedState(2);
+    const clueIds = [
+      'wissenschaft-100',
+      'wissenschaft-200',
+      'wissenschaft-300',
+      'wissenschaft-400',
+    ];
+    for (const clueId of clueIds.slice(0, count)) {
+      state = playClue(state, clueId, winnerTeamId, ['team-a']);
+    }
+    return state;
+  }
+
+  it('zeigt ab drei richtigen antworten die flamme mit der länge', () => {
+    renderWithGame(<Scoreboard />, series(3, 'team-a'));
+
+    expect(screen.getByText('Team A: 3 richtige Antworten in Folge')).toBeInTheDocument();
+    expect(screen.getByText('🔥')).toBeInTheDocument();
+  });
+
+  it('zeigt bei drei falschen antworten das eis', () => {
+    renderWithGame(<Scoreboard />, series(3, null));
+
+    expect(screen.getByText('Team A: 3 falsche Antworten in Folge')).toBeInTheDocument();
+    expect(screen.getByText('🧊')).toBeInTheDocument();
+  });
+
+  it('bleibt bei zwei gleichen ausgängen still', () => {
+    renderWithGame(<Scoreboard />, series(2, 'team-a'));
+
+    expect(screen.queryByText('🔥')).not.toBeInTheDocument();
+    expect(screen.queryByText('🧊')).not.toBeInTheDocument();
+  });
+});
+
 /**
  * Laufende Frage, bei der Team B per Veto übernommen hat: Der Zugriff liegt
  * beim zweiten Team, die nächste Frage beginnt weiterhin beim ersten – so wird

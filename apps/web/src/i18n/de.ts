@@ -120,6 +120,15 @@ export const de = {
     resultMarkCorrect: '✓',
     resultMarkWrong: '✗',
 
+    // Serien
+    /** Zeichen der Serie – die Bedeutung steht daneben im Vorlesetext. */
+    streakMarkCorrect: '🔥',
+    streakMarkWrong: '🧊',
+    streakCorrectLabel: (name: string, count: number) =>
+      `${name}: ${count} richtige Antworten in Folge`,
+    streakWrongLabel: (name: string, count: number) =>
+      `${name}: ${count} falsche Antworten in Folge`,
+
     // Zugreihenfolge
     turnLabel: (name: string) => `${name} ist am Zug`,
     turnNext: (name: string) => `Nächste Frage beginnt bei ${name}`,
