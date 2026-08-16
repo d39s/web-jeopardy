@@ -101,6 +101,11 @@ export interface GameState {
   activeTeamIndex: number;
   /** Zeitpunkt (epoch ms), zu dem die laufende Bedenkzeit endet. */
   timerEndsAt: number | null;
+  /**
+   * Ob eine falsche Antwort Punkte kostet. Ist die Regel aus, bleibt der
+   * Punktestand bei einer falschen Antwort unverändert.
+   */
+  deductOnWrong: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +119,8 @@ export type GameAction =
       teams: Team[];
       /** Ohne Angabe wird ohne Timer gespielt. */
       timerSeconds?: number | null;
+      /** Ohne Angabe kosten falsche Antworten Punkte. */
+      deductOnWrong?: boolean;
     }
   | { type: 'team/rename'; teamId: string; name: string }
   | { type: 'clue/open'; clueId: string; at: number }

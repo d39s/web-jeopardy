@@ -3,6 +3,7 @@ details.md
 
 dist/
 coverage/
+.claude/
 node_modules/
 package-lock.json
 playwright-report/

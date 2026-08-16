@@ -125,6 +125,7 @@ export const gameStateSchema = z.strictObject({
   startingTeamIndex: z.number().int().nonnegative(),
   activeTeamIndex: z.number().int().nonnegative(),
   timerEndsAt: z.number().int().nonnegative().nullable(),
+  deductOnWrong: z.boolean(),
 });
 
 // ---------------------------------------------------------------------------

@@ -20,6 +20,7 @@ export const initialGameState: GameState = {
   startingTeamIndex: 0,
   activeTeamIndex: 0,
   timerEndsAt: null,
+  deductOnWrong: true,
 };
 
 export function findClue(
@@ -96,6 +97,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         definition: action.definition,
         teams: action.teams,
         timerSeconds: action.timerSeconds ?? null,
+        deductOnWrong: action.deductOnWrong ?? true,
       };
     }
 
@@ -137,6 +139,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'clue/timerExpired': {
       if (!state.openClueId || state.timerEndsAt === null) return state;
+      // Nur eine tatsächlich verstrichene Frist zählt. Das schützt vor doppelt
+      // gemeldeten Abläufen und, in Phase 2, vor verspäteten Meldungen anderer
+      // Clients – sonst würde ein Team seinen Zugriff verlieren.
+      if (action.at < state.timerEndsAt) return state;
 
       const teamCount = Math.max(1, state.teams.length);
       const nextTeamIndex = (state.activeTeamIndex + 1) % teamCount;
@@ -161,12 +167,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Schutz gegen Doppelklick und gegen konkurrierende Wertungen in Phase 2.
       if (isClueScored(state.events, action.clueId)) return state;
 
+      // Falsche Antworten kosten nur Punkte, wenn die Regel eingeschaltet ist.
+      const delta = action.correct
+        ? found.clue.points
+        : state.deductOnWrong
+          ? -found.clue.points
+          : 0;
+
       return finishClue(
         state,
         action.clueId,
         action.teamId,
         action.correct ? 'correct' : 'wrong',
-        action.correct ? found.clue.points : -found.clue.points,
+        delta,
         action.at,
       );
     }

@@ -179,8 +179,9 @@ describe('ausgang einer gespielten frage', () => {
 
   it('meldet eine nicht beantwortete frage ohne team', () => {
     let state = gameReducer(startedGame(2, 30), { type: 'clue/open', clueId: 'musik-300', at: 0 });
-    state = gameReducer(state, { type: 'clue/timerExpired', at: 1 });
-    state = gameReducer(state, { type: 'clue/timerExpired', at: 2 });
+    // Der Ablauf zählt erst zum Fristende: 30 Sekunden je Team.
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 30_000 });
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 60_000 });
 
     expect(selectClueResult(state, 'musik-300')).toEqual({
       outcome: 'unanswered',
@@ -195,8 +196,9 @@ describe('ausgang einer gespielten frage', () => {
 
   it('zählt nicht beantwortete fragen bei keinem team als fehler', () => {
     let state = gameReducer(startedGame(2, 30), { type: 'clue/open', clueId: 'musik-300', at: 0 });
-    state = gameReducer(state, { type: 'clue/timerExpired', at: 1 });
-    state = gameReducer(state, { type: 'clue/timerExpired', at: 2 });
+    // Der Ablauf zählt erst zum Fristende: 30 Sekunden je Team.
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 30_000 });
+    state = gameReducer(state, { type: 'clue/timerExpired', at: 60_000 });
 
     expect(selectTeamStats(state, 'team-a')).toEqual({ correct: 0, wrong: 0 });
   });

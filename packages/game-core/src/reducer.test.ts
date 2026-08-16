@@ -9,12 +9,17 @@ const CLUE_100 = 'wissenschaft-100';
 const CLUE_200 = 'wissenschaft-200';
 const CLUE_300 = 'wissenschaft-300';
 
-function startedGame(teamCount = 2, timerSeconds: number | null = null): GameState {
+function startedGame(
+  teamCount = 2,
+  timerSeconds: number | null = null,
+  deductOnWrong = true,
+): GameState {
   return gameReducer(initialGameState, {
     type: 'game/start',
     definition: sampleDefinition,
     teams: createDefaultTeams(teamCount),
     timerSeconds,
+    deductOnWrong,
   });
 }
 
@@ -22,7 +27,8 @@ function openClue(state: GameState, clueId: string, at = 1_000): GameState {
   return gameReducer(state, { type: 'clue/open', clueId, at });
 }
 
-function expireTimer(state: GameState, at = 1_000): GameState {
+/** Meldet den Ablauf standardmäßig genau zum Fristende. */
+function expireTimer(state: GameState, at = state.timerEndsAt ?? 0): GameState {
   return gameReducer(state, { type: 'clue/timerExpired', at });
 }
 
@@ -292,5 +298,49 @@ describe('zugreihenfolge', () => {
     state = award(openClue(state, CLUE_200), CLUE_200, 'team-b', true);
 
     expect(state.startingTeamIndex).toBe(0);
+  });
+});
+
+describe('regel: punktabzug bei falscher antwort', () => {
+  it('zieht standardmäßig punkte ab', () => {
+    let state = startedGame(2);
+    state = award(state, CLUE_300, 'team-a', true);
+    state = award(state, CLUE_100, 'team-a', false);
+
+    expect(state.events[1]?.delta).toBe(-100);
+    expect(selectScore(state, 'team-a')).toBe(200);
+  });
+
+  it('lässt den punktestand unverändert, wenn die regel ausgeschaltet ist', () => {
+    let state = startedGame(2, null, false);
+    state = award(state, CLUE_300, 'team-a', true);
+    state = award(state, CLUE_100, 'team-a', false);
+
+    expect(state.events[1]?.delta).toBe(0);
+    expect(selectScore(state, 'team-a')).toBe(300);
+  });
+
+  it('behält den ausgang falsch, auch wenn keine punkte abgezogen werden', () => {
+    const state = award(startedGame(2, null, false), CLUE_100, 'team-b', false);
+
+    expect(state.events[0]?.outcome).toBe('wrong');
+    expect(selectIsClueScored(state, CLUE_100)).toBe(true);
+  });
+
+  it('meldet einen ablauf vor dem fristende als wirkungslos', () => {
+    const opened = openClue(startedGame(3, 30), CLUE_100, 1_000);
+    const tooEarly = gameReducer(opened, { type: 'clue/timerExpired', at: 5_000 });
+
+    expect(tooEarly).toBe(opened);
+    expect(tooEarly.activeTeamIndex).toBe(0);
+  });
+
+  it('verhindert, dass eine doppelt gemeldete frist ein team überspringt', () => {
+    const opened = openClue(startedGame(3, 30), CLUE_100, 1_000);
+    const once = expireTimer(opened);
+    const twice = gameReducer(once, { type: 'clue/timerExpired', at: 31_000 });
+
+    expect(once.activeTeamIndex).toBe(1);
+    expect(twice).toBe(once);
   });
 });
