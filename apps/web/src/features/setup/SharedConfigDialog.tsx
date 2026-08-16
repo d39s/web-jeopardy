@@ -16,6 +16,8 @@ export interface SharedConfigResult {
   topicId: string | null;
   teams: Team[];
   timerSeconds: number | null;
+  /** Ob eine falsche Antwort Punkte kostet. */
+  deductOnWrong: boolean;
 }
 
 export interface SharedConfigDialogProps {
@@ -59,6 +61,7 @@ export function SharedConfigDialog({
       // createTeam kürzt zu lange und ersetzt leere Namen durch den Standard.
       teams: names.map((name, index) => createTeam(index, name)),
       timerSeconds: config.timerSeconds,
+      deductOnWrong: config.deductOnWrong,
     });
   };
 
@@ -75,6 +78,9 @@ export function SharedConfigDialog({
         <div className="flex flex-wrap gap-2">
           {topic ? <Badge>{de.setup.sharedTopic(topic.title)}</Badge> : null}
           <Badge>{de.setup.sharedTimer(timerLabel)}</Badge>
+          <Badge>
+            {config.deductOnWrong ? de.setup.sharedRuleDeduct : de.setup.sharedRuleNoDeduct}
+          </Badge>
         </div>
 
         {/* Unbekanntes Thema: der Rest des Links bleibt trotzdem nutzbar. */}

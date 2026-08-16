@@ -29,6 +29,14 @@ export const de = {
     timerMinutesSeconds: (minutes: number, seconds: number) =>
       `${minutes}:${String(seconds).padStart(2, '0')} Minuten`,
 
+    rulesHeading: 'Spielregeln',
+    rulesDeductLabel: 'Falsche Antwort kostet Punkte',
+    rulesDeductHintOn:
+      'Bei einer falschen Antwort wird die Punktzahl der Frage abgezogen – nie unter null.',
+    rulesDeductHintOff: 'Bei einer falschen Antwort bleibt der Punktestand unverändert.',
+    sharedRuleDeduct: 'Falsche Antwort kostet Punkte',
+    sharedRuleNoDeduct: 'Falsche Antwort kostet keine Punkte',
+
     shareHeading: 'Spiel teilen',
     shareHint: 'Der Link enthält Thema, Teams und Bedenkzeit.',
     shareLinkLabel: 'Link zur Spielkonfiguration',

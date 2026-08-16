@@ -3,7 +3,7 @@ import { MAX_TEAMS_UI, MAX_TEAM_NAME_LENGTH, TIMER_OPTIONS } from '@jeopardy/gam
 /**
  * Spielkonfiguration als lesbarer Link.
  *
- * Format: `?thema=<themen-id>&teams=<Name1,Name2>&timer=<sekunden>`
+ * Format: `?thema=<themen-id>&teams=<Name1,Name2>&timer=<sekunden>&abzug=<0|1>`
  *
  * Bewusst kein Base64: Der Link bleibt lesbar und lässt sich notfalls von Hand
  * tippen. Die Teamnamen werden einzeln URL-kodiert und mit einem echten Komma
@@ -17,6 +17,7 @@ import { MAX_TEAMS_UI, MAX_TEAM_NAME_LENGTH, TIMER_OPTIONS } from '@jeopardy/gam
 export const SHARE_PARAM_TOPIC = 'thema';
 export const SHARE_PARAM_TEAMS = 'teams';
 export const SHARE_PARAM_TIMER = 'timer';
+export const SHARE_PARAM_DEDUCT = 'abzug';
 
 /** Trennt die Teamnamen im Link – im Namen selbst erscheint es nur kodiert. */
 const TEAM_SEPARATOR = ',';
@@ -41,6 +42,8 @@ export interface SharedConfig {
   teamNames: string[];
   /** Bedenkzeit je Frage in Sekunden; null bedeutet ohne Zeitbegrenzung. */
   timerSeconds: number | null;
+  /** Ob eine falsche Antwort Punkte kostet. */
+  deductOnWrong: boolean;
 }
 
 export type ShareParseResult =
@@ -105,6 +108,13 @@ function parseTeamNames(raw: string | null): string[] {
     .slice(0, MAX_TEAMS_UI);
 }
 
+/** Fehlt der Parameter oder ist er unlesbar, gilt der Standard: Abzug an. */
+function parseDeduct(raw: string | null): boolean {
+  if (raw === null) return true;
+  const decoded = decodeComponent(raw)?.trim().toLowerCase() ?? '';
+  return !['0', 'false', 'nein', 'aus'].includes(decoded);
+}
+
 function parseTimer(raw: string | null): number | null {
   if (raw === null) return null;
   const decoded = decodeComponent(raw)?.trim() ?? '';
@@ -135,6 +145,11 @@ export function buildShareQuery(config: SharedConfig): string {
     parts.push(`${SHARE_PARAM_TIMER}=${config.timerSeconds}`);
   }
 
+  // Nur die abweichende Regel steht im Link; Abzug ist der Standard.
+  if (!config.deductOnWrong) {
+    parts.push(`${SHARE_PARAM_DEDUCT}=0`);
+  }
+
   return parts.join('&');
 }
 
@@ -154,8 +169,9 @@ export function parseShareParams(search: string): ShareParseResult {
   const rawTopic = readRawParam(search, SHARE_PARAM_TOPIC);
   const rawTeams = readRawParam(search, SHARE_PARAM_TEAMS);
   const rawTimer = readRawParam(search, SHARE_PARAM_TIMER);
+  const rawDeduct = readRawParam(search, SHARE_PARAM_DEDUCT);
 
-  if (rawTopic === null && rawTeams === null && rawTimer === null) {
+  if (rawTopic === null && rawTeams === null && rawTimer === null && rawDeduct === null) {
     return { status: 'none' };
   }
 
@@ -163,6 +179,7 @@ export function parseShareParams(search: string): ShareParseResult {
     topicId: sanitizeTopicId(rawTopic === null ? null : decodeComponent(rawTopic)),
     teamNames: parseTeamNames(rawTeams),
     timerSeconds: parseTimer(rawTimer),
+    deductOnWrong: parseDeduct(rawDeduct),
   };
 
   if (config.topicId === null && config.teamNames.length === 0) {

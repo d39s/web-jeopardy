@@ -7,6 +7,7 @@ const basis: SharedConfig = {
   topicId: 'it-grundlagen',
   teamNames: ['Team A', 'Team B'],
   timerSeconds: 30,
+  deductOnWrong: true,
 };
 
 /** Baut den Link und liest ihn sofort wieder ein. */
@@ -43,6 +44,7 @@ describe('teilen-link lesen', () => {
       topicId: 'popkultur-90er',
       teamNames: ['Die Füchse & Co.', 'Über, Team', 'Grüße 100% 🎉', 'a+b=c?'],
       timerSeconds: 45,
+      deductOnWrong: true,
     };
 
     expect(rundlauf(config)).toEqual(config);
@@ -58,7 +60,7 @@ describe('teilen-link lesen', () => {
 
     expect(result).toEqual({
       status: 'ok',
-      config: { topicId: 'it-grundlagen', teamNames: [], timerSeconds: null },
+      config: { topicId: 'it-grundlagen', teamNames: [], timerSeconds: null, deductOnWrong: true },
     });
   });
 
@@ -73,7 +75,7 @@ describe('teilen-link lesen', () => {
 
     expect(result).toEqual({
       status: 'ok',
-      config: { topicId: null, teamNames: ['Adler'], timerSeconds: null },
+      config: { topicId: null, teamNames: ['Adler'], timerSeconds: null, deductOnWrong: true },
     });
   });
 
@@ -101,12 +103,40 @@ describe('teilen-link lesen', () => {
 
     expect(result).toEqual({
       status: 'ok',
-      config: { topicId: null, teamNames: ['Adler'], timerSeconds: null },
+      config: { topicId: null, teamNames: ['Adler'], timerSeconds: null, deductOnWrong: true },
     });
   });
 
   it('meldet einen link ohne verwertbare angaben als fehlerhaft', () => {
     expect(parseShareParams('?thema=&teams=').status).toBe('invalid');
     expect(parseShareParams('?timer=30').status).toBe('invalid');
+  });
+});
+
+describe('abzugsregel im link', () => {
+  it('lässt den standard weg und ergänzt ihn beim lesen', () => {
+    const query = buildShareQuery({ ...basis, deductOnWrong: true });
+
+    expect(query).not.toContain('abzug');
+    expect(parseShareParams(`?${query}`)).toEqual({
+      status: 'ok',
+      config: { ...basis, deductOnWrong: true },
+    });
+  });
+
+  it('überträgt die abgeschaltete regel', () => {
+    const config = { ...basis, deductOnWrong: false };
+    const query = buildShareQuery(config);
+
+    expect(query).toContain('abzug=0');
+    expect(parseShareParams(`?${query}`)).toEqual({ status: 'ok', config });
+  });
+
+  it('nimmt bei fehlender oder unlesbarer angabe den abzug an', () => {
+    const ohne = parseShareParams('?thema=it-grundlagen');
+    const kaputt = parseShareParams('?thema=it-grundlagen&abzug=vielleicht');
+
+    expect(ohne.status === 'ok' && ohne.config.deductOnWrong).toBe(true);
+    expect(kaputt.status === 'ok' && kaputt.config.deductOnWrong).toBe(true);
   });
 });

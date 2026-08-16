@@ -13,6 +13,7 @@ import { ShareSection } from './ShareSection';
 import { SharedConfigDialog } from './SharedConfigDialog';
 import type { SharedConfigResult } from './SharedConfigDialog';
 import { TeamSetup } from './TeamSetup';
+import { RulesSetup } from './RulesSetup';
 import { TimerSetup } from './TimerSetup';
 import { TopicPicker } from './TopicPicker';
 import { buildShareLink, clearShareParams, parseShareParams } from './shareConfig';
@@ -39,6 +40,7 @@ export function SetupPage() {
   const [uploaded, setUploaded] = useState<GameDefinition | null>(null);
   const [starting, setStarting] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
+  const [deductOnWrong, setDeductOnWrong] = useState(true);
 
   /**
    * Der geteilte Link wird genau einmal beim ersten Rendern ausgewertet. Danach
@@ -85,6 +87,7 @@ export function SetupPage() {
             topicId: selectedId,
             teamNames: normalizeTeams(teams).map((team) => team.name),
             timerSeconds,
+            deductOnWrong,
           },
           globalThis.location?.href ?? '',
         );
@@ -101,6 +104,7 @@ export function SetupPage() {
     }
     setTeams(result.teams);
     setTimerSeconds(result.timerSeconds);
+    setDeductOnWrong(result.deductOnWrong);
     closeShared();
   };
 
@@ -136,7 +140,7 @@ export function SetupPage() {
 
     const normalized = normalizeTeams(teams);
     saveLastTeams(normalized);
-    dispatch({ type: 'game/start', definition, teams: normalized, timerSeconds });
+    dispatch({ type: 'game/start', definition, teams: normalized, timerSeconds, deductOnWrong });
     void navigate('/game');
   };
 
@@ -165,6 +169,8 @@ export function SetupPage() {
       <TeamSetup teams={teams} onChange={setTeams} />
 
       <TimerSetup value={timerSeconds} onChange={setTimerSeconds} />
+
+      <RulesSetup deductOnWrong={deductOnWrong} onChange={setDeductOnWrong} />
 
       <TopicPicker
         topics={topics}
