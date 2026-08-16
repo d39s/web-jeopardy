@@ -49,6 +49,14 @@
       "category": "it",
       "difficulty": 2,
       "file": "it-fortgeschritten.json"
+    },
+    {
+      "id": "it-experten",
+      "title": "IT für Experten",
+      "description": "Rechnerarchitektur, Betriebssysteme, verteilte Systeme, Kryptografie und Protokolle – hier ist Fachwissen gefragt.",
+      "category": "it",
+      "difficulty": 3,
+      "file": "it-experten.json"
     }
   ]
 }
