@@ -49,6 +49,14 @@
       "category": "allgemeinwissen",
       "difficulty": 2,
       "file": "allgemeinwissen-fortgeschritten.json"
+    },
+    {
+      "id": "allgemeinwissen-experten",
+      "title": "Allgemeinwissen – Experten",
+      "description": "Für Runden, die es genau wissen wollen: Erdkunde, Jahreszahlen, Wissenschaft, Wortherkunft und Mythologie.",
+      "category": "allgemeinwissen",
+      "difficulty": 3,
+      "file": "allgemeinwissen-experten.json"
     }
   ]
 }

@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "id": "allgemeinwissen-experten",
+  "title": "Allgemeinwissen – Experten",
+  "category": "allgemeinwissen",
+  "difficulty": 3,
+  "description": "Für Runden, die es genau wissen wollen: Erdkunde, Jahreszahlen, Wissenschaft, Wortherkunft und Mythologie.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "pointSteps": [100, 200, 300, 400, 500],
+  "categories": [
+    {
+      "id": "erdkunde-fuer-kenner",
+      "name": "Erdkunde für Kenner",
+      "clues": [
+        {
+          "id": "erdkunde-fuer-kenner-100",
+          "points": 100,
+          "question": "Wie heißt die Hauptstadt Neuseelands?",
+          "answer": "Wellington"
+        },
+        {
+          "id": "erdkunde-fuer-kenner-200",
+          "points": 200,
+          "question": "Welches Land umschließt das Königreich Lesotho vollständig?",
+          "answer": "Südafrika"
+        },
+        {
+          "id": "erdkunde-fuer-kenner-300",
+          "points": 300,
+          "question": "Welcher See ist mit über 1600 Metern der tiefste der Erde?",
+          "answer": "Der Baikalsee",
+          "note": "Der flächengrößte See ist das Kaspische Meer – häufige Verwechslung."
+        },
+        {
+          "id": "erdkunde-fuer-kenner-400",
+          "points": 400,
+          "question": "Welches Land hat die längste Küstenlinie der Erde?",
+          "answer": "Kanada"
+        },
+        {
+          "id": "erdkunde-fuer-kenner-500",
+          "points": 500,
+          "question": "Welche Stadt löste 2005/2006 Rangun als Hauptstadt Myanmars ab?",
+          "answer": "Naypyidaw"
+        }
+      ]
+    },
+    {
+      "id": "jahreszahlen",
+      "name": "Jahreszahlen",
+      "clues": [
+        {
+          "id": "jahreszahlen-100",
+          "points": 100,
+          "question": "In welchem Jahr wurde Karl der Große in Rom zum Kaiser gekrönt?",
+          "answer": "800"
+        },
+        {
+          "id": "jahreszahlen-200",
+          "points": 200,
+          "question": "In welchem Jahr veröffentlichte Martin Luther seine 95 Thesen?",
+          "answer": "1517"
+        },
+        {
+          "id": "jahreszahlen-300",
+          "points": 300,
+          "question": "In welchem Jahr wurde das Deutsche Kaiserreich gegründet?",
+          "answer": "1871"
+        },
+        {
+          "id": "jahreszahlen-400",
+          "points": 400,
+          "question": "In welchem Jahr trat die Nationalversammlung in der Frankfurter Paulskirche erstmals zusammen?",
+          "answer": "1848"
+        },
+        {
+          "id": "jahreszahlen-500",
+          "points": 500,
+          "question": "In welchem Jahr endete der Wiener Kongress mit seiner Schlussakte?",
+          "answer": "1815"
+        }
+      ]
+    },
+    {
+      "id": "wissenschaft",
+      "name": "Wissenschaft",
+      "clues": [
+        {
+          "id": "wissenschaft-100",
+          "points": 100,
+          "question": "Wie viele Chromosomenpaare besitzt der Mensch?",
+          "answer": "23",
+          "note": "Gefragt sind die Paare, nicht die Gesamtzahl von 46 Chromosomen."
+        },
+        {
+          "id": "wissenschaft-200",
+          "points": 200,
+          "question": "Für welches Element steht das chemische Symbol K?",
+          "answer": "Kalium"
+        },
+        {
+          "id": "wissenschaft-300",
+          "points": 300,
+          "question": "Welches Element ist nach Sauerstoff das zweithäufigste in der Erdkruste?",
+          "answer": "Silizium"
+        },
+        {
+          "id": "wissenschaft-400",
+          "points": 400,
+          "question": "Wie heißt die SI-Einheit für die Aktivität eines radioaktiven Stoffes?",
+          "answer": "Das Becquerel"
+        },
+        {
+          "id": "wissenschaft-500",
+          "points": 500,
+          "question": "Wer beschrieb 1953 zusammen mit Francis Crick die Doppelhelix der DNA?",
+          "answer": "James Watson"
+        }
+      ]
+    },
+    {
+      "id": "wortherkunft",
+      "name": "Wortherkunft und Stil",
+      "clues": [
+        {
+          "id": "wortherkunft-100",
+          "points": 100,
+          "question": "Aus welcher Sprache stammt das Wort \"Algebra\"?",
+          "answer": "Aus dem Arabischen"
+        },
+        {
+          "id": "wortherkunft-200",
+          "points": 200,
+          "question": "Aus welcher Sprache stammt das Wort \"Roboter\", das 1920 in einem Theaterstück geprägt wurde?",
+          "answer": "Aus dem Tschechischen"
+        },
+        {
+          "id": "wortherkunft-300",
+          "points": 300,
+          "question": "Wie heißt die Stilfigur, die zwei widersprüchliche Begriffe verbindet, etwa \"bittersüß\"?",
+          "answer": "Das Oxymoron"
+        },
+        {
+          "id": "wortherkunft-400",
+          "points": 400,
+          "question": "Wie nennt man ein Wort, das aus zwei Wörtern verschmolzen ist, etwa \"Brunch\"?",
+          "answer": "Ein Kofferwort"
+        },
+        {
+          "id": "wortherkunft-500",
+          "points": 500,
+          "question": "Zu welcher Sprachfamilie gehören Finnisch, Estnisch und Ungarisch?",
+          "answer": "Zu den finnougrischen Sprachen",
+          "note": "Auch \"uralische Sprachen\" gilt – die finnougrischen sind deren größter Zweig."
+        }
+      ]
+    },
+    {
+      "id": "mythologie",
+      "name": "Mythologie",
+      "clues": [
+        {
+          "id": "mythologie-100",
+          "points": 100,
+          "question": "Welcher römische Gott entspricht dem griechischen Hermes?",
+          "answer": "Merkur"
+        },
+        {
+          "id": "mythologie-200",
+          "points": 200,
+          "question": "Welches Wesen mit Stierkopf hauste im Labyrinth von Knossos?",
+          "answer": "Der Minotaurus"
+        },
+        {
+          "id": "mythologie-300",
+          "points": 300,
+          "question": "Wer setzt in der griechischen Mythologie die Toten über den Fluss in die Unterwelt?",
+          "answer": "Charon"
+        },
+        {
+          "id": "mythologie-400",
+          "points": 400,
+          "question": "Wie heißt der Weltenbaum der nordischen Mythologie?",
+          "answer": "Yggdrasil"
+        },
+        {
+          "id": "mythologie-500",
+          "points": 500,
+          "question": "Wer war in der griechischen Mythologie die Mutter des Achilleus?",
+          "answer": "Die Meeresgöttin Thetis"
+        }
+      ]
+    }
+  ]
+}
