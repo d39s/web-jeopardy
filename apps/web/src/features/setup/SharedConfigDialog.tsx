@@ -7,6 +7,7 @@ import { Modal } from '../../components/ui/Modal';
 import { TextField } from '../../components/ui/TextField';
 import { de } from '../../i18n/de';
 import { formatTimerOption } from './TimerSetup';
+import { vetoValueText } from './VetoSetup';
 import type { SharedConfig } from './shareConfig';
 
 const TITLE_ID = 'geteiltes-spiel-titel';
@@ -16,6 +17,8 @@ export interface SharedConfigResult {
   topicId: string | null;
   teams: Team[];
   timerSeconds: number | null;
+  /** Veto-Zeit in Sekunden; null koppelt sie an die Bedenkzeit. */
+  vetoSeconds: number | null;
   /** Ob eine falsche Antwort Punkte kostet. */
   deductOnWrong: boolean;
 }
@@ -61,6 +64,7 @@ export function SharedConfigDialog({
       // createTeam kürzt zu lange und ersetzt leere Namen durch den Standard.
       teams: names.map((name, index) => createTeam(index, name)),
       timerSeconds: config.timerSeconds,
+      vetoSeconds: config.vetoSeconds,
       deductOnWrong: config.deductOnWrong,
     });
   };
@@ -78,6 +82,9 @@ export function SharedConfigDialog({
         <div className="flex flex-wrap gap-2">
           {topic ? <Badge>{de.setup.sharedTopic(topic.title)}</Badge> : null}
           <Badge>{de.setup.sharedTimer(timerLabel)}</Badge>
+          <Badge>
+            {de.setup.sharedVeto(vetoValueText(config.vetoSeconds, config.timerSeconds))}
+          </Badge>
           <Badge>
             {config.deductOnWrong ? de.setup.sharedRuleDeduct : de.setup.sharedRuleNoDeduct}
           </Badge>
