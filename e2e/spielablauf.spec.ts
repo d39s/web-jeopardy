@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { clueCard, revealAnswer, scoredClueCard, settleButton, startGame } from './helpers';
+import {
+  clueCard,
+  revealAnswer,
+  scoredClueCard,
+  settleButton,
+  startGame,
+  vetoButton,
+} from './helpers';
 
 test('spielfeld passt ohne scrollen auf einen bildschirm', async ({ page }) => {
   await startGame(page);
@@ -69,4 +76,28 @@ test('startseite und spielfeld sind ohne barrieren bedienbar', async ({ page }) 
   await clueCard(page, 'Erdkunde', 100).click();
   const dialog = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(dialog.violations).toEqual([]);
+});
+
+test('frage-popup passt bei acht teams ohne scrollen auf einen bildschirm', async ({ page }) => {
+  await startGame(page, 8);
+  await clueCard(page, 'Erdkunde', 500).click();
+
+  const dialog = page.locator('dialog[open]');
+  await expect(dialog).toBeVisible();
+
+  // Sieben Veto-Knöpfe, Countdown, Frage und Hauptaktion gleichzeitig im Dialog.
+  await expect(page.getByRole('button', { name: /^Veto:/ })).toHaveCount(7);
+
+  const scrollt = await dialog.evaluate((el) => el.scrollHeight > el.clientHeight + 1);
+  expect(scrollt).toBe(false);
+
+  // Auch die Wertung mit acht Beteiligten bleibt im Rahmen.
+  for (const team of ['Team B', 'Team C', 'Team D', 'Team E', 'Team F', 'Team G', 'Team H']) {
+    await vetoButton(page, team).click();
+  }
+  await revealAnswer(page);
+
+  await expect(page.getByText('Wer lag richtig?')).toBeVisible();
+  const scrolltWertung = await dialog.evaluate((el) => el.scrollHeight > el.clientHeight + 1);
+  expect(scrolltWertung).toBe(false);
 });

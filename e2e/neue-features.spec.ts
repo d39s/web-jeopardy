@@ -90,7 +90,9 @@ test('geteilter link belegt thema, teams, bedenkzeit und regel vor', async ({ pa
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByText('Geteiltes Spiel')).toBeVisible();
   await expect(dialog.getByText(/Popkultur/)).toBeVisible();
-  await expect(dialog.getByText(/45 Sekunden/)).toBeVisible();
+  await expect(dialog.getByText('Bedenkzeit: 45 Sekunden')).toBeVisible();
+  // Ohne eigenen Wert im Link koppelt sich die Veto-Zeit an die Bedenkzeit.
+  await expect(dialog.getByText(/^Veto-Zeit: Wie die Bedenkzeit/)).toBeVisible();
   await expect(dialog.getByText('Falsche Antwort kostet keine Punkte')).toBeVisible();
 
   await dialog.getByRole('textbox', { name: 'Name von Team 2' }).fill('Blaue Riesen');
@@ -98,7 +100,10 @@ test('geteilter link belegt thema, teams, bedenkzeit und regel vor', async ({ pa
 
   await expect(page.getByRole('textbox', { name: 'Name von Team 1' })).toHaveValue('Rote Riesen');
   await expect(page.getByRole('textbox', { name: 'Name von Team 2' })).toHaveValue('Blaue Riesen');
-  await expect(page.getByText('45 Sekunden')).toBeVisible();
+  await expect(page.getByLabel('Bedenkzeit je Frage')).toHaveAttribute(
+    'aria-valuetext',
+    '45 Sekunden',
+  );
   await expect(page.getByRole('button', { name: /Punktestand bleibt/ })).toHaveAttribute(
     'aria-pressed',
     'true',
