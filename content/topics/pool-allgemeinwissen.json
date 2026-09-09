@@ -1226,7 +1226,7 @@
           "id": "natur-1-03",
           "level": 1,
           "question": "So viele Beine hat eine Spinne.",
-          "answer": "Acht"
+          "answer": "Acht Beine"
         },
         {
           "id": "natur-1-04",
@@ -1303,8 +1303,8 @@
         {
           "id": "natur-2-05",
           "level": 2,
-          "question": "Dieses Organ pumpt bei Säugetieren das Blut.",
-          "answer": "Das Herz"
+          "question": "Dieses Raubtier ist das größte an Land lebende der Erde.",
+          "answer": "Der Eisbär"
         },
         {
           "id": "natur-2-06",
@@ -1381,8 +1381,8 @@
         {
           "id": "natur-3-07",
           "level": 3,
-          "question": "Dieses Organ filtert bei Wirbeltieren das Blut.",
-          "answer": "Die Niere"
+          "question": "Dieser Vogel hämmert Bruthöhlen in Baumstämme.",
+          "answer": "Der Specht"
         },
         {
           "id": "natur-3-08",
@@ -1531,8 +1531,8 @@
         {
           "id": "natur-5-10",
           "level": 5,
-          "question": "Dieses Organ der Wirbeltiere bildet die Galle.",
-          "answer": "Die Leber"
+          "question": "Diese Pflanzengruppe vermehrt sich über Sporen und trägt Wedel.",
+          "answer": "Die Farne"
         },
         {
           "id": "natur-5-11",
@@ -1820,7 +1820,7 @@
           "id": "wissenschaft-1-02",
           "level": 1,
           "question": "So viele Planeten hat unser Sonnensystem.",
-          "answer": "Acht"
+          "answer": "Acht Planeten"
         },
         {
           "id": "wissenschaft-1-03",
@@ -3020,7 +3020,7 @@
           "id": "zahlen-1-02",
           "level": 1,
           "question": "So viele Flächen hat ein Würfel.",
-          "answer": "Sechs"
+          "answer": "Sechs Flächen"
         },
         {
           "id": "zahlen-1-03",
@@ -3104,7 +3104,7 @@
           "id": "zahlen-2-05",
           "level": 2,
           "question": "So viele Gramm ergeben ein Kilogramm.",
-          "answer": "1000"
+          "answer": "1000 Gramm"
         },
         {
           "id": "zahlen-2-06",
@@ -3128,7 +3128,7 @@
           "id": "zahlen-2-09",
           "level": 2,
           "question": "So viele Seiten hat ein Achteck.",
-          "answer": "Acht"
+          "answer": "Acht Seiten"
         },
         {
           "id": "zahlen-2-10",
@@ -3140,7 +3140,7 @@
           "id": "zahlen-2-11",
           "level": 2,
           "question": "So viele Milliliter ergeben einen Liter.",
-          "answer": "1000"
+          "answer": "1000 Milliliter"
         },
         {
           "id": "zahlen-3-01",
@@ -3643,8 +3643,8 @@
         {
           "id": "kunst-und-literatur-1-06",
           "level": 1,
-          "question": "Diese Brüder schrieben „Hänsel und Gretel\" auf.",
-          "answer": "Die Brüder Grimm"
+          "question": "Dieser Russe komponierte „Schwanensee\" und „Der Nussknacker\".",
+          "answer": "Pjotr Iljitsch Tschaikowski"
         },
         {
           "id": "kunst-und-literatur-1-07",
