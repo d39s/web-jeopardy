@@ -3,10 +3,10 @@ import { drawBoard, fittingRubrics } from './draw';
 import { samplePool } from './fixtures';
 import { validateGameDefinition } from './schema';
 import { CATEGORY_COUNT, CLUES_PER_CATEGORY, DIFFICULTY_BANDS, POINT_STEPS } from './types';
-import type { Difficulty, GameDefinition, QuestionPool } from './types';
+import type { ClueLevel, Difficulty, GameDefinition, QuestionPool } from './types';
 
 /** Stufe einer gezogenen Karte, über ihre ID im Pool nachgeschlagen. */
-function levelOf(pool: QuestionPool, clueId: string): Difficulty | undefined {
+function levelOf(pool: QuestionPool, clueId: string): ClueLevel | undefined {
   for (const rubric of pool.rubrics) {
     const clue = rubric.clues.find((entry) => entry.id === clueId);
     if (clue) return clue.level;
@@ -63,6 +63,18 @@ describe('brett ziehen', () => {
     }
   });
 
+  it('gibt jeder zeile eine andere stufe – die härte steigt im brett', () => {
+    for (const level of [1, 2, 3, 4, 5] as const) {
+      const definition = draw(level, 77);
+
+      for (const category of definition.categories) {
+        const levels = category.clues.map((clue) => levelOf(samplePool, clue.id) ?? 0);
+        expect(new Set(levels).size).toBe(CLUES_PER_CATEGORY);
+        expect([...levels].sort((a, b) => a - b)).toEqual(levels);
+      }
+    }
+  });
+
   it('trägt die angaben des pools in das gezogene brett', () => {
     const definition = draw(4, 8);
 
@@ -84,7 +96,7 @@ describe('brett ziehen', () => {
           name: 'Nur leicht',
           clues: Array.from({ length: 6 }, (_, index) => ({
             id: `nur-leicht-${index}`,
-            level: 1 as Difficulty,
+            level: 1 as ClueLevel,
             question: `Leichte Frage ${index}?`,
             answer: `Antwort ${index}`,
           })),
@@ -110,7 +122,7 @@ describe('brett ziehen', () => {
           .concat(
             Array.from({ length: 4 }, (_, index) => ({
               id: `${rubric.id}-extra-${index}`,
-              level: 1 as Difficulty,
+              level: 1 as ClueLevel,
               question: `${rubric.name}: Zusatzfrage ${index}?`,
               answer: `Antwort ${index}`,
             })),
@@ -178,7 +190,7 @@ describe('passende rubriken zählen', () => {
           name: 'Nur leicht',
           clues: Array.from({ length: 6 }, (_, index) => ({
             id: `nur-leicht-${index}`,
-            level: 1 as Difficulty,
+            level: 1 as ClueLevel,
             question: `Leichte Frage ${index}?`,
             answer: `Antwort ${index}`,
           })),

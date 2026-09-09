@@ -29,17 +29,19 @@ sofort. Ein laufendes Spiel übersteht das Schließen des Browsers.
 
 ### Schwierigkeit und Ziehung
 
-Jede Frage im Vorrat trägt eine Stufe von 1 bis 5. Der Regler wählt daraus kein einzelnes
-Niveau, sondern ein Band über die fünf Zeilen – die 500er-Karte bleibt also in jeder
-Reglerstellung die schwerste des Bretts:
+Jede Frage im Vorrat trägt eine Stufe von 1 bis 9. Der Regler schiebt darüber ein Fenster
+von fünf Stufen – eine je Zeile. In **jeder** Reglerstellung bekommt das Brett damit fünf
+verschiedene, aufsteigende Stufen: Die 100er-Karte ist immer die leichteste, die 500er immer
+die schwerste. Die Skala reicht bis 9, weil das Fenster fünf Stufen breit ist und der Regler
+es um vier Stellungen weiterschiebt:
 
 | Regler       | 100er | 200er | 300er | 400er | 500er |
 | ------------ | ----: | ----: | ----: | ----: | ----: |
-| 1 Locker     |     1 |     1 |     2 |     2 |     3 |
-| 2 Leicht     |     1 |     2 |     2 |     3 |     4 |
-| 3 Ausgewogen |     1 |     2 |     3 |     4 |     5 |
-| 4 Fordernd   |     2 |     3 |     4 |     4 |     5 |
-| 5 Für Kenner |     3 |     4 |     4 |     5 |     5 |
+| 1 Locker     |     1 |     2 |     3 |     4 |     5 |
+| 2 Leicht     |     2 |     3 |     4 |     5 |     6 |
+| 3 Ausgewogen |     3 |     4 |     5 |     6 |     7 |
+| 4 Fordernd   |     4 |     5 |     6 |     7 |     8 |
+| 5 Für Kenner |     5 |     6 |     7 |     8 |     9 |
 
 Punkte bleiben immer 100 bis 500: Sie ordnen das Brett und sind nur innerhalb einer Partie
 vergleichbar. Details zum Vorrat stehen in [content/README.md](content/README.md).

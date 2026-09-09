@@ -6,6 +6,7 @@ import {
   validateQuestionPool,
   validateTopicIndex,
 } from './schema';
+import { CLUE_LEVELS } from './types';
 import type { QuestionPool } from './types';
 
 interface TestIndex {
@@ -127,13 +128,22 @@ describe('validierung der fragenpools', () => {
     expect(validateQuestionPool(pool).ok).toBe(false);
   });
 
-  it('lehnt eine stufe außerhalb der skala ab', () => {
+  it.each([0, 10, 2.5])('lehnt die stufe %s ab', (level) => {
     const pool = poolCopy();
-    (pool.rubrics[0]!.clues[0] as { level: number }).level = 6;
+    (pool.rubrics[0]!.clues[0] as { level: number }).level = level;
 
     const result = validateQuestionPool(pool);
     if (result.ok) throw new Error('Der Pool hätte abgelehnt werden müssen.');
     expect(formatIssues(result.issues)[0]).toMatch(/^rubrics\.0\.clues\.0\.level:/);
+  });
+
+  it('nimmt die stufen der ganzen skala an', () => {
+    // Die Fragenskala reicht weiter als der Regler – bis 9.
+    for (const level of CLUE_LEVELS) {
+      const pool = poolCopy();
+      (pool.rubrics[0]!.clues[0] as { level: number }).level = level;
+      expect(validateQuestionPool(pool).ok).toBe(true);
+    }
   });
 
   it('lehnt doppelte ids ab, auch über rubriken hinweg', () => {

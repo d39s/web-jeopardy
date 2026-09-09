@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { CATEGORY_COLORS } from './colors';
 import { MAX_TEAM_NAME_LENGTH } from './teams';
-import { CATEGORY_COUNT, CLUES_PER_CATEGORY, MAX_DIFFICULTY, WRONG_PENALTIES } from './types';
+import {
+  CATEGORY_COUNT,
+  CLUES_PER_CATEGORY,
+  MAX_CLUE_LEVEL,
+  MAX_DIFFICULTY,
+  WRONG_PENALTIES,
+} from './types';
 import type { GameDefinition, GameState, QuestionPool, TopicIndex } from './types';
 
 const idSchema = z
@@ -28,6 +34,7 @@ export const categorySchema = z.strictObject({
     .length(CLUES_PER_CATEGORY, `Jede Kategorie braucht genau ${CLUES_PER_CATEGORY} Fragen.`),
 });
 
+/** Reglerstellung eines Fragensets. */
 const difficultyMessage = `Schwierigkeit liegt zwischen 1 und ${MAX_DIFFICULTY}.`;
 
 const difficultySchema = z
@@ -35,6 +42,15 @@ const difficultySchema = z
   .int()
   .min(1, difficultyMessage)
   .max(MAX_DIFFICULTY, difficultyMessage);
+
+/** Stufe einer einzelnen Frage – breitere Skala als der Regler, siehe types.ts. */
+const clueLevelMessage = `Stufe liegt zwischen 1 und ${MAX_CLUE_LEVEL}.`;
+
+const clueLevelSchema = z
+  .number()
+  .int()
+  .min(1, clueLevelMessage)
+  .max(MAX_CLUE_LEVEL, clueLevelMessage);
 
 const gameDefinitionShape = z.strictObject({
   schemaVersion: z.literal(1),
@@ -136,7 +152,7 @@ export const topicIndexSchema = topicIndexShape.superRefine((index, ctx) => {
 
 export const poolClueSchema = z.strictObject({
   id: idSchema,
-  level: difficultySchema,
+  level: clueLevelSchema,
   question: z.string().trim().min(1).max(500),
   answer: z.string().trim().min(1).max(500),
   note: z.string().trim().max(500).optional(),

@@ -1,13 +1,14 @@
 import {
   CATEGORY_COUNT,
+  CLUE_LEVELS,
   CLUES_PER_CATEGORY,
-  DIFFICULTIES,
   DIFFICULTY_BANDS,
   POINT_STEPS,
 } from './types';
 import type {
   Category,
   Clue,
+  ClueLevel,
   Difficulty,
   GameDefinition,
   PoolClue,
@@ -48,8 +49,8 @@ export type DrawResult =
   { ok: true; definition: GameDefinition } | { ok: false; problem: DrawProblem };
 
 /** Wie viele Fragen der Stufe das Band verlangt. */
-function demandPerLevel(band: readonly Difficulty[]): Map<Difficulty, number> {
-  const demand = new Map<Difficulty, number>();
+function demandPerLevel(band: readonly ClueLevel[]): Map<ClueLevel, number> {
+  const demand = new Map<ClueLevel, number>();
   for (const level of band) demand.set(level, (demand.get(level) ?? 0) + 1);
   return demand;
 }
@@ -59,7 +60,7 @@ function demandPerLevel(band: readonly Difficulty[]): Map<Difficulty, number> {
  * beim Ziehen Vorrang: Erst wenn es zu wenige davon gibt, kommen Rubriken zum
  * Zug, für die auf benachbarte Stufen ausgewichen werden muss.
  */
-function servesBand(rubric: PoolRubric, band: readonly Difficulty[]): boolean {
+function servesBand(rubric: PoolRubric, band: readonly ClueLevel[]): boolean {
   for (const [level, count] of demandPerLevel(band)) {
     const available = rubric.clues.filter((clue) => clue.level === level).length;
     if (available < count) return false;
@@ -74,11 +75,11 @@ function servesBand(rubric: PoolRubric, band: readonly Difficulty[]): boolean {
  */
 function pickNearLevel(
   clues: readonly PoolClue[],
-  wanted: Difficulty,
+  wanted: ClueLevel,
   used: Set<string>,
   random: Random,
 ): PoolClue | null {
-  for (let radius = 0; radius < DIFFICULTIES.length; radius++) {
+  for (let radius = 0; radius < CLUE_LEVELS.length; radius++) {
     const candidates = clues.filter(
       (clue) => !used.has(clue.id) && Math.abs(clue.level - wanted) === radius,
     );
@@ -90,7 +91,7 @@ function pickNearLevel(
 /** Fünf Fragen einer Rubrik in Zeilenreihenfolge; null, wenn der Vorrat nicht reicht. */
 function pickClues(
   rubric: PoolRubric,
-  band: readonly Difficulty[],
+  band: readonly ClueLevel[],
   random: Random,
 ): PoolClue[] | null {
   const used = new Set<string>();

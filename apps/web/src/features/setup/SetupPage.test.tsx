@@ -113,14 +113,14 @@ describe('startseite', () => {
     const regler = screen.getByLabelText('Schwierigkeit des Spielfelds');
     expect(regler).toHaveAttribute('aria-valuetext', 'Ausgewogen, Schwierigkeit 3 von 5');
     expect(
-      screen.getByText('Zeilen 100 bis 500 auf den Stufen 1 · 2 · 3 · 4 · 5'),
+      screen.getByText('Zeilen 100 bis 500 auf den Stufen 3 · 4 · 5 · 6 · 7'),
     ).toBeInTheDocument();
 
     fireEvent.change(regler, { target: { value: '1' } });
 
     expect(regler).toHaveAttribute('aria-valuetext', 'Locker, Schwierigkeit 1 von 5');
     expect(
-      screen.getByText('Zeilen 100 bis 500 auf den Stufen 1 · 1 · 2 · 2 · 3'),
+      screen.getByText('Zeilen 100 bis 500 auf den Stufen 1 · 2 · 3 · 4 · 5'),
     ).toBeInTheDocument();
   });
 
@@ -135,6 +135,20 @@ describe('startseite', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
     await waitFor(() => expect(transport.getState().phase).toBe('playing'));
     expect(transport.getState().definition).not.toBeNull();
+  });
+
+  it('gibt jeder zeile eine andere stufe – die härte steigt im brett', async () => {
+    const { transport } = renderSetup();
+    await chooseCategory();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
+    await waitFor(() => expect(transport.getState().phase).toBe('playing'));
+
+    for (const category of transport.getState().definition?.categories ?? []) {
+      const stufen = category.clues.map((clue) => levelOf(clue.id) ?? 0);
+      expect(new Set(stufen).size).toBe(5);
+      expect([...stufen].sort((a, b) => a - b)).toEqual(stufen);
+    }
   });
 
   it('zeigt umfang und rubriken des geladenen vorrats', async () => {

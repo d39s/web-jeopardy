@@ -1,4 +1,4 @@
-import { DIFFICULTIES, POINT_STEPS } from './types';
+import { CLUE_LEVELS, POINT_STEPS } from './types';
 import type { Category, GameDefinition, PoolRubric, QuestionPool } from './types';
 
 function makeCategory(id: string, name: string, entries: [string, string][]): Category {
@@ -155,14 +155,14 @@ export const sampleClueIds = sampleDefinition.categories.flatMap((category) =>
 );
 
 /**
- * Rubrik mit zwei Fragen auf jeder Stufe. Die Texte sind bewusst schematisch:
- * Geprüft wird die Ziehung, nicht der Inhalt.
+ * Rubrik mit zwei Fragen auf jeder der neun Stufen. Die Texte sind bewusst
+ * schematisch: Geprüft wird die Ziehung, nicht der Inhalt.
  */
 function makeRubric(id: string, name: string): PoolRubric {
   return {
     id,
     name,
-    clues: DIFFICULTIES.flatMap((level) =>
+    clues: CLUE_LEVELS.flatMap((level) =>
       [1, 2].map((index) => ({
         id: `${id}-${level}-${index}`,
         level,

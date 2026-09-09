@@ -13,94 +13,94 @@
         {
           "id": "erdkunde-1-01",
           "level": 1,
-          "question": "Welcher Fluss fließt durch Wien, Budapest und Belgrad?",
-          "answer": "Die Donau"
-        },
-        {
-          "id": "erdkunde-1-02",
-          "level": 1,
-          "question": "Welcher Kontinent ist der flächengrößte?",
-          "answer": "Asien"
-        },
-        {
-          "id": "erdkunde-1-03",
-          "level": 1,
           "question": "Wie heißt die Hauptstadt von Italien?",
           "answer": "Rom"
         },
         {
           "id": "erdkunde-2-01",
           "level": 2,
+          "question": "Welcher Kontinent ist der flächengrößte?",
+          "answer": "Asien"
+        },
+        {
+          "id": "erdkunde-3-01",
+          "level": 3,
+          "question": "Welcher Fluss fließt durch Wien, Budapest und Belgrad?",
+          "answer": "Die Donau"
+        },
+        {
+          "id": "erdkunde-3-02",
+          "level": 3,
           "question": "Welcher Ozean liegt zwischen Europa und Amerika?",
           "answer": "Der Atlantik"
         },
         {
-          "id": "erdkunde-2-02",
-          "level": 2,
+          "id": "erdkunde-4-01",
+          "level": 4,
           "question": "Wie heißt die Hauptstadt Australiens?",
           "answer": "Canberra",
           "note": "Sydney und Melbourne sind größer, aber nicht Hauptstadt."
         },
         {
-          "id": "erdkunde-2-03",
-          "level": 2,
+          "id": "erdkunde-4-02",
+          "level": 4,
           "question": "Wie viele Bundesländer hat Deutschland?",
           "answer": "16"
         },
         {
-          "id": "erdkunde-3-01",
-          "level": 3,
+          "id": "erdkunde-5-01",
+          "level": 5,
           "question": "Welcher Fluss ist der längste Europas?",
           "answer": "Die Wolga"
         },
         {
-          "id": "erdkunde-3-02",
-          "level": 3,
+          "id": "erdkunde-5-02",
+          "level": 5,
           "question": "Welches Gebirge gilt als Grenze zwischen Europa und Asien?",
           "answer": "Der Ural"
         },
         {
-          "id": "erdkunde-3-03",
-          "level": 3,
+          "id": "erdkunde-5-03",
+          "level": 5,
           "question": "Wie heißt die Hauptstadt Neuseelands?",
           "answer": "Wellington"
         },
         {
-          "id": "erdkunde-4-01",
-          "level": 4,
+          "id": "erdkunde-6-01",
+          "level": 6,
+          "question": "Welches Land Afrikas ist das flächengrößte?",
+          "answer": "Algerien"
+        },
+        {
+          "id": "erdkunde-6-02",
+          "level": 6,
+          "question": "Welches Land umschließt das Königreich Lesotho vollständig?",
+          "answer": "Südafrika"
+        },
+        {
+          "id": "erdkunde-7-01",
+          "level": 7,
+          "question": "Welcher See in Zentralasien war einst der viertgrößte der Erde und ist seit den 1960er-Jahren weitgehend ausgetrocknet?",
+          "answer": "Der Aralsee"
+        },
+        {
+          "id": "erdkunde-7-02",
+          "level": 7,
           "question": "Welcher See ist mit über 1600 Metern der tiefste der Erde?",
           "answer": "Der Baikalsee",
           "note": "Der flächengrößte See ist das Kaspische Meer – häufige Verwechslung."
         },
         {
-          "id": "erdkunde-4-02",
-          "level": 4,
-          "question": "Welches Land Afrikas ist das flächengrößte?",
-          "answer": "Algerien"
-        },
-        {
-          "id": "erdkunde-4-03",
-          "level": 4,
-          "question": "Welches Land umschließt das Königreich Lesotho vollständig?",
-          "answer": "Südafrika"
-        },
-        {
-          "id": "erdkunde-5-01",
-          "level": 5,
-          "question": "Welche Stadt löste 2005/2006 Rangun als Hauptstadt Myanmars ab?",
-          "answer": "Naypyidaw"
-        },
-        {
-          "id": "erdkunde-5-02",
-          "level": 5,
-          "question": "Welcher See in Zentralasien war einst der viertgrößte der Erde und ist seit den 1960er-Jahren weitgehend ausgetrocknet?",
-          "answer": "Der Aralsee"
-        },
-        {
-          "id": "erdkunde-5-03",
-          "level": 5,
+          "id": "erdkunde-8-01",
+          "level": 8,
           "question": "Welches Land hat die längste Küstenlinie der Erde?",
           "answer": "Kanada"
+        },
+        {
+          "id": "erdkunde-9-01",
+          "level": 9,
+          "question": "Welche Stadt löste 2005/2006 Rangun als Hauptstadt Myanmars ab?",
+          "answer": "Naypyidaw"
         }
       ]
     },
@@ -111,92 +111,92 @@
         {
           "id": "geschichte-1-01",
           "level": 1,
-          "question": "In welchem Jahr begann der Erste Weltkrieg?",
-          "answer": "1914"
-        },
-        {
-          "id": "geschichte-1-02",
-          "level": 1,
           "question": "In welchem Jahr fiel die Berliner Mauer?",
           "answer": "1989"
         },
         {
-          "id": "geschichte-1-03",
-          "level": 1,
+          "id": "geschichte-2-01",
+          "level": 2,
           "question": "Wer betrat als erster Mensch den Mond?",
           "answer": "Neil Armstrong"
         },
         {
-          "id": "geschichte-2-01",
-          "level": 2,
-          "question": "In welchem Jahr endete der Zweite Weltkrieg in Europa?",
-          "answer": "1945"
-        },
-        {
-          "id": "geschichte-2-02",
-          "level": 2,
-          "question": "In welcher Schlacht wurde Napoleon 1815 endgültig besiegt?",
-          "answer": "In der Schlacht bei Waterloo"
-        },
-        {
-          "id": "geschichte-2-03",
-          "level": 2,
-          "question": "Wer brachte den Buchdruck mit beweglichen Lettern nach Europa?",
-          "answer": "Johannes Gutenberg"
-        },
-        {
           "id": "geschichte-3-01",
           "level": 3,
-          "question": "In welchem Jahr wurde Karl der Große in Rom zum Kaiser gekrönt?",
-          "answer": "800"
+          "question": "In welchem Jahr begann der Erste Weltkrieg?",
+          "answer": "1914"
         },
         {
           "id": "geschichte-3-02",
           "level": 3,
-          "question": "Welche französische Königin wurde 1793 mit der Guillotine hingerichtet?",
-          "answer": "Marie-Antoinette"
-        },
-        {
-          "id": "geschichte-3-03",
-          "level": 3,
-          "question": "Welches Reich regierte Julius Caesar?",
-          "answer": "Das Römische Reich"
+          "question": "In welchem Jahr endete der Zweite Weltkrieg in Europa?",
+          "answer": "1945"
         },
         {
           "id": "geschichte-4-01",
           "level": 4,
-          "question": "In welchem Jahr eroberten die Osmanen Konstantinopel?",
-          "answer": "1453"
+          "question": "In welcher Schlacht wurde Napoleon 1815 endgültig besiegt?",
+          "answer": "In der Schlacht bei Waterloo"
         },
         {
           "id": "geschichte-4-02",
           "level": 4,
-          "question": "In welchem Jahr veröffentlichte Martin Luther seine 95 Thesen?",
-          "answer": "1517"
-        },
-        {
-          "id": "geschichte-4-03",
-          "level": 4,
-          "question": "In welchem Jahr wurde das Deutsche Kaiserreich gegründet?",
-          "answer": "1871"
+          "question": "Wer brachte den Buchdruck mit beweglichen Lettern nach Europa?",
+          "answer": "Johannes Gutenberg"
         },
         {
           "id": "geschichte-5-01",
           "level": 5,
-          "question": "In welchem Jahr endete der Wiener Kongress mit seiner Schlussakte?",
-          "answer": "1815"
+          "question": "In welchem Jahr wurde Karl der Große in Rom zum Kaiser gekrönt?",
+          "answer": "800"
         },
         {
           "id": "geschichte-5-02",
           "level": 5,
-          "question": "In welchem Jahr trat die Nationalversammlung in der Frankfurter Paulskirche erstmals zusammen?",
-          "answer": "1848"
+          "question": "Welche französische Königin wurde 1793 mit der Guillotine hingerichtet?",
+          "answer": "Marie-Antoinette"
         },
         {
           "id": "geschichte-5-03",
           "level": 5,
+          "question": "Welches Reich regierte Julius Caesar?",
+          "answer": "Das Römische Reich"
+        },
+        {
+          "id": "geschichte-6-01",
+          "level": 6,
+          "question": "In welchem Jahr eroberten die Osmanen Konstantinopel?",
+          "answer": "1453"
+        },
+        {
+          "id": "geschichte-6-02",
+          "level": 6,
+          "question": "In welchem Jahr veröffentlichte Martin Luther seine 95 Thesen?",
+          "answer": "1517"
+        },
+        {
+          "id": "geschichte-7-01",
+          "level": 7,
+          "question": "In welchem Jahr wurde das Deutsche Kaiserreich gegründet?",
+          "answer": "1871"
+        },
+        {
+          "id": "geschichte-7-02",
+          "level": 7,
           "question": "Wie heißt der Friedensschluss von 1648, der den Dreißigjährigen Krieg beendete?",
           "answer": "Der Westfälische Friede"
+        },
+        {
+          "id": "geschichte-8-01",
+          "level": 8,
+          "question": "In welchem Jahr trat die Nationalversammlung in der Frankfurter Paulskirche erstmals zusammen?",
+          "answer": "1848"
+        },
+        {
+          "id": "geschichte-9-01",
+          "level": 9,
+          "question": "In welchem Jahr endete der Wiener Kongress mit seiner Schlussakte?",
+          "answer": "1815"
         }
       ]
     },
@@ -207,30 +207,30 @@
         {
           "id": "natur-1-01",
           "level": 1,
-          "question": "Welches ist das größte Tier der Erde?",
-          "answer": "Der Blauwal"
-        },
-        {
-          "id": "natur-1-02",
-          "level": 1,
           "question": "Wie viele Beine hat eine Spinne?",
           "answer": "Acht"
         },
         {
           "id": "natur-2-01",
           "level": 2,
-          "question": "Wie heißt der Vorgang, mit dem Pflanzen aus Licht Zucker gewinnen?",
-          "answer": "Fotosynthese"
-        },
-        {
-          "id": "natur-2-02",
-          "level": 2,
-          "question": "Wie viele Kammern hat das menschliche Herz insgesamt?",
-          "answer": "Vier: zwei Vorhöfe und zwei Herzkammern"
+          "question": "Welches ist das größte Tier der Erde?",
+          "answer": "Der Blauwal"
         },
         {
           "id": "natur-3-01",
           "level": 3,
+          "question": "Wie heißt der Vorgang, mit dem Pflanzen aus Licht Zucker gewinnen?",
+          "answer": "Fotosynthese"
+        },
+        {
+          "id": "natur-4-01",
+          "level": 4,
+          "question": "Wie viele Kammern hat das menschliche Herz insgesamt?",
+          "answer": "Vier: zwei Vorhöfe und zwei Herzkammern"
+        },
+        {
+          "id": "natur-5-01",
+          "level": 5,
           "question": "Welches Gas macht den größten Anteil der Erdatmosphäre aus?",
           "answer": "Stickstoff"
         }
@@ -241,65 +241,65 @@
       "name": "Wissenschaft",
       "clues": [
         {
-          "id": "wissenschaft-1-01",
-          "level": 1,
+          "id": "wissenschaft-3-01",
+          "level": 3,
           "question": "Für welches Element steht das chemische Symbol Fe?",
           "answer": "Eisen"
         },
         {
-          "id": "wissenschaft-2-01",
-          "level": 2,
+          "id": "wissenschaft-4-01",
+          "level": 4,
           "question": "Welches Element hat im Periodensystem die Ordnungszahl 1?",
           "answer": "Wasserstoff"
         },
         {
-          "id": "wissenschaft-3-01",
-          "level": 3,
+          "id": "wissenschaft-5-01",
+          "level": 5,
           "question": "Wie heißt die SI-Einheit der Kraft?",
           "answer": "Das Newton"
         },
         {
-          "id": "wissenschaft-3-02",
-          "level": 3,
+          "id": "wissenschaft-5-02",
+          "level": 5,
           "question": "Wie viele Chromosomenpaare besitzt der Mensch?",
           "answer": "23",
           "note": "Gefragt sind die Paare, nicht die Gesamtzahl von 46 Chromosomen."
         },
         {
-          "id": "wissenschaft-4-01",
-          "level": 4,
+          "id": "wissenschaft-6-01",
+          "level": 6,
           "question": "Für welches Element steht das chemische Symbol K?",
           "answer": "Kalium"
         },
         {
-          "id": "wissenschaft-4-02",
-          "level": 4,
-          "question": "Welches Element ist nach Sauerstoff das zweithäufigste in der Erdkruste?",
-          "answer": "Silizium"
-        },
-        {
-          "id": "wissenschaft-4-03",
-          "level": 4,
+          "id": "wissenschaft-6-02",
+          "level": 6,
           "question": "Wie viele Planeten zählt das Sonnensystem, seit Pluto 2006 zum Zwergplaneten erklärt wurde?",
           "answer": "Acht"
         },
         {
-          "id": "wissenschaft-5-01",
-          "level": 5,
-          "question": "Wer beschrieb 1953 zusammen mit Francis Crick die Doppelhelix der DNA?",
-          "answer": "James Watson"
+          "id": "wissenschaft-7-01",
+          "level": 7,
+          "question": "Welches Element ist nach Sauerstoff das zweithäufigste in der Erdkruste?",
+          "answer": "Silizium"
         },
         {
-          "id": "wissenschaft-5-02",
-          "level": 5,
+          "id": "wissenschaft-7-02",
+          "level": 7,
           "question": "Wie heißt das Gasgesetz, nach dem Druck und Volumen bei gleichbleibender Temperatur umgekehrt proportional sind?",
           "answer": "Das Gesetz von Boyle-Mariotte"
         },
         {
-          "id": "wissenschaft-5-03",
-          "level": 5,
+          "id": "wissenschaft-8-01",
+          "level": 8,
           "question": "Wie heißt die SI-Einheit für die Aktivität eines radioaktiven Stoffes?",
           "answer": "Das Becquerel"
+        },
+        {
+          "id": "wissenschaft-9-01",
+          "level": 9,
+          "question": "Wer beschrieb 1953 zusammen mit Francis Crick die Doppelhelix der DNA?",
+          "answer": "James Watson"
         }
       ]
     },
@@ -310,60 +310,60 @@
         {
           "id": "sprache-1-01",
           "level": 1,
-          "question": "Wie nennt man ein Wort, das vorwärts wie rückwärts gleich gelesen wird?",
-          "answer": "Ein Palindrom"
-        },
-        {
-          "id": "sprache-1-02",
-          "level": 1,
           "question": "Wie viele Buchstaben hat das deutsche Alphabet ohne Umlaute und ß?",
           "answer": "26"
         },
         {
           "id": "sprache-2-01",
           "level": 2,
-          "question": "Welcher Fall antwortet auf die Frage \"wem?\"",
-          "answer": "Der Dativ"
-        },
-        {
-          "id": "sprache-2-02",
-          "level": 2,
-          "question": "Wie lautet die Mehrzahl von \"Atlas\"?",
-          "answer": "Atlanten"
+          "question": "Wie nennt man ein Wort, das vorwärts wie rückwärts gleich gelesen wird?",
+          "answer": "Ein Palindrom"
         },
         {
           "id": "sprache-3-01",
           "level": 3,
-          "question": "Aus welcher Sprache stammt das Wort \"Algebra\"?",
-          "answer": "Aus dem Arabischen"
-        },
-        {
-          "id": "sprache-3-02",
-          "level": 3,
-          "question": "Wie nennt man ein Wort, das eine Tätigkeit beschreibt?",
-          "answer": "Ein Verb oder Tuwort"
+          "question": "Welcher Fall antwortet auf die Frage \"wem?\"",
+          "answer": "Der Dativ"
         },
         {
           "id": "sprache-4-01",
           "level": 4,
-          "question": "Aus welcher Sprache stammt das Wort \"Roboter\", das 1920 in einem Theaterstück geprägt wurde?",
-          "answer": "Aus dem Tschechischen"
-        },
-        {
-          "id": "sprache-4-02",
-          "level": 4,
-          "question": "Wie heißt die Stilfigur, die zwei widersprüchliche Begriffe verbindet, etwa \"bittersüß\"?",
-          "answer": "Das Oxymoron"
+          "question": "Wie lautet die Mehrzahl von \"Atlas\"?",
+          "answer": "Atlanten"
         },
         {
           "id": "sprache-5-01",
           "level": 5,
-          "question": "Wie nennt man ein Wort, das aus zwei Wörtern verschmolzen ist, etwa \"Brunch\"?",
-          "answer": "Ein Kofferwort"
+          "question": "Aus welcher Sprache stammt das Wort \"Algebra\"?",
+          "answer": "Aus dem Arabischen"
         },
         {
           "id": "sprache-5-02",
           "level": 5,
+          "question": "Wie nennt man ein Wort, das eine Tätigkeit beschreibt?",
+          "answer": "Ein Verb oder Tuwort"
+        },
+        {
+          "id": "sprache-6-01",
+          "level": 6,
+          "question": "Aus welcher Sprache stammt das Wort \"Roboter\", das 1920 in einem Theaterstück geprägt wurde?",
+          "answer": "Aus dem Tschechischen"
+        },
+        {
+          "id": "sprache-7-01",
+          "level": 7,
+          "question": "Wie heißt die Stilfigur, die zwei widersprüchliche Begriffe verbindet, etwa \"bittersüß\"?",
+          "answer": "Das Oxymoron"
+        },
+        {
+          "id": "sprache-8-01",
+          "level": 8,
+          "question": "Wie nennt man ein Wort, das aus zwei Wörtern verschmolzen ist, etwa \"Brunch\"?",
+          "answer": "Ein Kofferwort"
+        },
+        {
+          "id": "sprache-9-01",
+          "level": 9,
           "question": "Zu welcher Sprachfamilie gehören Finnisch, Estnisch und Ungarisch?",
           "answer": "Zu den finnougrischen Sprachen",
           "note": "Auch \"uralische Sprachen\" gilt – die finnougrischen sind deren größter Zweig."
@@ -381,26 +381,26 @@
           "answer": "56"
         },
         {
-          "id": "zahlen-1-02",
-          "level": 1,
+          "id": "zahlen-2-01",
+          "level": 2,
           "question": "Wie viele Minuten hat ein Tag?",
           "answer": "1440"
         },
         {
-          "id": "zahlen-2-01",
-          "level": 2,
+          "id": "zahlen-3-01",
+          "level": 3,
           "question": "Wie lautet die Kreiszahl Pi auf zwei Nachkommastellen?",
           "answer": "3,14"
         },
         {
-          "id": "zahlen-2-02",
-          "level": 2,
+          "id": "zahlen-4-01",
+          "level": 4,
           "question": "Wie viele Nullen hat eine Milliarde?",
           "answer": "Neun"
         },
         {
-          "id": "zahlen-3-01",
-          "level": 3,
+          "id": "zahlen-5-01",
+          "level": 5,
           "question": "Was ergibt die Quersumme von 9999?",
           "answer": "36"
         }
@@ -411,32 +411,32 @@
       "name": "Kunst und Literatur",
       "clues": [
         {
-          "id": "kunst-und-literatur-1-01",
-          "level": 1,
+          "id": "kunst-und-literatur-3-01",
+          "level": 3,
           "question": "Wer schrieb das Drama \"Faust\"?",
           "answer": "Johann Wolfgang von Goethe"
         },
         {
-          "id": "kunst-und-literatur-2-01",
-          "level": 2,
+          "id": "kunst-und-literatur-4-01",
+          "level": 4,
           "question": "In welchem Museum hängt die Mona Lisa?",
           "answer": "Im Louvre in Paris"
         },
         {
-          "id": "kunst-und-literatur-3-01",
-          "level": 3,
+          "id": "kunst-und-literatur-5-01",
+          "level": 5,
           "question": "Welcher niederländische Maler trennte sich 1888 einen Teil seines linken Ohrs ab?",
           "answer": "Vincent van Gogh"
         },
         {
-          "id": "kunst-und-literatur-4-01",
-          "level": 4,
+          "id": "kunst-und-literatur-6-01",
+          "level": 6,
           "question": "Wer schrieb den Roman \"Die Blechtrommel\"?",
           "answer": "Günter Grass"
         },
         {
-          "id": "kunst-und-literatur-5-01",
-          "level": 5,
+          "id": "kunst-und-literatur-7-01",
+          "level": 7,
           "question": "Welche Kunstrichtung begründeten Pablo Picasso und Georges Braque um 1907?",
           "answer": "Den Kubismus"
         }
@@ -447,33 +447,33 @@
       "name": "Mensch und Medizin",
       "clues": [
         {
-          "id": "mensch-und-medizin-1-01",
-          "level": 1,
+          "id": "mensch-und-medizin-3-01",
+          "level": 3,
           "question": "Welches Organ bildet das Hormon Insulin?",
           "answer": "Die Bauchspeicheldrüse"
         },
         {
-          "id": "mensch-und-medizin-2-01",
-          "level": 2,
+          "id": "mensch-und-medizin-4-01",
+          "level": 4,
           "question": "Welches ist der längste Knochen des menschlichen Körpers?",
           "answer": "Der Oberschenkelknochen"
         },
         {
-          "id": "mensch-und-medizin-3-01",
-          "level": 3,
+          "id": "mensch-und-medizin-5-01",
+          "level": 5,
           "question": "Wie heißt der rote Blutfarbstoff, der den Sauerstoff transportiert?",
           "answer": "Hämoglobin"
         },
         {
-          "id": "mensch-und-medizin-4-01",
-          "level": 4,
+          "id": "mensch-und-medizin-6-01",
+          "level": 6,
           "question": "Aus wie vielen Knochen besteht das Skelett eines erwachsenen Menschen üblicherweise?",
           "answer": "206",
           "note": "Neugeborene haben deutlich mehr; gefragt ist der Erwachsene."
         },
         {
-          "id": "mensch-und-medizin-5-01",
-          "level": 5,
+          "id": "mensch-und-medizin-7-01",
+          "level": 7,
           "question": "Welcher Teil des Gehirns steuert Gleichgewicht und Feinabstimmung der Bewegungen?",
           "answer": "Das Kleinhirn"
         }
@@ -484,34 +484,34 @@
       "name": "Mythologie",
       "clues": [
         {
-          "id": "mythologie-3-01",
-          "level": 3,
+          "id": "mythologie-5-01",
+          "level": 5,
           "question": "Welcher römische Gott entspricht dem griechischen Hermes?",
           "answer": "Merkur"
         },
         {
-          "id": "mythologie-4-01",
-          "level": 4,
+          "id": "mythologie-6-01",
+          "level": 6,
           "question": "Welches Wesen mit Stierkopf hauste im Labyrinth von Knossos?",
           "answer": "Der Minotaurus"
         },
         {
-          "id": "mythologie-4-02",
-          "level": 4,
+          "id": "mythologie-7-01",
+          "level": 7,
           "question": "Wer setzt in der griechischen Mythologie die Toten über den Fluss in die Unterwelt?",
           "answer": "Charon"
         },
         {
-          "id": "mythologie-5-01",
-          "level": 5,
-          "question": "Wer war in der griechischen Mythologie die Mutter des Achilleus?",
-          "answer": "Die Meeresgöttin Thetis"
-        },
-        {
-          "id": "mythologie-5-02",
-          "level": 5,
+          "id": "mythologie-8-01",
+          "level": 8,
           "question": "Wie heißt der Weltenbaum der nordischen Mythologie?",
           "answer": "Yggdrasil"
+        },
+        {
+          "id": "mythologie-9-01",
+          "level": 9,
+          "question": "Wer war in der griechischen Mythologie die Mutter des Achilleus?",
+          "answer": "Die Meeresgöttin Thetis"
         }
       ]
     }

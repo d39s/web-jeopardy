@@ -13,24 +13,28 @@ npm run validate:content
 1. Die Startseite lässt eine **Kategorie** wählen und lädt deren Pool.
 2. Ein Regler stellt die **Schwierigkeit** von 1 bis 5 ein.
 3. Beim Start werden fünf **Rubriken** gezogen – sie werden die fünf Spalten.
-4. Je Rubrik werden fünf Fragen gezogen, eine pro Zeile, in aufsteigender Härte.
+4. Je Rubrik werden fünf Fragen gezogen, eine pro Zeile, mit aufsteigender Stufe.
 
 Welche Fragen es trifft, entscheidet die **Ziehungsnummer**. Sie steht im geteilten Link:
 Dieselbe Nummer ergibt überall dasselbe Brett, eine neue Nummer eine neue Partie.
 
-## Schwierigkeit: Stufe der Frage, Band des Reglers
+## Schwierigkeit: Stufe der Frage, Fenster des Reglers
 
-Jede Frage trägt eine absolute Stufe von 1 bis 5. Der Regler wählt daraus kein einzelnes
-Niveau, sondern ein **Band** über die fünf Zeilen – innerhalb einer Partie steigt die Härte
-also weiter von der 100er- zur 500er-Karte:
+Jede Frage trägt eine absolute Stufe von **1 bis 9**. Der Regler wählt daraus kein einzelnes
+Niveau, sondern schiebt ein Fenster von fünf Stufen über die Skala – eine Stufe je Zeile. In
+jeder Reglerstellung stehen damit fünf **verschiedene**, aufsteigende Stufen auf dem Brett:
 
 | Regler       | 100er | 200er | 300er | 400er | 500er |
 | ------------ | ----: | ----: | ----: | ----: | ----: |
-| 1 Locker     |     1 |     1 |     2 |     2 |     3 |
-| 2 Leicht     |     1 |     2 |     2 |     3 |     4 |
-| 3 Ausgewogen |     1 |     2 |     3 |     4 |     5 |
-| 4 Fordernd   |     2 |     3 |     4 |     4 |     5 |
-| 5 Für Kenner |     3 |     4 |     4 |     5 |     5 |
+| 1 Locker     |     1 |     2 |     3 |     4 |     5 |
+| 2 Leicht     |     2 |     3 |     4 |     5 |     6 |
+| 3 Ausgewogen |     3 |     4 |     5 |     6 |     7 |
+| 4 Fordernd   |     4 |     5 |     6 |     7 |     8 |
+| 5 Für Kenner |     5 |     6 |     7 |     8 |     9 |
+
+Zwei Zeilen desselben Bretts sind also nie gleich schwer – sonst gäbe es keinen Grund, sich
+an die teuren Karten zu wagen. Dass die Skala bis 9 reicht und nicht bis 5, folgt daraus: Das
+Fenster ist fünf Stufen breit und wandert über vier Stellungen weiter.
 
 Woran sich die Stufe einer einzelnen Frage bemisst:
 
@@ -38,9 +42,13 @@ Woran sich die Stufe einer einzelnen Frage bemisst:
 | ----- | ---------------------------------------------------- |
 | 1     | Kennt praktisch jede Runde – Hauptstadt von Italien. |
 | 2     | Breites Publikum, kurzes Nachdenken.                 |
-| 3     | Wer sich für das Thema interessiert, kommt darauf.   |
-| 4     | Verlangt Vorwissen; die Runde rät nicht mehr mit.    |
-| 5     | Fachwissen oder ein sehr gutes Gedächtnis.           |
+| 3     | Allgemeinbildung, ohne Spezialwissen.                |
+| 4     | Wer sich für das Thema interessiert, kommt darauf.   |
+| 5     | Verlangt Vorwissen; die Runde rät nicht mehr mit.    |
+| 6     | Solide Kenntnis des Themas nötig.                    |
+| 7     | Detailwissen, das man sich angelesen haben muss.     |
+| 8     | Fachwissen oder ein sehr gutes Gedächtnis.           |
+| 9     | Die Frage, bei der auch Kenner überlegen.            |
 
 Punkte stehen **nicht** in der Datei: Sie ergeben sich aus der Zeile, in der eine Frage
 landet, und sind immer 100 bis 500.
@@ -79,7 +87,7 @@ landet, und sind immer 100 bis 500.
 | ---------------------------------------------------- | ------------------------------------------------------------------- |
 | Mindestens 5 Rubriken je Pool                        | Fünf werden zu den Spalten des Spielfelds.                          |
 | Mindestens 5 Fragen je Rubrik                        | Weniger füllt keine Spalte; die Rubrik wird beim Ziehen übergangen. |
-| `level` ist 1 bis 5                                  | Absolute Skala, aus der der Regler sein Band schneidet.             |
+| `level` ist 1 bis 9                                  | Absolute Skala, über die der Regler sein Fenster schiebt.           |
 | Alle `id`-Werte im Pool sind eindeutig               | Rubrik- und Frage-IDs landen im Brett im selben Namensraum.         |
 | Bewährtes Muster: `<rubrik>-<stufe>-<nummer>`        | Leicht zu lesen und automatisch eindeutig.                          |
 | Keine Frage zweimal, auch nicht sinngleich           | Sonst stünde sie irgendwann doppelt auf demselben Brett.            |
@@ -117,11 +125,12 @@ ebenso eine Datei im Verzeichnis, die in keinem Eintrag vorkommt.
 meldet, wenn eine Stufe nur von genau fünf Rubriken bedient wird – dann steht jedes Spiel mit
 derselben Spaltenauswahl da. Angestrebt ist je Kategorie ein volles Raster:
 
-**10 Rubriken × 5 Stufen × 20 Fragen = 1000 Fragen.**
+**10 Rubriken × 9 Stufen × 11 Fragen ≈ 1000 Fragen.**
 
-Eine Rubrik, der Stufen fehlen, ist nicht verloren: Beim Ziehen weicht das Spiel auf die
-nächstgelegene vorhandene Stufe aus. Rubriken, die das Band lückenlos bedienen, haben aber
-immer Vorrang – ein vollständiges Raster sorgt deshalb für die größte Abwechslung.
+Wichtiger als die runde Zahl ist die Lückenlosigkeit: Eine Rubrik, die alle neun Stufen
+führt, steht in jeder Reglerstellung zur Verfügung. Fehlen ihr Stufen, ist sie nicht
+verloren – beim Ziehen weicht das Spiel auf die nächstgelegene vorhandene aus. Rubriken, die
+das Fenster lückenlos bedienen, haben aber immer Vorrang.
 
 ## Ohne Neubau ausliefern
 
@@ -156,4 +165,5 @@ gespielt – Regler und Ziehung greifen daran nicht. Aufbau:
 ```
 
 Dafür gilt: genau 5 Spalten mit je genau 5 Fragen, `points` in der Reihenfolge aus
-`pointSteps`, `difficulty` zwischen 1 und 5, alle IDs innerhalb der Datei eindeutig.
+`pointSteps`, `difficulty` zwischen 1 und 5 (die Reglerstellung, nicht die Fragenstufe),
+alle IDs innerhalb der Datei eindeutig.

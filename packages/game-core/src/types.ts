@@ -26,32 +26,40 @@ export interface Category {
   clues: Clue[];
 }
 
-/** Schwierigkeitsstufen – dieselbe Skala für einzelne Fragen und für den Regler. */
+/**
+ * Stufen einer einzelnen Frage. Die Skala ist breiter als der Regler, weil
+ * jedes Brett fünf davon nebeneinander zeigt: Von der leichtesten Stellung
+ * (1 bis 5) bis zur schwersten (5 bis 9) wandert ein Fenster über die Skala.
+ */
+export const CLUE_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+export type ClueLevel = (typeof CLUE_LEVELS)[number];
+
+/** Anschlag der Fragenskala – kommt in Prüfmeldungen vor. */
+export const MAX_CLUE_LEVEL: ClueLevel = 9;
+
+/** Stellungen des Schwierigkeitsreglers. */
 export const DIFFICULTIES = [1, 2, 3, 4, 5] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** Anschlag des Reglers. */
+export const MAX_DIFFICULTY: Difficulty = 5;
 
 /**
  * Welche Stufe jede der fünf Zeilen bekommt, abhängig vom Reglerwert.
  *
- * Der Regler verschiebt ein Fenster über die Skala, statt eine feste Stufe für
- * alle 25 Karten zu setzen: Innerhalb des Bretts soll die Härte weiter von der
- * 100er- zur 500er-Zeile steigen, sonst gäbe es keinen Grund, die teuren Karten
- * zu wagen. An den Enden staucht sich das Fenster, damit es die Skala nicht
- * verlässt – Stufe 1 bleibt also auch ganz links am leichten Rand.
+ * Jede Stellung liefert fünf **verschiedene**, aufsteigende Stufen: Innerhalb
+ * des Bretts steigt die Härte von der 100er- zur 500er-Zeile, sonst gäbe es
+ * keinen Grund, die teuren Karten zu wagen. Der Regler verschiebt dieses
+ * Fenster um genau eine Stufe je Stellung – deshalb reicht die Fragenskala bis
+ * 9 und nicht nur bis 5.
  */
-export const DIFFICULTY_BANDS: Record<Difficulty, readonly Difficulty[]> = {
-  1: [1, 1, 2, 2, 3],
-  2: [1, 2, 2, 3, 4],
-  3: [1, 2, 3, 4, 5],
-  4: [2, 3, 4, 4, 5],
-  5: [3, 4, 4, 5, 5],
+export const DIFFICULTY_BANDS: Record<Difficulty, readonly ClueLevel[]> = {
+  1: [1, 2, 3, 4, 5],
+  2: [2, 3, 4, 5, 6],
+  3: [3, 4, 5, 6, 7],
+  4: [4, 5, 6, 7, 8],
+  5: [5, 6, 7, 8, 9],
 };
-
-/**
- * Anschlag der Skala. Die Zusicherung ist nötig, weil der Index aus `length`
- * berechnet wird und TypeScript daraus nur `Difficulty | undefined` ableitet.
- */
-export const MAX_DIFFICULTY = DIFFICULTIES[DIFFICULTIES.length - 1] as Difficulty;
 
 /** Punktestufen der fünf Zeilen. Gezogene Bretter nutzen immer diese Werte. */
 export const POINT_STEPS = [100, 200, 300, 400, 500] as const;
@@ -62,8 +70,8 @@ export const POINT_STEPS = [100, 200, 300, 400, 500] as const;
  */
 export interface PoolClue {
   id: string;
-  /** Absolute Schwierigkeit 1 bis 5, unabhängig von der späteren Zeile. */
-  level: Difficulty;
+  /** Absolute Schwierigkeit 1 bis 9, unabhängig von der späteren Zeile. */
+  level: ClueLevel;
   question: string;
   answer: string;
   /** Optionaler Moderatorenhinweis, wird nie auf dem Spielfeld angezeigt. */
@@ -103,7 +111,7 @@ export interface GameDefinition {
   title: string;
   /** Themenkategorie, in der das Fragenset zur Auswahl steht. */
   category: string;
-  /** 1 bis 5 – bei gezogenen Brettern die Reglerstellung. */
+  /** Reglerstellung 1 bis 5, aus der die Zeilenstufen entstanden sind. */
   difficulty: Difficulty;
   description?: string;
   author?: string;
