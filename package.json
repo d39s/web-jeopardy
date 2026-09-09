@@ -26,6 +26,7 @@
     "test:junit": "vitest run --coverage --reporter=default --reporter=junit --outputFile.junit=reports/unit.xml",
     "test:e2e": "playwright test",
     "validate:content": "tsx scripts/validate-content.ts",
+    "build:info": "tsx scripts/write-build-info.ts",
     "prepare": "husky"
   },
   "devDependencies": {

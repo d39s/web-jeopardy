@@ -100,6 +100,14 @@ pipeline {
             }
 
             steps {
+                // Die Fußzeile der Startseite nennt Commit und Baudatum. Im
+                // Build-Kontext liegt kein .git-Verzeichnis, deshalb kommen die
+                // Angaben hier als .env-Datei mit (siehe apps/web/vite.config.ts).
+                sh '''
+                    printf 'VITE_COMMIT=%.7s\\n' "${GIT_COMMIT:-}" > apps/web/.env.production
+                    printf 'VITE_BUILD_DATE=%s\\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> apps/web/.env.production
+                '''
+
                 // Der Build-Kontext ist das Repository-Wurzelverzeichnis, das
                 // Dockerfile liegt unter docker/ und kopiert content/ mit hinein.
                 kaniko dockerfile: 'docker/Dockerfile', cache: true

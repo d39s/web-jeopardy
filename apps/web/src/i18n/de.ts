@@ -7,6 +7,15 @@ export const de = {
     title: 'Jeopardy',
   },
 
+  /** Fußzeile der Startseite – welcher Stand gerade ausgeliefert wird. */
+  version: {
+    version: (version: string) => `Version ${version}`,
+    commit: (commit: string) => `Commit ${commit}`,
+    builtAt: (date: string) => `Stand ${date}`,
+    commitUnknown: 'unbekannt',
+    separator: ' · ',
+  },
+
   setup: {
     heading: 'Jeopardy',
     intro: 'Teams festlegen, Thema wählen, los geht es.',

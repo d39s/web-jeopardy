@@ -31,18 +31,19 @@ npm run dev          # http://localhost:5173
 
 ## Skripte
 
-| Befehl                     | Zweck                                        |
-| -------------------------- | -------------------------------------------- |
-| `npm run dev`              | Entwicklungsserver                           |
-| `npm run build`            | Produktions-Build nach `apps/web/dist`       |
-| `npm run preview`          | Gebautes Ergebnis lokal ausliefern           |
-| `npm run lint`             | ESLint über das gesamte Monorepo             |
-| `npm run typecheck`        | TypeScript-Prüfung aller Projekte            |
-| `npm test`                 | Unit- und Komponententests (Vitest)          |
-| `npm run test:coverage`    | Tests mit Coverage-Schwellen für `game-core` |
-| `npm run test:junit`       | Wie oben, zusätzlich JUnit-Bericht für CI    |
-| `npm run test:e2e`         | End-to-End-Tests (Playwright)                |
-| `npm run validate:content` | Prüft alle Fragensets in `content/topics`    |
+| Befehl                     | Zweck                                           |
+| -------------------------- | ----------------------------------------------- |
+| `npm run dev`              | Entwicklungsserver                              |
+| `npm run build`            | Produktions-Build nach `apps/web/dist`          |
+| `npm run preview`          | Gebautes Ergebnis lokal ausliefern              |
+| `npm run lint`             | ESLint über das gesamte Monorepo                |
+| `npm run typecheck`        | TypeScript-Prüfung aller Projekte               |
+| `npm test`                 | Unit- und Komponententests (Vitest)             |
+| `npm run test:coverage`    | Tests mit Coverage-Schwellen für `game-core`    |
+| `npm run test:junit`       | Wie oben, zusätzlich JUnit-Bericht für CI       |
+| `npm run test:e2e`         | End-to-End-Tests (Playwright)                   |
+| `npm run validate:content` | Prüft alle Fragensets in `content/topics`       |
+| `npm run build:info`       | Commit und Datum für die Fußzeile bereitstellen |
 
 ## Continuous Integration
 
@@ -55,7 +56,9 @@ die gemeinsame [jenkins-library](https://jenkins.d39s.de). Zwei Stufen:
    Playwright-Bericht wird als Artefakt gesichert.
 2. **Image bauen** im `kaniko`-Pod über den Library-Schritt `kaniko`. Gebaut wird
    `docker/Dockerfile` mit dem Repository-Wurzelverzeichnis als Kontext, das Ergebnis landet
-   in `harbor.d39s.de/library/web-jeopardy`.
+   in `harbor.d39s.de/library/web-jeopardy`. Davor schreibt die Stufe Commit und Baudatum
+   nach `apps/web/.env.production` – im Kontext liegt kein `.git`, sonst bliebe die Fußzeile
+   der Startseite ohne Commit.
 
 Die Tags vergibt die Library: `br-<zweig>` auf Zweigen, `pr-<nummer>` bei Pull Requests,
 `latest` auf dem Hauptzweig und Versionsnummern aus Git-Tags. Gibt es kein Ziel, baut kaniko
@@ -67,6 +70,7 @@ zurück.
 ## Betrieb im Container
 
 ```bash
+npm run build:info            # Commit und Datum für die Fußzeile, siehe Versionierung
 docker compose up --build     # http://localhost:8080
 ```
 
@@ -93,8 +97,47 @@ docs/               Konzept, Arbeitsplan, ADRs
 e2e/                End-to-End-Tests
 ```
 
+## Versionierung
+
+Unten auf der Startseite steht, welcher Stand gerade läuft:
+
+```
+Version 0.1.0 · Commit d186d11 · Stand 09.09.2026
+```
+
+So ist auf jedem Beamer und in jedem Screenshot ablesbar, welches Build zu sehen ist.
+
+Maßgeblich ist die `version` in der `package.json` im Wurzelverzeichnis. **Jede weitere
+Änderung und jedes Release folgt [Semantic Versioning](https://semver.org/lang/de/)** –
+`MAJOR.MINOR.PATCH`:
+
+| Stufe     | Wann sie steigt                                                            |
+| --------- | -------------------------------------------------------------------------- |
+| **MAJOR** | Bruch am Verhalten oder an den Daten, etwa ein neues Schema für Fragensets |
+| **MINOR** | Neue Funktion, abwärtskompatibel                                           |
+| **PATCH** | Fehlerbehebung ohne neue Funktion                                          |
+
+Solange die Version bei `0.x` steht, gilt die Vorabphase: Funktionen und Brüche gehen in
+MINOR, Korrekturen in PATCH. Die Version wandert nicht mit jedem Commit, sondern mit dem
+Release. Ein Release setzt alle Arbeitsbereiche gemeinsam und legt das Git-Tag an, aus dem
+die Pipeline die Image-Tags ableitet:
+
+```bash
+npm version minor --workspaces --include-workspace-root
+git push --follow-tags
+```
+
+Commit und Datum kommen aus dem Build, nicht aus dem Quelltext:
+
+- **Lokal** (`npm run dev`, `npm run build`) liest Vite den kurzen Commit-Hash direkt aus
+  dem Arbeitsverzeichnis; als Datum gilt der Zeitpunkt des Builds.
+- **Im Container** gibt es kein `.git` (siehe `.dockerignore`). Dort liefert
+  `npm run build:info` die Angaben vorab als `apps/web/.env.production`; die Jenkins-Pipeline
+  schreibt dieselbe Datei aus `GIT_COMMIT`. Fehlt sie, steht in der Fußzeile
+  `Commit unbekannt`.
+
 ## Mitarbeiten
 
 Verbindliche Commit-Regeln und Best Practices stehen in
 [docs/arbeitsplan.md](docs/arbeitsplan.md) (Kapitel 6 und 7). Kurzfassung: Conventional
-Commits, kleine Commits, `main` bleibt jederzeit grün.
+Commits, kleine Commits, `main` bleibt jederzeit grün, Releases nach SemVer.
