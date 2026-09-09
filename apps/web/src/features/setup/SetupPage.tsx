@@ -8,6 +8,7 @@ import type {
 } from '@jeopardy/game-core';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { BuildInfo } from '../../components/BuildInfo';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { fetchTopic, fetchTopicIndex, parseUploadedFile } from '../../content/loader';
@@ -233,7 +234,7 @@ export function SetupPage() {
         />
       ) : null}
 
-      <footer className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Button
           variant="primary"
           size="lg"
@@ -243,7 +244,9 @@ export function SetupPage() {
           {de.setup.start}
         </Button>
         {canStart ? null : <p className="text-sm text-text-muted">{de.setup.startHint}</p>}
-      </footer>
+      </div>
+
+      <BuildInfo />
     </main>
   );
 }

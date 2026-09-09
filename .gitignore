@@ -15,6 +15,9 @@ reports/
 .idea/
 *.local
 
+# Von npm run build:info erzeugt – gehört zum jeweiligen Build, nicht ins Repository.
+apps/web/.env.production
+
 # Arbeitskopien und Werkzeugdaten
 .claude/
 
