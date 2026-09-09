@@ -1,6 +1,6 @@
-import { sampleDefinition } from '@jeopardy/game-core';
+import { sampleDefinition, samplePool } from '@jeopardy/game-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchTopic, fetchTopicIndex, parseUploadedFile } from './loader';
+import { fetchPool, fetchTopicIndex, parseUploadedFile } from './loader';
 
 function mockFetch(response: Partial<Response> & { json?: () => Promise<unknown> }): void {
   vi.stubGlobal(
@@ -14,26 +14,20 @@ afterEach(() => {
 });
 
 describe('themenindex laden', () => {
-  it('liefert die themenliste', async () => {
+  it('liefert die kategorien mit ihrem vorrat', async () => {
     mockFetch({
       json: () =>
         Promise.resolve({
-          schemaVersion: 1,
-          categories: [{ id: 'testkategorie', title: 'Testkategorie' }],
-          topics: [
-            {
-              id: 'testthema',
-              title: 'Testthema',
-              category: 'testkategorie',
-              difficulty: 2,
-              file: 'testthema.json',
-            },
+          schemaVersion: 2,
+          categories: [
+            { id: 'testkategorie', title: 'Testkategorie', file: 'pool-testkategorie.json' },
           ],
         }),
     });
 
     const result = await fetchTopicIndex();
-    expect(result.ok && result.data.topics).toHaveLength(1);
+    expect(result.ok && result.data.categories).toHaveLength(1);
+    expect(result.ok && result.data.categories[0]?.file).toBe('pool-testkategorie.json');
   });
 
   it('meldet einen netzwerkfehler', async () => {
@@ -46,7 +40,7 @@ describe('themenindex laden', () => {
 
   it('meldet einen ungültigen index', async () => {
     mockFetch({
-      json: () => Promise.resolve({ schemaVersion: 1, categories: [], topics: [{ id: 'x' }] }),
+      json: () => Promise.resolve({ schemaVersion: 2, categories: [{ id: 'x' }] }),
     });
 
     const result = await fetchTopicIndex();
@@ -58,28 +52,26 @@ describe('themenindex laden', () => {
   });
 });
 
-describe('fragenset laden', () => {
-  it('liefert ein gültiges fragenset', async () => {
-    mockFetch({ json: () => Promise.resolve(sampleDefinition) });
+describe('fragenvorrat laden', () => {
+  it('liefert einen gültigen vorrat', async () => {
+    mockFetch({ json: () => Promise.resolve(samplePool) });
 
-    const result = await fetchTopic('testthema.json', 'Testthema');
-    expect(result.ok && result.data.categories).toHaveLength(5);
+    const result = await fetchPool('pool-testkategorie.json', 'Testkategorie');
+    expect(result.ok && result.data.rubrics).toHaveLength(samplePool.rubrics.length);
   });
 
   it('meldet einen http-fehler mit statuscode', async () => {
     mockFetch({ ok: false, status: 404, json: () => Promise.resolve({}) });
 
-    const result = await fetchTopic('fehlt.json', 'Fehlt');
+    const result = await fetchPool('fehlt.json', 'Fehlt');
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.message).toContain('Fehlt');
   });
 
-  it('meldet ein fragenset, das dem schema nicht entspricht', async () => {
-    mockFetch({
-      json: () => Promise.resolve({ ...sampleDefinition, categories: [] }),
-    });
+  it('meldet einen vorrat, der dem schema nicht entspricht', async () => {
+    mockFetch({ json: () => Promise.resolve({ ...samplePool, rubrics: [] }) });
 
-    const result = await fetchTopic('kaputt.json', 'Kaputt');
+    const result = await fetchPool('kaputt.json', 'Kaputt');
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.kind).toBe('invalid');
   });

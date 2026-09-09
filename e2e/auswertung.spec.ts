@@ -23,7 +23,10 @@ test('auswertung öffnet sich am spielende und zeigt alle reiter', async ({ page
   await dialog.getByRole('tab', { name: 'Fragen' }).click();
   const fragen = dialog.getByRole('tabpanel').getByRole('listitem');
   await expect(fragen).toHaveCount(25);
-  await expect(fragen.first()).toContainText('Rom');
+  // Welche Frage zuerst gespielt wurde, entscheidet die Ziehung – der Rückblick
+  // nennt sie in jedem Fall mit Punktzahl und Antwort.
+  await expect(fragen.first()).toContainText('Frage 1');
+  await expect(fragen.first()).toContainText('Antwort');
 
   // Barrierefreiheit der Auswertung selbst.
   const ergebnis = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();

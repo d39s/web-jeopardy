@@ -70,7 +70,9 @@ export const de = {
     sharedRuleNone: 'Falsche Antwort kostet keine Punkte',
 
     shareHeading: 'Spiel teilen',
-    shareHint: 'Der Link enthält Thema, Teams, Bedenkzeit und Veto-Zeit.',
+    shareHint:
+      'Der Link enthält Kategorie, Schwierigkeit, Ziehung, Teams und Zeiten – ' +
+      'wer ihn öffnet, bekommt genau dieses Spielfeld.',
     shareLinkLabel: 'Link zur Spielkonfiguration',
     shareCopy: 'Link kopieren',
     shareCopied: 'Link kopiert.',
@@ -79,28 +81,57 @@ export const de = {
       'Ein selbst geladenes Fragenset lässt sich nicht per Link teilen – bitte die Datei mitgeben.',
     sharedHeading: 'Geteiltes Spiel',
     sharedIntro: 'Diese Konfiguration wurde geteilt. Bitte die Teamnamen prüfen und anpassen.',
-    sharedTopic: (title: string) => `Thema: ${title}`,
+    sharedCategory: (title: string) => `Kategorie: ${title}`,
+    sharedDifficulty: (label: string) => `Schwierigkeit: ${label}`,
+    sharedDraw: (seed: string) => `Ziehung ${seed}`,
     sharedTimer: (label: string) => `Bedenkzeit: ${label}`,
     sharedConfirm: 'Namen übernehmen',
     sharedDiscard: 'Nicht übernehmen',
     sharedInvalid: 'Der geteilte Link ist unvollständig oder fehlerhaft.',
 
     topicsHeading: 'Thema',
-    categoryHint: 'Zuerst die Kategorie wählen, danach das Fragenset.',
-    categoryTopicCount: (count: number) => (count === 1 ? '1 Fragenset' : `${count} Fragensets`),
+    categoryHint: 'Zuerst die Kategorie wählen, danach die Schwierigkeit einstellen.',
     categoryBack: 'Andere Kategorie',
     categoryOf: (title: string) => `Kategorie: ${title}`,
-    difficultyLabel: (level: number) => `Schwierigkeit ${level} von 3`,
     difficultyMark: '?',
     topicsLoading: 'Themen werden geladen …',
-    topicsEmpty: 'Es sind noch keine Fragensets vorhanden.',
+    topicsEmpty: 'Es sind noch keine Themen vorhanden.',
     topicsError: 'Die Themenliste konnte nicht geladen werden.',
+    poolLoading: 'Fragen werden geladen …',
+    poolSize: (clues: number, rubrics: number) => `${clues} Fragen in ${rubrics} Rubriken`,
+
+    difficultyHeading: 'Schwierigkeit',
+    difficultyHint:
+      'Der Regler verschiebt die Härte des ganzen Spielfelds. Innerhalb einer Partie ' +
+      'bleibt es dabei: Die 100er-Karte ist die leichteste, die 500er die schwerste.',
+    difficultyLabel: (level: number) => `Schwierigkeit ${level} von 5`,
+    difficultySliderLabel: 'Schwierigkeit des Spielfelds',
+    /** Name der eingestellten Stufe – steht groß über dem Regler. */
+    difficultyName: (level: number) =>
+      ['Locker', 'Leicht', 'Ausgewogen', 'Fordernd', 'Für Kenner'][level - 1] ?? 'Ausgewogen',
+    difficultyDescription: (level: number) =>
+      [
+        'Antworten, die den meisten geläufig sind.',
+        'Ein Stück über dem Aufwärmen.',
+        'Die ganze Bandbreite: von leicht bis knifflig.',
+        'Auch die günstigen Karten fordern.',
+        'Verlangt Fachwissen bis in die letzte Zeile.',
+      ][level - 1] ?? '',
+    /** Zweite Zeile unter dem Regler: welche Stufe in welcher Zeile landet. */
+    difficultyBand: (levels: string) => `Zeilen 100 bis 500 auf den Stufen ${levels}`,
+    difficultyScaleStart: 'Locker',
+    difficultyScaleEnd: 'Für Kenner',
+
+    drawHeading: 'Ziehung',
+    drawHint: 'Jede Partie zieht ein eigenes Spielfeld aus dem Vorrat.',
+    drawNumber: (seed: string) => `Ziehung ${seed}`,
+    reshuffle: 'Neu mischen',
     uploadHeading: 'Eigenes Fragenset laden',
     uploadHint: 'JSON-Datei nach dem Schema aus der Dokumentation.',
     uploadLabel: 'JSON-Datei auswählen',
     uploadSuccess: (title: string) => `Eigenes Fragenset geladen: ${title}`,
     start: 'Spiel starten',
-    startHint: 'Bitte zuerst ein Thema auswählen.',
+    startHint: 'Bitte zuerst eine Kategorie wählen.',
     resumeHeading: 'Laufendes Spiel gefunden',
     resumeText: (title: string) => `Zuletzt gespielt: ${title}`,
     resume: 'Fortsetzen',
@@ -232,7 +263,8 @@ export const de = {
   },
 
   errors: {
-    topicLoad: (title: string) => `Das Fragenset "${title}" konnte nicht geladen werden.`,
+    poolLoad: (title: string) => `Der Fragenvorrat "${title}" konnte nicht geladen werden.`,
+    drawFailed: 'Aus diesem Vorrat lässt sich derzeit kein vollständiges Spielfeld ziehen.',
     invalidFile: 'Die Datei entspricht nicht dem erwarteten Format.',
     notJson: 'Die Datei ist kein gültiges JSON.',
     issuesHeading: 'Gefundene Probleme:',

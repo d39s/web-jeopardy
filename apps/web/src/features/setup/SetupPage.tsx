@@ -1,9 +1,10 @@
-import { createDefaultTeams, createTeam } from '@jeopardy/game-core';
+import { createDefaultTeams, createSeed, createTeam, drawBoard } from '@jeopardy/game-core';
 import type {
+  Difficulty,
   GameDefinition,
+  QuestionPool,
   Team,
   TopicCategory,
-  TopicIndexEntry,
   WrongPenalty,
 } from '@jeopardy/game-core';
 import { useEffect, useState } from 'react';
@@ -11,11 +12,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { BuildInfo } from '../../components/BuildInfo';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { fetchTopic, fetchTopicIndex, parseUploadedFile } from '../../content/loader';
+import { fetchPool, fetchTopicIndex, parseUploadedFile } from '../../content/loader';
 import type { LoadError } from '../../content/loader';
 import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
 import { loadLastTeams, saveLastTeams } from '../../state/persistence';
+import { DEFAULT_DIFFICULTY, DifficultySetup } from './DifficultySetup';
+import { DrawSetup } from './DrawSetup';
 import { ShareSection } from './ShareSection';
 import { SharedConfigDialog } from './SharedConfigDialog';
 import type { SharedConfigResult } from './SharedConfigDialog';
@@ -23,6 +26,7 @@ import { TeamSetup } from './TeamSetup';
 import { RulesSetup } from './RulesSetup';
 import { TimerSetup } from './TimerSetup';
 import { TopicPicker } from './TopicPicker';
+import { UploadSection } from './UploadSection';
 import { VetoSetup, effectiveVetoSetting } from './VetoSetup';
 import { buildShareLink, clearShareParams, parseShareParams } from './shareConfig';
 
@@ -42,17 +46,25 @@ export function SetupPage() {
 
   const [teams, setTeams] = useState<Team[]>(() => loadLastTeams() ?? createDefaultTeams(2));
   const [categories, setCategories] = useState<TopicCategory[]>([]);
-  const [topics, setTopics] = useState<TopicIndexEntry[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [pool, setPool] = useState<QuestionPool | null>(null);
+  const [poolLoading, setPoolLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<LoadError | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [uploaded, setUploaded] = useState<GameDefinition | null>(null);
   const [starting, setStarting] = useState(false);
+  const [level, setLevel] = useState<Difficulty>(DEFAULT_DIFFICULTY);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
   const [wrongPenalty, setWrongPenalty] = useState<WrongPenalty>('full');
   // null koppelt die Veto-Zeit an die Bedenkzeit – das ist der Standard.
   const [vetoSeconds, setVetoSeconds] = useState<number | null>(null);
+
+  /**
+   * Nummer der Ziehung. Sie entsteht beim Aufbau der Seite, steht im geteilten
+   * Link und lässt sich von Hand neu würfeln – jede neue Partie beginnt also
+   * mit einem frischen Brett, ein geteilter Link aber mit demselben.
+   */
+  const [seed, setSeed] = useState<number>(createSeed);
 
   /**
    * Der geteilte Link wird genau einmal beim ersten Rendern ausgewertet. Danach
@@ -75,7 +87,6 @@ export function SetupPage() {
       setLoading(false);
       if (result.ok) {
         setCategories(result.data.categories);
-        setTopics(result.data.topics);
       } else {
         setError(result.error);
       }
@@ -84,22 +95,54 @@ export function SetupPage() {
     return () => controller.abort();
   }, []);
 
+  /**
+   * Der Vorrat wird erst mit der Kategorie geladen: Er ist um ein Vielfaches
+   * größer als der Index und für die erste Auswahlstufe nicht nötig.
+   */
+  useEffect(() => {
+    const category = categories.find((entry) => entry.id === selectedCategory);
+    if (!category) {
+      setPool(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setPoolLoading(true);
+
+    void fetchPool(category.file, category.title, controller.signal).then((result) => {
+      if (controller.signal.aborted) return;
+      setPoolLoading(false);
+      if (result.ok) {
+        setPool(result.data);
+        setError(null);
+      } else {
+        setPool(null);
+        setError(result.error);
+      }
+    });
+
+    return () => controller.abort();
+  }, [categories, selectedCategory]);
+
   const resumable = state.definition !== null && state.phase !== 'setup';
-  const canStart = uploaded !== null || selectedId !== null;
+  const canStart = uploaded !== null || pool !== null;
 
   /** Ohne Bedenkzeit ist eine eigene Veto-Zeit gegenstandslos – siehe VetoSetup. */
   const startVetoSeconds = effectiveVetoSetting(vetoSeconds, timerSeconds);
 
   /**
    * Ein selbst geladenes Fragenset passt nicht in eine Adresszeile – dann gibt
-   * es keinen Link. Sonst spiegelt er immer die aktuell eingestellten Werte.
+   * es keinen Link. Sonst spiegelt er immer die aktuell eingestellten Werte,
+   * die Ziehungsnummer eingeschlossen.
    */
   const shareLink =
-    uploaded !== null || selectedId === null
+    uploaded !== null || selectedCategory === null
       ? null
       : buildShareLink(
           {
-            topicId: selectedId,
+            categoryId: selectedCategory,
+            level,
+            seed,
             teamNames: normalizeTeams(teams).map((team) => team.name),
             timerSeconds,
             vetoSeconds: startVetoSeconds,
@@ -114,12 +157,13 @@ export function SetupPage() {
   };
 
   const applyShared = (result: SharedConfigResult) => {
-    if (result.topicId !== null) {
-      setSelectedId(result.topicId);
-      // Damit das geteilte Thema sichtbar ist, in seine Kategorie wechseln.
-      setSelectedCategory(topics.find((topic) => topic.id === result.topicId)?.category ?? null);
+    if (result.categoryId !== null) {
+      setSelectedCategory(result.categoryId);
       setUploaded(null);
     }
+    setLevel(result.level);
+    // Ohne Nummer im Link bleibt die eigene – dann gibt es ein frisches Brett.
+    if (result.seed !== null) setSeed(result.seed);
     setTeams(result.teams);
     setTimerSeconds(result.timerSeconds);
     setVetoSeconds(result.vetoSeconds);
@@ -138,24 +182,24 @@ export function SetupPage() {
     }
   };
 
-  const start = async () => {
-    const chosen = topics.find((topic) => topic.id === selectedId);
+  const start = () => {
     setStarting(true);
     setError(null);
 
+    // Ein hochgeladenes Fragenset ist ein fertiges Brett und wird nicht gezogen.
     let definition = uploaded;
-    if (!definition && chosen) {
-      const result = await fetchTopic(chosen.file, chosen.title);
-      if (!result.ok) {
-        setError(result.error);
+    if (definition === null && pool !== null) {
+      const drawn = drawBoard({ pool, level, seed });
+      if (!drawn.ok) {
+        setError({ kind: 'invalid', message: de.errors.drawFailed, issues: [] });
         setStarting(false);
         return;
       }
-      definition = result.data;
+      definition = drawn.definition;
     }
 
     setStarting(false);
-    if (!definition) return;
+    if (definition === null) return;
 
     const normalized = normalizeTeams(teams);
     saveLastTeams(normalized);
@@ -202,19 +246,23 @@ export function SetupPage() {
 
       <TopicPicker
         categories={categories}
-        topics={topics}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
+        pool={pool}
+        poolLoading={poolLoading}
         loading={loading}
         error={error}
-        selectedId={selectedId}
-        uploaded={uploaded}
-        onSelect={(id) => {
-          setSelectedId(id);
-          setUploaded(null);
-        }}
-        onUpload={(file) => void handleUpload(file)}
       />
+
+      {/* Regler und Ziehung betreffen nur gezogene Bretter, nicht den Upload. */}
+      {uploaded === null && selectedCategory !== null ? (
+        <>
+          <DifficultySetup value={level} onChange={setLevel} />
+          <DrawSetup seed={seed} onReshuffle={() => setSeed(createSeed())} />
+        </>
+      ) : null}
+
+      <UploadSection uploaded={uploaded} onUpload={(file) => void handleUpload(file)} />
 
       <ShareSection
         link={shareLink}
@@ -224,10 +272,10 @@ export function SetupPage() {
 
       {sharedLink.status === 'ok' ? (
         <SharedConfigDialog
-          // Erst öffnen, wenn der Themenindex da ist – sonst fehlt der Titel.
+          // Erst öffnen, wenn der Index da ist – sonst fehlt der Kategorietitel.
           open={sharedOpen && !loading}
           config={sharedLink.config}
-          topics={topics}
+          categories={categories}
           fallbackTeams={teams}
           onConfirm={applyShared}
           onDismiss={closeShared}
@@ -235,12 +283,7 @@ export function SetupPage() {
       ) : null}
 
       <div className="flex flex-wrap items-center gap-4">
-        <Button
-          variant="primary"
-          size="lg"
-          disabled={!canStart || starting}
-          onClick={() => void start()}
-        >
+        <Button variant="primary" size="lg" disabled={!canStart || starting} onClick={start}>
           {de.setup.start}
         </Button>
         {canStart ? null : <p className="text-sm text-text-muted">{de.setup.startHint}</p>}

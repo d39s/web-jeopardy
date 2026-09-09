@@ -1,51 +1,20 @@
-import { initialGameState, sampleDefinition } from '@jeopardy/game-core';
+import { DIFFICULTY_BANDS, initialGameState, sampleDefinition } from '@jeopardy/game-core';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { chooseCategory, clueIdsOf, mockContentRequests, testPool } from '../../test/content';
 import { renderWithGame, startedState } from '../../test/renderWithGame';
 import { SetupPage } from './SetupPage';
 import { timerSliderValue } from './TimerSetup';
 
-const topicIndex = {
-  schemaVersion: 1,
-  categories: [{ id: 'testkategorie', title: 'Testkategorie', description: 'Zum Ausprobieren.' }],
-  topics: [
-    {
-      id: 'testthema',
-      title: 'Testthema',
-      description: 'Zum Ausprobieren.',
-      category: 'testkategorie',
-      difficulty: 1,
-      file: 'testthema.json',
-    },
-    {
-      id: 'zweites',
-      title: 'Zweites Thema',
-      category: 'testkategorie',
-      difficulty: 3,
-      file: 'zweites.json',
-    },
-  ],
-};
-
-/** Zwei Stufen: erst die Kategorie, dann das Fragenset. */
-async function chooseTopic(title = 'Testthema'): Promise<void> {
-  await userEvent.click(await screen.findByRole('button', { name: /Testkategorie/ }));
-  await userEvent.click(screen.getByRole('button', { name: new RegExp(title) }));
-}
-
-function mockTopicRequests(): void {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn((url: string) =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(url.endsWith('index.json') ? topicIndex : sampleDefinition),
-      } as Response),
-    ),
-  );
+/** Stufe einer gezogenen Karte, über ihre ID im Testvorrat nachgeschlagen. */
+function levelOf(clueId: string): number | undefined {
+  for (const rubric of testPool.rubrics) {
+    const clue = rubric.clues.find((entry) => entry.id === clueId);
+    if (clue) return clue.level;
+  }
+  return undefined;
 }
 
 function renderSetup(state = initialGameState) {
@@ -58,7 +27,7 @@ function renderSetup(state = initialGameState) {
 }
 
 beforeEach(() => {
-  mockTopicRequests();
+  mockContentRequests();
 });
 
 afterEach(() => {
@@ -104,22 +73,83 @@ describe('startseite', () => {
     expect(screen.getByText(/Mehr als 8 Teams/)).toBeInTheDocument();
   });
 
-  it('startet das spiel mit dem gewählten thema und den teams', async () => {
+  it('zieht beim start ein spielfeld aus der gewählten kategorie', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
-    await chooseTopic();
+    await chooseCategory();
 
     await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
 
     await waitFor(() => expect(transport.getState().phase).toBe('playing'));
-    expect(transport.getState().definition?.id).toBe('testthema');
+    const definition = transport.getState().definition;
+    expect(definition?.category).toBe('testkategorie');
+    expect(definition?.categories).toHaveLength(5);
+    expect(clueIdsOf(definition!)).toHaveLength(25);
     expect(transport.getState().teams.map((team) => team.name)).toEqual(['Team A', 'Team B']);
+  });
+
+  it('gibt die eingestellte stufe an die zeilen des bretts weiter', async () => {
+    const { transport } = renderSetup();
+    await chooseCategory();
+
+    fireEvent.change(screen.getByLabelText('Schwierigkeit des Spielfelds'), {
+      target: { value: '5' },
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
+
+    await waitFor(() => expect(transport.getState().phase).toBe('playing'));
+    const definition = transport.getState().definition;
+    expect(definition?.difficulty).toBe(5);
+    for (const category of definition?.categories ?? []) {
+      expect(category.clues.map((clue) => levelOf(clue.id))).toEqual([...DIFFICULTY_BANDS[5]]);
+    }
+  });
+
+  it('zeigt zur eingestellten stufe ihren namen und die zeilen', async () => {
+    renderSetup();
+    await chooseCategory();
+
+    // Der Name steht auch an den Enden der Skala – geprüft wird deshalb der
+    // Vorlesetext des Reglers, der eindeutig den eingestellten Wert nennt.
+    const regler = screen.getByLabelText('Schwierigkeit des Spielfelds');
+    expect(regler).toHaveAttribute('aria-valuetext', 'Ausgewogen, Schwierigkeit 3 von 5');
+    expect(
+      screen.getByText('Zeilen 100 bis 500 auf den Stufen 1 · 2 · 3 · 4 · 5'),
+    ).toBeInTheDocument();
+
+    fireEvent.change(regler, { target: { value: '1' } });
+
+    expect(regler).toHaveAttribute('aria-valuetext', 'Locker, Schwierigkeit 1 von 5');
+    expect(
+      screen.getByText('Zeilen 100 bis 500 auf den Stufen 1 · 1 · 2 · 2 · 3'),
+    ).toBeInTheDocument();
+  });
+
+  it('zieht nach neu mischen ein anderes brett', async () => {
+    const { transport } = renderSetup();
+    await chooseCategory();
+
+    const erste = screen.getByText(/^Ziehung /).textContent;
+    await userEvent.click(screen.getByRole('button', { name: 'Neu mischen' }));
+    expect(screen.getByText(/^Ziehung /).textContent).not.toBe(erste);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
+    await waitFor(() => expect(transport.getState().phase).toBe('playing'));
+    expect(transport.getState().definition).not.toBeNull();
+  });
+
+  it('zeigt umfang und rubriken des geladenen vorrats', async () => {
+    renderSetup();
+    await chooseCategory();
+
+    const clues = testPool.rubrics.reduce((sum, rubric) => sum + rubric.clues.length, 0);
+    expect(
+      screen.getByText(`${clues} Fragen in ${testPool.rubrics.length} Rubriken`),
+    ).toBeInTheDocument();
   });
 
   it('übernimmt geänderte teamnamen und füllt leere felder auf', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
-    await chooseTopic();
+    await chooseCategory();
 
     await userEvent.clear(screen.getByDisplayValue('Team A'));
     await userEvent.type(screen.getByLabelText('Name von Team 1'), 'Die Adler');
@@ -133,8 +163,7 @@ describe('startseite', () => {
 
   it('reicht eine eigene veto-zeit an das spiel weiter', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
-    await chooseTopic();
+    await chooseCategory();
 
     fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
       target: { value: String(timerSliderValue(45)) },
@@ -152,8 +181,7 @@ describe('startseite', () => {
 
   it('gibt die kopplung als offene veto-zeit weiter', async () => {
     const { transport } = renderSetup();
-    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
-    await chooseTopic();
+    await chooseCategory();
 
     fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
       target: { value: String(timerSliderValue(45)) },
@@ -182,6 +210,19 @@ describe('startseite', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Verwerfen' }));
     expect(transport.getState().phase).toBe('setup');
+  });
+
+  it('zeigt regler und ziehung erst nach der wahl einer kategorie', async () => {
+    renderSetup();
+    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+
+    expect(screen.queryByLabelText('Schwierigkeit des Spielfelds')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Neu mischen' })).not.toBeInTheDocument();
+
+    await chooseCategory();
+
+    expect(screen.getByLabelText('Schwierigkeit des Spielfelds')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Neu mischen' })).toBeInTheDocument();
   });
 
   it('nimmt ein eigenes fragenset entgegen', async () => {

@@ -4,9 +4,25 @@ import { buildShareLink, buildShareQuery, parseShareParams } from './shareConfig
 import type { SharedConfig } from './shareConfig';
 
 const basis: SharedConfig = {
-  topicId: 'it-grundlagen',
+  categoryId: 'it',
+  level: 3,
+  seed: 4711,
   teamNames: ['Team A', 'Team B'],
   timerSeconds: 30,
+  vetoSeconds: null,
+  wrongPenalty: 'full' as const,
+};
+
+/** 4711 zur Basis 36 – die Kurzform, die im Link steht. */
+const ZIEHUNG = '3mv';
+
+/** Konfiguration ohne Kategorie: nur Teams, wie ein Link ohne Thema sie liefert. */
+const ohneKategorie: SharedConfig = {
+  categoryId: null,
+  level: null,
+  seed: null,
+  teamNames: [],
+  timerSeconds: null,
   vetoSeconds: null,
   wrongPenalty: 'full' as const,
 };
@@ -18,19 +34,30 @@ function rundlauf(config: SharedConfig): SharedConfig | null {
 }
 
 describe('teilen-link bauen', () => {
-  it('schreibt thema, teams und bedenkzeit als lesbare parameter', () => {
-    expect(buildShareQuery(basis)).toBe('thema=it-grundlagen&teams=Team%20A,Team%20B&timer=30');
+  it('schreibt kategorie, stufe, ziehung, teams und bedenkzeit als lesbare parameter', () => {
+    expect(buildShareQuery(basis)).toBe(
+      `kategorie=it&stufe=3&ziehung=${ZIEHUNG}&teams=Team%20A,Team%20B&timer=30`,
+    );
   });
 
   it('lässt den timer weg, wenn ohne zeitbegrenzung gespielt wird', () => {
     expect(buildShareQuery({ ...basis, timerSeconds: null })).toBe(
-      'thema=it-grundlagen&teams=Team%20A,Team%20B',
+      `kategorie=it&stufe=3&ziehung=${ZIEHUNG}&teams=Team%20A,Team%20B`,
     );
+  });
+
+  it('lässt stufe und ziehung weg, solange keine kategorie feststeht', () => {
+    const query = buildShareQuery({ ...basis, categoryId: null });
+
+    expect(query).not.toContain('stufe');
+    expect(query).not.toContain('ziehung');
+    expect(query).toBe('teams=Team%20A,Team%20B&timer=30');
   });
 
   it('hängt die parameter an die adresse und entfernt vorhandene query-teile', () => {
     expect(buildShareLink(basis, 'https://spiel.example/jeopardy/?alt=1#stelle')).toBe(
-      'https://spiel.example/jeopardy/?thema=it-grundlagen&teams=Team%20A,Team%20B&timer=30',
+      `https://spiel.example/jeopardy/?kategorie=it&stufe=3&ziehung=${ZIEHUNG}` +
+        '&teams=Team%20A,Team%20B&timer=30',
     );
   });
 });
@@ -40,13 +67,20 @@ describe('teilen-link lesen', () => {
     expect(rundlauf(basis)).toEqual(basis);
   });
 
+  it('überträgt jede stufe und jede ziehungsnummer verlustfrei', () => {
+    for (const level of [1, 2, 3, 4, 5] as const) {
+      for (const seed of [0, 1, 999999, 0xffffffff]) {
+        expect(rundlauf({ ...basis, level, seed })).toEqual({ ...basis, level, seed });
+      }
+    }
+  });
+
   it('überträgt umlaute und sonderzeichen in teamnamen unverändert', () => {
     const config: SharedConfig = {
-      topicId: 'popkultur-90er',
+      ...basis,
+      categoryId: 'popkultur',
       teamNames: ['Die Füchse & Co.', 'Über, Team', 'Grüße 100% 🎉', 'a+b=c?'],
       timerSeconds: 45,
-      vetoSeconds: null,
-      wrongPenalty: 'full' as const,
     };
 
     expect(rundlauf(config)).toEqual(config);
@@ -58,44 +92,46 @@ describe('teilen-link lesen', () => {
   });
 
   it('ignoriert eine bedenkzeit, die nicht zur auswahl gehört', () => {
-    const result = parseShareParams('?thema=it-grundlagen&timer=7');
+    const result = parseShareParams('?kategorie=it&timer=7');
 
     expect(result).toEqual({
       status: 'ok',
-      config: {
-        topicId: 'it-grundlagen',
-        teamNames: [],
-        timerSeconds: null,
-        vetoSeconds: null,
-        wrongPenalty: 'full' as const,
-      },
+      config: { ...ohneKategorie, categoryId: 'it' },
     });
   });
 
   it('ignoriert eine unbrauchbare bedenkzeit', () => {
-    const result = parseShareParams('?thema=it-grundlagen&timer=bald');
+    const result = parseShareParams('?kategorie=it&timer=bald');
 
     expect(result.status === 'ok' && result.config.timerSeconds).toBeNull();
   });
 
-  it('ignoriert eine themen-id mit unzulässigen zeichen', () => {
-    const result = parseShareParams('?thema=..%2F..%2Fetc&teams=Adler');
+  it('ignoriert eine stufe außerhalb der skala', () => {
+    for (const stufe of ['0', '6', '2.5', 'schwer', '']) {
+      const result = parseShareParams(`?kategorie=it&stufe=${stufe}`);
+      expect(result.status === 'ok' && result.config.level).toBeNull();
+    }
+  });
+
+  it('ignoriert eine unbrauchbare ziehungsnummer', () => {
+    for (const ziehung of ['', '-1', 'zzzzzzzz', 'ü']) {
+      const result = parseShareParams(`?kategorie=it&ziehung=${ziehung}`);
+      expect(result.status === 'ok' && result.config.seed).toBeNull();
+    }
+  });
+
+  it('ignoriert eine kategorie-id mit unzulässigen zeichen', () => {
+    const result = parseShareParams('?kategorie=..%2F..%2Fetc&teams=Adler');
 
     expect(result).toEqual({
       status: 'ok',
-      config: {
-        topicId: null,
-        teamNames: ['Adler'],
-        timerSeconds: null,
-        vetoSeconds: null,
-        wrongPenalty: 'full' as const,
-      },
+      config: { ...ohneKategorie, teamNames: ['Adler'] },
     });
   });
 
   it('begrenzt die teamanzahl auf die obergrenze der oberfläche', () => {
     const namen = Array.from({ length: MAX_TEAMS_UI + 4 }, (_, index) => `Team ${index + 1}`);
-    const result = parseShareParams(`?thema=it-grundlagen&teams=${namen.join(',')}`);
+    const result = parseShareParams(`?kategorie=it&teams=${namen.join(',')}`);
 
     expect(result.status === 'ok' && result.config.teamNames).toHaveLength(MAX_TEAMS_UI);
   });
@@ -113,23 +149,18 @@ describe('teilen-link lesen', () => {
   });
 
   it('übersteht kaputte prozentfolgen im link', () => {
-    const result = parseShareParams('?thema=%E0%A4&teams=%E0%A4,Adler');
+    const result = parseShareParams('?kategorie=%E0%A4&teams=%E0%A4,Adler');
 
     expect(result).toEqual({
       status: 'ok',
-      config: {
-        topicId: null,
-        teamNames: ['Adler'],
-        timerSeconds: null,
-        vetoSeconds: null,
-        wrongPenalty: 'full' as const,
-      },
+      config: { ...ohneKategorie, teamNames: ['Adler'] },
     });
   });
 
   it('meldet einen link ohne verwertbare angaben als fehlerhaft', () => {
-    expect(parseShareParams('?thema=&teams=').status).toBe('invalid');
+    expect(parseShareParams('?kategorie=&teams=').status).toBe('invalid');
     expect(parseShareParams('?timer=30').status).toBe('invalid');
+    expect(parseShareParams('?stufe=3&ziehung=3mv').status).toBe('invalid');
   });
 });
 
@@ -145,20 +176,20 @@ describe('veto-zeit im link', () => {
     const config: SharedConfig = { ...basis, vetoSeconds: 20 };
 
     expect(buildShareQuery(config)).toBe(
-      'thema=it-grundlagen&teams=Team%20A,Team%20B&timer=30&vetozeit=20',
+      `kategorie=it&stufe=3&ziehung=${ZIEHUNG}&teams=Team%20A,Team%20B&timer=30&vetozeit=20`,
     );
     expect(rundlauf(config)).toEqual(config);
   });
 
   it('ignoriert eine veto-zeit, die nicht zur auswahl gehört', () => {
-    const result = parseShareParams('?thema=it-grundlagen&timer=30&vetozeit=7');
+    const result = parseShareParams('?kategorie=it&timer=30&vetozeit=7');
 
     expect(result.status === 'ok' && result.config.vetoSeconds).toBeNull();
   });
 
   it('ignoriert eine unbrauchbare veto-zeit', () => {
-    const kaputt = parseShareParams('?thema=it-grundlagen&vetozeit=gleich');
-    const leer = parseShareParams('?thema=it-grundlagen&vetozeit=');
+    const kaputt = parseShareParams('?kategorie=it&vetozeit=gleich');
+    const leer = parseShareParams('?kategorie=it&vetozeit=');
 
     expect(kaputt.status === 'ok' && kaputt.config.vetoSeconds).toBeNull();
     expect(leer.status === 'ok' && leer.config.vetoSeconds).toBeNull();
@@ -195,8 +226,8 @@ describe('abzugsregel im link', () => {
   });
 
   it('nimmt bei fehlender oder unlesbarer angabe den vollen abzug an', () => {
-    const ohne = parseShareParams('?thema=it-grundlagen');
-    const kaputt = parseShareParams('?thema=it-grundlagen&abzug=vielleicht');
+    const ohne = parseShareParams('?kategorie=it');
+    const kaputt = parseShareParams('?kategorie=it&abzug=vielleicht');
 
     expect(ohne.status === 'ok' && ohne.config.wrongPenalty).toBe('full');
     expect(kaputt.status === 'ok' && kaputt.config.wrongPenalty).toBe('full');

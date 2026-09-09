@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 1,
+  "id": "historische-persoenlichkeiten",
+  "title": "Historische Persönlichkeiten",
+  "description": "Aussagen statt Fragen: Gesucht sind Menschen aus fünf Epochen deutscher Geschichte.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "rubrics": [
+    {
+      "id": "vormaerz",
+      "name": "Vormärz und 1848",
+      "clues": [
+        {
+          "id": "vormaerz-1-01",
+          "level": 1,
+          "question": "Dieser Dichter aus Düsseldorf schrieb \"Die schlesischen Weber\" und lebte ab 1831 im Pariser Exil.",
+          "answer": "Heinrich Heine"
+        },
+        {
+          "id": "vormaerz-1-02",
+          "level": 1,
+          "question": "Dieser gebürtige Trierer verfasste gemeinsam mit Friedrich Engels das 1848 erschienene \"Manifest der Kommunistischen Partei\".",
+          "answer": "Karl Marx"
+        },
+        {
+          "id": "vormaerz-1-03",
+          "level": 1,
+          "question": "Dieser hessische Dichter und Mediziner verfasste 1834 die Flugschrift \"Der Hessische Landbote\" mit dem Ruf \"Friede den Hütten! Krieg den Palästen!\".",
+          "answer": "Georg Büchner"
+        },
+        {
+          "id": "vormaerz-2-01",
+          "level": 2,
+          "question": "Dieser Abgeordnete der Frankfurter Nationalversammlung wurde im November 1848 in Wien standrechtlich erschossen.",
+          "answer": "Robert Blum"
+        },
+        {
+          "id": "vormaerz-2-02",
+          "level": 2,
+          "question": "Dieser Dichter schrieb 1841 auf Helgoland das \"Lied der Deutschen\".",
+          "answer": "August Heinrich Hoffmann von Fallersleben"
+        },
+        {
+          "id": "vormaerz-2-03",
+          "level": 2,
+          "question": "Dieser Fabrikantensohn aus Barmen beschrieb 1845 \"Die Lage der arbeitenden Klasse in England\".",
+          "answer": "Friedrich Engels"
+        },
+        {
+          "id": "vormaerz-3-01",
+          "level": 3,
+          "question": "Dieser badische Rechtsanwalt rief im September 1848 in Lörrach die deutsche Republik aus und wurde in den USA Journalist.",
+          "answer": "Gustav Struve"
+        },
+        {
+          "id": "vormaerz-3-02",
+          "level": 3,
+          "question": "Dieser badische Revolutionär rief im April 1848 in Konstanz die deutsche Republik aus und floh später in die Vereinigten Staaten.",
+          "answer": "Friedrich Hecker",
+          "note": "Gustav Struve rief die Republik erst im September 1848 in Lörrach aus – häufige Verwechslung."
+        },
+        {
+          "id": "vormaerz-3-03",
+          "level": 3,
+          "question": "Dieser hessische Jurist führte als Präsident die Verhandlungen der Frankfurter Nationalversammlung in der Paulskirche.",
+          "answer": "Heinrich von Gagern"
+        },
+        {
+          "id": "vormaerz-4-01",
+          "level": 4,
+          "question": "Diese Leipzigerin gab ab 1849 die \"Frauen-Zeitung\" heraus und gründete später den Allgemeinen Deutschen Frauenverein.",
+          "answer": "Louise Otto-Peters"
+        },
+        {
+          "id": "vormaerz-4-02",
+          "level": 4,
+          "question": "Dieser Dichter führte 1848 die aus Pariser Exilanten gebildete Deutsche Demokratische Legion nach Baden.",
+          "answer": "Georg Herwegh"
+        },
+        {
+          "id": "vormaerz-4-03",
+          "level": 4,
+          "question": "Dieser Königsberger Arzt und Demokrat hielt dem preußischen König 1848 entgegen: \"Das ist das Unglück der Könige, dass sie die Wahrheit nicht hören wollen.\"",
+          "answer": "Johann Jacoby"
+        },
+        {
+          "id": "vormaerz-5-01",
+          "level": 5,
+          "question": "Diese Schriftstellerin gab 1848 in Köln eine eigene Zeitung heraus und wurde nach der Flucht in den USA Frauenrechtlerin.",
+          "answer": "Mathilde Franziska Anneke"
+        },
+        {
+          "id": "vormaerz-5-02",
+          "level": 5,
+          "question": "Dieser Lyriker aus Detmold dichtete 1848 \"Die Toten an die Lebenden\" und arbeitete an der \"Neuen Rheinischen Zeitung\" mit.",
+          "answer": "Ferdinand Freiligrath"
+        },
+        {
+          "id": "vormaerz-5-03",
+          "level": 5,
+          "question": "Dieser gescheiterte Achtundvierziger wurde in den USA General im Bürgerkrieg und später Innenminister.",
+          "answer": "Carl Schurz"
+        }
+      ]
+    },
+    {
+      "id": "kaiserreich",
+      "name": "Kaiserreich",
+      "clues": [
+        {
+          "id": "kaiserreich-1-01",
+          "level": 1,
+          "question": "Dieser Mitbegründer der Sozialdemokratie führte die Partei bis zu seinem Tod 1913 und stritt im Reichstag mit Bismarck.",
+          "answer": "August Bebel"
+        },
+        {
+          "id": "kaiserreich-1-02",
+          "level": 1,
+          "question": "Dieser Reichskanzler einigte 1871 das Deutsche Reich und ging als \"Eiserner Kanzler\" in die Geschichte ein.",
+          "answer": "Otto von Bismarck"
+        },
+        {
+          "id": "kaiserreich-1-03",
+          "level": 1,
+          "question": "Dieser letzte deutsche Kaiser dankte im November 1918 ab und ging ins niederländische Exil.",
+          "answer": "Wilhelm II."
+        },
+        {
+          "id": "kaiserreich-2-01",
+          "level": 2,
+          "question": "Dieser Arzt entdeckte 1882 den Erreger der Tuberkulose und erhielt 1905 den Nobelpreis für Medizin.",
+          "answer": "Robert Koch"
+        },
+        {
+          "id": "kaiserreich-2-02",
+          "level": 2,
+          "question": "Dieser Berliner Arzt begründete die Zellularpathologie und saß als linksliberaler Abgeordneter im Reichstag.",
+          "answer": "Rudolf Virchow"
+        },
+        {
+          "id": "kaiserreich-2-03",
+          "level": 2,
+          "question": "Dieser Physiker entdeckte 1895 eine unbekannte Strahlung und erhielt 1901 den ersten Nobelpreis für Physik.",
+          "answer": "Wilhelm Conrad Röntgen"
+        },
+        {
+          "id": "kaiserreich-3-01",
+          "level": 3,
+          "question": "Dieser Erfinder entdeckte 1866 das dynamoelektrische Prinzip und gab einem Elektrokonzern seinen Namen.",
+          "answer": "Werner von Siemens"
+        },
+        {
+          "id": "kaiserreich-3-02",
+          "level": 3,
+          "question": "Dieser Führer der Zentrumspartei war Bismarcks hartnäckigster Gegenspieler im Kulturkampf.",
+          "answer": "Ludwig Windthorst"
+        },
+        {
+          "id": "kaiserreich-3-03",
+          "level": 3,
+          "question": "Dieser Mannheimer erhielt 1886 das Patent auf ein \"Fahrzeug mit Gasmotorenbetrieb\".",
+          "answer": "Carl Benz"
+        },
+        {
+          "id": "kaiserreich-4-01",
+          "level": 4,
+          "question": "Dieser Graf ließ im Juli 1900 über dem Bodensee sein erstes Starrluftschiff aufsteigen.",
+          "answer": "Ferdinand Graf von Zeppelin"
+        },
+        {
+          "id": "kaiserreich-4-02",
+          "level": 4,
+          "question": "Dieser Mediziner erhielt 1901 den ersten Nobelpreis für Medizin, verliehen für die Serumtherapie gegen Diphtherie.",
+          "answer": "Emil von Behring"
+        },
+        {
+          "id": "kaiserreich-4-03",
+          "level": 4,
+          "question": "Dieser schlesische Dramatiker schrieb \"Die Weber\" und erhielt 1912 den Literaturnobelpreis.",
+          "answer": "Gerhart Hauptmann"
+        },
+        {
+          "id": "kaiserreich-5-01",
+          "level": 5,
+          "question": "Dieser Chemiker entwickelte die Ammoniaksynthese aus Stickstoff und leitete im Ersten Weltkrieg den deutschen Gaskrieg.",
+          "answer": "Fritz Haber"
+        },
+        {
+          "id": "kaiserreich-5-02",
+          "level": 5,
+          "question": "Dieser General folgte 1890 als Reichskanzler auf Bismarck und ließ dessen Rückversicherungsvertrag mit Russland auslaufen.",
+          "answer": "Leo von Caprivi"
+        },
+        {
+          "id": "kaiserreich-5-03",
+          "level": 5,
+          "question": "Dieser Großadmiral trieb ab 1897 als Staatssekretär den Ausbau der deutschen Schlachtflotte voran.",
+          "answer": "Alfred von Tirpitz"
+        }
+      ]
+    },
+    {
+      "id": "weimar",
+      "name": "Weimarer Republik",
+      "clues": [
+        {
+          "id": "weimar-1-01",
+          "level": 1,
+          "question": "Dieser Außenminister erhielt 1926 gemeinsam mit Aristide Briand den Friedensnobelpreis.",
+          "answer": "Gustav Stresemann"
+        },
+        {
+          "id": "weimar-1-02",
+          "level": 1,
+          "question": "Dieser Physiker erhielt 1921 den Nobelpreis und verließ Deutschland 1933 für immer.",
+          "answer": "Albert Einstein"
+        },
+        {
+          "id": "weimar-1-03",
+          "level": 1,
+          "question": "Dieser Sozialdemokrat war von 1919 bis zu seinem Tod 1925 der erste Reichspräsident.",
+          "answer": "Friedrich Ebert"
+        },
+        {
+          "id": "weimar-2-01",
+          "level": 2,
+          "question": "Diese Mitbegründerin der KPD wurde im Januar 1919 in Berlin von Freikorpssoldaten ermordet.",
+          "answer": "Rosa Luxemburg"
+        },
+        {
+          "id": "weimar-2-02",
+          "level": 2,
+          "question": "Dieser Generalfeldmarschall wurde 1925 Reichspräsident und ernannte im Januar 1933 Hitler zum Reichskanzler.",
+          "answer": "Paul von Hindenburg"
+        },
+        {
+          "id": "weimar-2-03",
+          "level": 2,
+          "question": "Dieser Industrielle und Außenminister wurde 1922 in Berlin von Rechtsextremen ermordet.",
+          "answer": "Walther Rathenau"
+        },
+        {
+          "id": "weimar-3-01",
+          "level": 3,
+          "question": "Diese Berliner Schauspielerin wurde 1930 mit dem Film \"Der blaue Engel\" weltberühmt und nahm später die US-Staatsbürgerschaft an.",
+          "answer": "Marlene Dietrich"
+        },
+        {
+          "id": "weimar-3-02",
+          "level": 3,
+          "question": "Diese Künstlerin schuf den Zyklus \"Ein Weberaufstand\" und war die erste Frau in der Preußischen Akademie der Künste.",
+          "answer": "Käthe Kollwitz"
+        },
+        {
+          "id": "weimar-3-03",
+          "level": 3,
+          "question": "Dieser Sozialdemokrat rief am 9. November 1918 von einem Fenster des Reichstagsgebäudes die Republik aus.",
+          "answer": "Philipp Scheidemann",
+          "note": "Karl Liebknecht rief am selben Tag die \"freie sozialistische Republik\" aus – gefragt ist der Sozialdemokrat."
+        },
+        {
+          "id": "weimar-4-01",
+          "level": 4,
+          "question": "Dieser Architekt gründete 1919 in Weimar das Bauhaus.",
+          "answer": "Walter Gropius"
+        },
+        {
+          "id": "weimar-4-02",
+          "level": 4,
+          "question": "Dieser Regisseur drehte 1927 den Stummfilm \"Metropolis\".",
+          "answer": "Fritz Lang"
+        },
+        {
+          "id": "weimar-4-03",
+          "level": 4,
+          "question": "Dieser Zentrumspolitiker unterzeichnete 1918 den Waffenstillstand von Compiègne und wurde 1921 im Schwarzwald ermordet.",
+          "answer": "Matthias Erzberger"
+        },
+        {
+          "id": "weimar-5-01",
+          "level": 5,
+          "question": "Dieser Herausgeber der \"Weltbühne\" wurde wegen Landesverrats verurteilt und bekam als Häftling der Nationalsozialisten den Friedensnobelpreis zugesprochen.",
+          "answer": "Carl von Ossietzky"
+        },
+        {
+          "id": "weimar-5-02",
+          "level": 5,
+          "question": "Dieser Schriftsteller veröffentlichte 1929 den Antikriegsroman \"Im Westen nichts Neues\".",
+          "answer": "Erich Maria Remarque"
+        },
+        {
+          "id": "weimar-5-03",
+          "level": 5,
+          "question": "Dieser Staatsrechtler legte als Staatssekretär den ersten Entwurf der Reichsverfassung von 1919 vor.",
+          "answer": "Hugo Preuß"
+        }
+      ]
+    },
+    {
+      "id": "ns",
+      "name": "Nationalsozialismus",
+      "clues": [
+        {
+          "id": "ns-1-01",
+          "level": 1,
+          "question": "Diese Münchner Studentin verteilte Flugblätter der \"Weißen Rose\" und wurde im Februar 1943 hingerichtet.",
+          "answer": "Sophie Scholl",
+          "note": "Ihr Bruder Hans Scholl wurde am selben Tag hingerichtet – gefragt ist die Studentin."
+        },
+        {
+          "id": "ns-1-02",
+          "level": 1,
+          "question": "Dieser evangelische Theologe der Bekennenden Kirche wurde im April 1945 im KZ Flossenbürg hingerichtet.",
+          "answer": "Dietrich Bonhoeffer"
+        },
+        {
+          "id": "ns-1-03",
+          "level": 1,
+          "question": "Dieses jüdische Mädchen schrieb im Amsterdamer Hinterhaus Tagebuch und starb 1945 im Lager Bergen-Belsen.",
+          "answer": "Anne Frank"
+        },
+        {
+          "id": "ns-2-01",
+          "level": 2,
+          "question": "Dieser Oberst deponierte am 20. Juli 1944 eine Bombe in Hitlers Lagebesprechung in der Wolfsschanze.",
+          "answer": "Claus Schenk Graf von Stauffenberg"
+        },
+        {
+          "id": "ns-2-02",
+          "level": 2,
+          "question": "Dieser Reichsminister für Volksaufklärung und Propaganda kontrollierte ab 1933 Presse, Rundfunk und Film.",
+          "answer": "Joseph Goebbels"
+        },
+        {
+          "id": "ns-2-03",
+          "level": 2,
+          "question": "Dieser schwäbische Schreiner verübte im November 1939 im Münchner Bürgerbräukeller ein Sprengstoffattentat auf Hitler.",
+          "answer": "Georg Elser"
+        },
+        {
+          "id": "ns-3-01",
+          "level": 3,
+          "question": "Dieser Chef des Reichssicherheitshauptamts leitete im Januar 1942 die Wannseekonferenz.",
+          "answer": "Reinhard Heydrich"
+        },
+        {
+          "id": "ns-3-02",
+          "level": 3,
+          "question": "Dieser Oberbefehlshaber der Luftwaffe war zeitweise als Hitlers Nachfolger vorgesehen und wurde in Nürnberg zum Tode verurteilt.",
+          "answer": "Hermann Göring"
+        },
+        {
+          "id": "ns-3-03",
+          "level": 3,
+          "question": "Dieser Unternehmer beschäftigte in seiner Fabrik über tausend jüdische Zwangsarbeiter und bewahrte sie so vor der Ermordung.",
+          "answer": "Oskar Schindler"
+        },
+        {
+          "id": "ns-4-01",
+          "level": 4,
+          "question": "Dieser Architekt und Rüstungsminister erhielt in Nürnberg zwanzig Jahre Haft.",
+          "answer": "Albert Speer"
+        },
+        {
+          "id": "ns-4-02",
+          "level": 4,
+          "question": "Dieser Reichsführer SS baute den SS-Apparat auf und organisierte das System der Konzentrations- und Vernichtungslager.",
+          "answer": "Heinrich Himmler"
+        },
+        {
+          "id": "ns-4-03",
+          "level": 4,
+          "question": "Dieser frühere Oberbürgermeister von Leipzig war als ziviler Kopf des Widerstands nach dem Umsturzversuch als Reichskanzler vorgesehen.",
+          "answer": "Carl Friedrich Goerdeler"
+        },
+        {
+          "id": "ns-5-01",
+          "level": 5,
+          "question": "Dieser Admiral leitete die militärische Abwehr, deckte Widerständler und wurde 1945 in Flossenbürg hingerichtet.",
+          "answer": "Wilhelm Canaris"
+        },
+        {
+          "id": "ns-5-02",
+          "level": 5,
+          "question": "Dieser Generaloberst außer Dienst war als Kopf des militärischen Widerstands nach dem 20. Juli 1944 als Staatsoberhaupt vorgesehen.",
+          "answer": "Ludwig Beck"
+        },
+        {
+          "id": "ns-5-03",
+          "level": 5,
+          "question": "Dieser Jurist gab mit seinem schlesischen Gut dem bedeutendsten zivilen Widerstandskreis den Namen.",
+          "answer": "Helmuth James Graf von Moltke",
+          "note": "Gemeint ist der Kreisauer Kreis, benannt nach dem Gut Kreisau."
+        }
+      ]
+    },
+    {
+      "id": "nachkriegszeit",
+      "name": "DDR und Bundesrepublik",
+      "clues": [
+        {
+          "id": "nachkriegszeit-1-01",
+          "level": 1,
+          "question": "Dieser Bundeskanzler kniete 1970 vor dem Denkmal der Helden des Warschauer Ghettos.",
+          "answer": "Willy Brandt"
+        },
+        {
+          "id": "nachkriegszeit-1-02",
+          "level": 1,
+          "question": "Dieser Wirtschaftsminister gilt als Vater der sozialen Marktwirtschaft und wurde 1963 Bundeskanzler.",
+          "answer": "Ludwig Erhard"
+        },
+        {
+          "id": "nachkriegszeit-1-03",
+          "level": 1,
+          "question": "Dieser erste Bundeskanzler regierte von 1949 bis 1963 und war zuvor Oberbürgermeister von Köln.",
+          "answer": "Konrad Adenauer"
+        },
+        {
+          "id": "nachkriegszeit-2-01",
+          "level": 2,
+          "question": "Dieser Bundeskanzler wird als \"Kanzler der Einheit\" bezeichnet und regierte sechzehn Jahre.",
+          "answer": "Helmut Kohl"
+        },
+        {
+          "id": "nachkriegszeit-2-02",
+          "level": 2,
+          "question": "Dieser SED-Chef erklärte im Juni 1961: \"Niemand hat die Absicht, eine Mauer zu errichten.\"",
+          "answer": "Walter Ulbricht"
+        },
+        {
+          "id": "nachkriegszeit-2-03",
+          "level": 2,
+          "question": "Dieser Staats- und Parteichef führte die DDR von 1971 bis zu seinem Rücktritt im Oktober 1989.",
+          "answer": "Erich Honecker"
+        },
+        {
+          "id": "nachkriegszeit-3-01",
+          "level": 3,
+          "question": "Diese in Hamburg geborene Physikerin wuchs in der DDR auf und wurde 2005 die erste Bundeskanzlerin.",
+          "answer": "Angela Merkel"
+        },
+        {
+          "id": "nachkriegszeit-3-02",
+          "level": 3,
+          "question": "Dieser Liberale amtierte von 1949 bis 1959 als erster Bundespräsident.",
+          "answer": "Theodor Heuss"
+        },
+        {
+          "id": "nachkriegszeit-3-03",
+          "level": 3,
+          "question": "Dieser spätere Bundeskanzler organisierte 1962 als Hamburger Senator die Rettungseinsätze bei der Sturmflut.",
+          "answer": "Helmut Schmidt"
+        },
+        {
+          "id": "nachkriegszeit-4-01",
+          "level": 4,
+          "question": "Diese Schriftstellerin veröffentlichte 1963 in der DDR den Roman \"Der geteilte Himmel\".",
+          "answer": "Christa Wolf"
+        },
+        {
+          "id": "nachkriegszeit-4-02",
+          "level": 4,
+          "question": "Dieser Liedermacher wurde 1976 nach einem Konzert in Köln aus der DDR ausgebürgert.",
+          "answer": "Wolf Biermann"
+        },
+        {
+          "id": "nachkriegszeit-4-03",
+          "level": 4,
+          "question": "Dieser Vertraute Willy Brandts prägte 1963 für die Ostpolitik die Formel \"Wandel durch Annäherung\".",
+          "answer": "Egon Bahr"
+        },
+        {
+          "id": "nachkriegszeit-5-01",
+          "level": 5,
+          "question": "Dieser Minister für Staatssicherheit leitete das Ministerium von 1957 bis zum Herbst 1989.",
+          "answer": "Erich Mielke"
+        },
+        {
+          "id": "nachkriegszeit-5-02",
+          "level": 5,
+          "question": "Dieser Wortführer des Sozialistischen Deutschen Studentenbundes überlebte 1968 in Berlin ein Attentat schwer verletzt.",
+          "answer": "Rudi Dutschke"
+        },
+        {
+          "id": "nachkriegszeit-5-03",
+          "level": 5,
+          "question": "Dieser erste frei gewählte Ministerpräsident der DDR unterzeichnete 1990 den Einigungsvertrag.",
+          "answer": "Lothar de Maizière"
+        }
+      ]
+    }
+  ]
+}

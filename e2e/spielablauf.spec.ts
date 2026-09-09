@@ -1,8 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import {
-  chooseTopic,
+  chooseCategory,
   clueCard,
+  columnNames,
   revealAnswer,
   scoredClueCard,
   settleButton,
@@ -19,29 +20,38 @@ test('spielfeld passt ohne scrollen auf einen bildschirm', async ({ page }) => {
   expect(scrollHeight).toBeLessThanOrEqual(clientHeight + 1);
 });
 
-test('spielfeld zeigt fünf kategorien und 25 karten', async ({ page }) => {
+test('spielfeld zeigt fünf gezogene spalten und 25 karten', async ({ page }) => {
   await startGame(page);
 
   await expect(page.getByRole('button', { name: /Punkte$/ })).toHaveCount(25);
-  for (const category of ['Erdkunde', 'Geschichte', 'Natur', 'Sprache', 'Zahlen']) {
-    await expect(page.getByText(category, { exact: true })).toBeVisible();
+
+  // Welche Rubriken gezogen werden, entscheidet der Zufall – fünf verschiedene
+  // Spalten mit je fünf Karten müssen es aber immer sein.
+  const spalten = await columnNames(page);
+  expect(spalten).toHaveLength(5);
+  expect(new Set(spalten).size).toBe(5);
+
+  for (const name of spalten) {
+    await expect(page.getByText(name, { exact: true })).toBeVisible();
   }
 });
 
 test('lange kategorienamen bleiben in ihrer spalte', async ({ page }) => {
+  // Diese Kategorie führt die längsten Rubriknamen ("Nationalsozialismus",
+  // "DDR und Bundesrepublik") – sie müssen getrennt werden statt überzulaufen.
   await page.goto('/');
-  await chooseTopic(
-    page,
-    'Historische Persönlichkeiten',
-    'Historische Persönlichkeiten – Einstieg',
-  );
+  await chooseCategory(page, 'Historische Persönlichkeiten');
   await page.getByRole('button', { name: 'Spiel starten' }).click();
 
-  // "Nationalsozialismus" ist breiter als eine Spalte und muss getrennt werden.
-  const kopf = page.getByText('Nationalsozialismus', { exact: true });
-  await expect(kopf).toBeVisible();
-  const laeuftUeber = await kopf.evaluate((el) => el.scrollWidth > el.clientWidth);
-  expect(laeuftUeber).toBe(false);
+  const spalten = await columnNames(page);
+  expect(spalten).toHaveLength(5);
+
+  for (const name of spalten) {
+    const kopf = page.getByText(name, { exact: true });
+    await expect(kopf).toBeVisible();
+    const laeuftUeber = await kopf.evaluate((el) => el.scrollWidth > el.clientWidth);
+    expect(laeuftUeber).toBe(false);
+  }
 });
 
 test('teamname lässt sich am spielfeld ändern und wirkt auf die punktebuttons', async ({
@@ -53,7 +63,7 @@ test('teamname lässt sich am spielfeld ändern und wirkt auf die punktebuttons'
   await nameField.fill('Die Adler');
   await nameField.blur();
 
-  await clueCard(page, 'Erdkunde', 100).click();
+  await clueCard(page, 0, 100).click();
   await revealAnswer(page);
 
   await expect(settleButton(page, 'Die Adler')).toBeVisible();
@@ -62,7 +72,7 @@ test('teamname lässt sich am spielfeld ändern und wirkt auf die punktebuttons'
 
 test('laufendes spiel übersteht neuladen und lässt sich fortsetzen', async ({ page }) => {
   await startGame(page);
-  await clueCard(page, 'Erdkunde', 100).click();
+  await clueCard(page, 0, 100).click();
   await revealAnswer(page);
   await settleButton(page, 'Team A').click();
 
@@ -71,7 +81,7 @@ test('laufendes spiel übersteht neuladen und lässt sich fortsetzen', async ({ 
 
   await page.reload();
   await expect(page.getByText('Team A: 100 Punkte')).toBeAttached();
-  await expect(scoredClueCard(page, 'Erdkunde', 100)).toBeDisabled();
+  await expect(scoredClueCard(page, 0, 100)).toBeDisabled();
 
   // Über die Startseite wird dasselbe Spiel zum Fortsetzen angeboten.
   await page.goto('/');
@@ -90,14 +100,14 @@ test('startseite und spielfeld sind ohne barrieren bedienbar', async ({ page }) 
   const spielfeld = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(spielfeld.violations).toEqual([]);
 
-  await clueCard(page, 'Erdkunde', 100).click();
+  await clueCard(page, 0, 100).click();
   const dialog = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(dialog.violations).toEqual([]);
 });
 
 test('frage-popup passt bei acht teams ohne scrollen auf einen bildschirm', async ({ page }) => {
   await startGame(page, 8);
-  await clueCard(page, 'Erdkunde', 500).click();
+  await clueCard(page, 0, 500).click();
 
   const dialog = page.locator('dialog[open]');
   await expect(dialog).toBeVisible();

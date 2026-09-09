@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { CATEGORY_COLORS } from './colors';
 import { MAX_TEAM_NAME_LENGTH } from './teams';
-import { CATEGORY_COUNT, CLUES_PER_CATEGORY, WRONG_PENALTIES } from './types';
-import type { GameDefinition, GameState, TopicIndex } from './types';
+import { CATEGORY_COUNT, CLUES_PER_CATEGORY, MAX_DIFFICULTY, WRONG_PENALTIES } from './types';
+import type { GameDefinition, GameState, QuestionPool, TopicIndex } from './types';
 
 const idSchema = z
   .string()
@@ -28,11 +28,13 @@ export const categorySchema = z.strictObject({
     .length(CLUES_PER_CATEGORY, `Jede Kategorie braucht genau ${CLUES_PER_CATEGORY} Fragen.`),
 });
 
+const difficultyMessage = `Schwierigkeit liegt zwischen 1 und ${MAX_DIFFICULTY}.`;
+
 const difficultySchema = z
   .number()
   .int()
-  .min(1, 'Schwierigkeit liegt zwischen 1 und 3.')
-  .max(3, 'Schwierigkeit liegt zwischen 1 und 3.');
+  .min(1, difficultyMessage)
+  .max(MAX_DIFFICULTY, difficultyMessage);
 
 const gameDefinitionShape = z.strictObject({
   schemaVersion: z.literal(1),
@@ -91,36 +93,32 @@ export const gameDefinitionSchema = gameDefinitionShape.superRefine((definition,
   });
 });
 
+const fileSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .regex(/^[a-z0-9][a-z0-9-]*\.json$/i, 'Dateiname muss auf .json enden.');
+
+/**
+ * Version 2: Der Index führt nur noch die Themenkategorien, jede mit ihrem
+ * Fragenpool. Fertige Fragensets stehen nicht mehr darin – die Schwierigkeit
+ * wählt der Regler, das Brett wird beim Start gezogen.
+ */
 const topicIndexShape = z.strictObject({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.literal(2),
   categories: z
     .array(
       z.strictObject({
         id: idSchema,
         title: z.string().trim().min(1).max(80),
         description: z.string().trim().max(300).optional(),
+        file: fileSchema,
       }),
     )
     .min(1, 'Es braucht mindestens eine Themenkategorie.'),
-  topics: z.array(
-    z.strictObject({
-      id: idSchema,
-      title: z.string().trim().min(1).max(80),
-      description: z.string().trim().max(300).optional(),
-      category: idSchema,
-      difficulty: difficultySchema,
-      file: z
-        .string()
-        .trim()
-        .min(1)
-        .regex(/^[a-z0-9][a-z0-9-]*\.json$/i, 'Dateiname muss auf .json enden.'),
-    }),
-  ),
 });
 
 export const topicIndexSchema = topicIndexShape.superRefine((index, ctx) => {
-  const known = new Set(index.categories.map((category) => category.id));
-
   index.categories.forEach((category, position) => {
     if (index.categories.findIndex((other) => other.id === category.id) !== position) {
       ctx.addIssue({
@@ -130,16 +128,76 @@ export const topicIndexSchema = topicIndexShape.superRefine((index, ctx) => {
       });
     }
   });
+});
 
-  // Ein Verweis ins Leere fiele sonst erst in der Oberfläche auf.
-  index.topics.forEach((topic, position) => {
-    if (!known.has(topic.category)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['topics', position, 'category'],
-        message: `Unbekannte Themenkategorie "${topic.category}".`,
-      });
+// ---------------------------------------------------------------------------
+// Fragenpool
+// ---------------------------------------------------------------------------
+
+export const poolClueSchema = z.strictObject({
+  id: idSchema,
+  level: difficultySchema,
+  question: z.string().trim().min(1).max(500),
+  answer: z.string().trim().min(1).max(500),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const poolRubricSchema = z.strictObject({
+  id: idSchema,
+  name: z.string().trim().min(1).max(40),
+  color: z.enum(CATEGORY_COLORS).optional(),
+  clues: z
+    .array(poolClueSchema)
+    .min(CLUES_PER_CATEGORY, `Eine Rubrik braucht mindestens ${CLUES_PER_CATEGORY} Fragen.`),
+});
+
+const questionPoolShape = z.strictObject({
+  schemaVersion: z.literal(1),
+  id: idSchema,
+  title: z.string().trim().min(1).max(80),
+  description: z.string().trim().max(300).optional(),
+  author: z.string().trim().max(80).optional(),
+  locale: z.string().trim().max(20).optional(),
+  rubrics: z
+    .array(poolRubricSchema)
+    .min(CATEGORY_COUNT, `Ein Pool braucht mindestens ${CATEGORY_COUNT} Rubriken.`),
+});
+
+export const questionPoolSchema = questionPoolShape.superRefine((pool, ctx) => {
+  // Rubriken werden zu Spalten, Fragen zu Karten – im gezogenen Brett stehen
+  // beide IDs im selben Namensraum und müssen sich deshalb hier unterscheiden.
+  const seenIds = new Set<string>();
+  const register = (id: string, path: (string | number)[]) => {
+    if (seenIds.has(id)) {
+      ctx.addIssue({ code: 'custom', path, message: `Die ID "${id}" wird mehrfach verwendet.` });
     }
+    seenIds.add(id);
+  };
+
+  const seenQuestions = new Map<string, string>();
+
+  pool.rubrics.forEach((rubric, rubricIndex) => {
+    register(rubric.id, ['rubrics', rubricIndex, 'id']);
+
+    rubric.clues.forEach((clue, clueIndex) => {
+      register(clue.id, ['rubrics', rubricIndex, 'clues', clueIndex, 'id']);
+
+      // Dieselbe Frage zweimal im Vorrat hieße: irgendwann steht sie doppelt
+      // auf dem Brett. Verglichen wird tolerant, damit Tippvarianten auffallen.
+      const key = clue.question
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .trim();
+      const previous = seenQuestions.get(key);
+      if (previous !== undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['rubrics', rubricIndex, 'clues', clueIndex, 'question'],
+          message: `Gleiche Frage wie "${previous}".`,
+        });
+      }
+      seenQuestions.set(key, clue.id);
+    });
   });
 });
 
@@ -198,6 +256,13 @@ export function validateGameDefinition(input: unknown): ValidationResult<GameDef
   const result = gameDefinitionSchema.safeParse(input);
   return result.success
     ? { ok: true, data: result.data as GameDefinition }
+    : { ok: false, issues: toIssues(result.error) };
+}
+
+export function validateQuestionPool(input: unknown): ValidationResult<QuestionPool> {
+  const result = questionPoolSchema.safeParse(input);
+  return result.success
+    ? { ok: true, data: result.data as QuestionPool }
     : { ok: false, issues: toIssues(result.error) };
 }
 
