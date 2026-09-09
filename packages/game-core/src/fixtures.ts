@@ -1,6 +1,5 @@
-import type { Category, GameDefinition } from './types';
-
-const POINT_STEPS = [100, 200, 300, 400, 500];
+import { CLUE_LEVELS, POINT_STEPS } from './types';
+import type { Category, GameDefinition, PoolRubric, QuestionPool } from './types';
 
 function makeCategory(id: string, name: string, entries: [string, string][]): Category {
   return {
@@ -28,7 +27,7 @@ export const sampleDefinition: GameDefinition = {
   description: 'Fragenset für Tests und Entwicklung.',
   author: 'Projektteam',
   locale: 'de-DE',
-  pointSteps: POINT_STEPS,
+  pointSteps: [...POINT_STEPS],
   categories: [
     makeCategory('wissenschaft', 'Wissenschaft', [
       ['Welches Gas atmen Pflanzen bei der Fotosynthese auf?', 'Kohlenstoffdioxid'],
@@ -145,7 +144,7 @@ export const invalidDefinitionSamples: { name: string; value: unknown }[] = [
     },
   },
   { name: 'falsche schema-version', value: { ...sampleDefinition, schemaVersion: 2 } },
-  { name: 'schwierigkeit außerhalb 1 bis 3', value: { ...sampleDefinition, difficulty: 4 } },
+  { name: 'schwierigkeit außerhalb der skala', value: { ...sampleDefinition, difficulty: 6 } },
   { name: 'schwierigkeit als text', value: { ...sampleDefinition, difficulty: '2' } },
   { name: 'fehlende themenkategorie', value: { ...sampleDefinition, category: undefined } },
 ];
@@ -154,3 +153,43 @@ export const invalidDefinitionSamples: { name: string; value: unknown }[] = [
 export const sampleClueIds = sampleDefinition.categories.flatMap((category) =>
   category.clues.map((clue) => clue.id),
 );
+
+/**
+ * Rubrik mit zwei Fragen auf jeder der neun Stufen. Die Texte sind bewusst
+ * schematisch: Geprüft wird die Ziehung, nicht der Inhalt.
+ */
+function makeRubric(id: string, name: string): PoolRubric {
+  return {
+    id,
+    name,
+    clues: CLUE_LEVELS.flatMap((level) =>
+      [1, 2].map((index) => ({
+        id: `${id}-${level}-${index}`,
+        level,
+        question: `${name}: Frage auf Stufe ${level} (${index})?`,
+        answer: `${name} ${level}.${index}`,
+      })),
+    ),
+  };
+}
+
+/**
+ * Vollständiger Fragenpool für Tests: sechs lückenlose Rubriken, aus denen sich
+ * in jeder Reglerstellung ein Brett ziehen lässt.
+ */
+export const samplePool: QuestionPool = {
+  schemaVersion: 1,
+  id: 'testpool',
+  title: 'Testpool',
+  description: 'Fragenvorrat für Tests und Entwicklung.',
+  author: 'Projektteam',
+  locale: 'de-DE',
+  rubrics: [
+    makeRubric('rubrik-a', 'Rubrik A'),
+    makeRubric('rubrik-b', 'Rubrik B'),
+    makeRubric('rubrik-c', 'Rubrik C'),
+    makeRubric('rubrik-d', 'Rubrik D'),
+    makeRubric('rubrik-e', 'Rubrik E'),
+    makeRubric('rubrik-f', 'Rubrik F'),
+  ],
+};

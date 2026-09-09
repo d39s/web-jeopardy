@@ -1,0 +1,507 @@
+{
+  "schemaVersion": 1,
+  "id": "popkultur",
+  "title": "Popkultur",
+  "description": "Kino, Musik, Serien, Games und Netzkultur.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "rubrics": [
+    {
+      "id": "kino",
+      "name": "Kino",
+      "clues": [
+        {
+          "id": "kino-1-01",
+          "level": 1,
+          "question": "Wie heißt der Zauberschüler mit der Blitznarbe auf der Stirn?",
+          "answer": "Harry Potter"
+        },
+        {
+          "id": "kino-2-01",
+          "level": 2,
+          "question": "In welcher Filmreihe kämpfen Jedi gegen die dunkle Seite der Macht?",
+          "answer": "Star Wars"
+        },
+        {
+          "id": "kino-3-01",
+          "level": 3,
+          "question": "Wer führte Regie bei \"Pulp Fiction\"?",
+          "answer": "Quentin Tarantino"
+        },
+        {
+          "id": "kino-3-02",
+          "level": 3,
+          "question": "Wie heißt das Königreich in \"Die Eiskönigin\"?",
+          "answer": "Arendelle"
+        },
+        {
+          "id": "kino-4-01",
+          "level": 4,
+          "question": "Wer führte Regie bei \"Jurassic Park\" und \"E.T.\"?",
+          "answer": "Steven Spielberg"
+        },
+        {
+          "id": "kino-4-02",
+          "level": 4,
+          "question": "Wie heißt der kannibalische Psychiater, den Anthony Hopkins in \"Das Schweigen der Lämmer\" spielt?",
+          "answer": "Hannibal Lecter"
+        },
+        {
+          "id": "kino-5-01",
+          "level": 5,
+          "question": "Welcher Film gewann 2020 als erster nicht englischsprachiger den Oscar als bester Film?",
+          "answer": "Parasite"
+        },
+        {
+          "id": "kino-5-02",
+          "level": 5,
+          "question": "Welcher Kinofilm von 1995 gilt als erster abendfüllender Film, der vollständig am Computer animiert wurde?",
+          "answer": "Toy Story"
+        },
+        {
+          "id": "kino-5-03",
+          "level": 5,
+          "question": "Welcher Regisseur drehte \"2001: Odyssee im Weltraum\" und \"Shining\"?",
+          "answer": "Stanley Kubrick"
+        },
+        {
+          "id": "kino-6-01",
+          "level": 6,
+          "question": "Welcher japanische Regisseur drehte 1954 \"Die sieben Samurai\"?",
+          "answer": "Akira Kurosawa"
+        },
+        {
+          "id": "kino-6-02",
+          "level": 6,
+          "question": "Wie lautet der bürgerliche Name der Hauptfigur Neo in \"Matrix\"?",
+          "answer": "Thomas Anderson"
+        },
+        {
+          "id": "kino-7-01",
+          "level": 7,
+          "question": "Welche Regisseurin gewann 2010 für \"Tödliches Kommando\" als erste Frau den Regie-Oscar?",
+          "answer": "Kathryn Bigelow"
+        },
+        {
+          "id": "kino-7-02",
+          "level": 7,
+          "question": "Welcher Horrorfilm von 1999 wurde als angeblich echtes Filmmaterial dreier verschwundener Studenten beworben?",
+          "answer": "The Blair Witch Project"
+        },
+        {
+          "id": "kino-8-01",
+          "level": 8,
+          "question": "Wie heißt die französische Filmbewegung, die François Truffaut und Jean-Luc Godard ab Ende der 1950er prägten?",
+          "answer": "Die Nouvelle Vague"
+        },
+        {
+          "id": "kino-9-01",
+          "level": 9,
+          "question": "Welcher Stummfilm wurde bei der ersten Oscar-Verleihung 1929 als bester Film ausgezeichnet?",
+          "answer": "Wings",
+          "note": "\"Sunrise\" erhielt im selben Jahr den separaten Preis für die künstlerischste Produktion."
+        }
+      ]
+    },
+    {
+      "id": "musik",
+      "name": "Musik",
+      "clues": [
+        {
+          "id": "musik-1-01",
+          "level": 1,
+          "question": "Welche Band sang \"Bohemian Rhapsody\"?",
+          "answer": "Queen"
+        },
+        {
+          "id": "musik-2-01",
+          "level": 2,
+          "question": "Aus welchem Land stammt die Band ABBA?",
+          "answer": "Aus Schweden"
+        },
+        {
+          "id": "musik-3-01",
+          "level": 3,
+          "question": "Welche Band nahm 1969 das Album \"Abbey Road\" auf?",
+          "answer": "The Beatles"
+        },
+        {
+          "id": "musik-3-02",
+          "level": 3,
+          "question": "Welches Instrument machte Jimi Hendrix berühmt?",
+          "answer": "Die E-Gitarre"
+        },
+        {
+          "id": "musik-4-01",
+          "level": 4,
+          "question": "Welches Album von Michael Jackson aus dem Jahr 1982 ist das meistverkaufte Album der Musikgeschichte?",
+          "answer": "Thriller"
+        },
+        {
+          "id": "musik-4-02",
+          "level": 4,
+          "question": "Wie heißt der jährliche europäische Musikwettbewerb?",
+          "answer": "Der Eurovision Song Contest"
+        },
+        {
+          "id": "musik-5-01",
+          "level": 5,
+          "question": "Welches Album von Pink Floyd aus dem Jahr 1973 zeigt auf dem Cover ein Prisma?",
+          "answer": "The Dark Side of the Moon"
+        },
+        {
+          "id": "musik-5-02",
+          "level": 5,
+          "question": "Wie heißt das Anwesen in Memphis, in dem Elvis Presley wohnte und beigesetzt ist?",
+          "answer": "Graceland"
+        },
+        {
+          "id": "musik-5-03",
+          "level": 5,
+          "question": "Wie viele Saiten hat ein üblicher E-Bass?",
+          "answer": "Vier"
+        },
+        {
+          "id": "musik-6-01",
+          "level": 6,
+          "question": "Welche Band veröffentlichte 1977 mit \"Never Mind the Bollocks\" ihr einziges Studioalbum?",
+          "answer": "Sex Pistols"
+        },
+        {
+          "id": "musik-6-02",
+          "level": 6,
+          "question": "Welcher Musiker wurde 1980 in New York vor seinem Wohnhaus, dem Dakota Building, erschossen?",
+          "answer": "John Lennon"
+        },
+        {
+          "id": "musik-7-01",
+          "level": 7,
+          "question": "Welche Düsseldorfer Band gilt mit Alben wie \"Autobahn\" und \"Trans Europa Express\" als Wegbereiterin der elektronischen Musik?",
+          "answer": "Kraftwerk"
+        },
+        {
+          "id": "musik-7-02",
+          "level": 7,
+          "question": "Welcher Produzent gilt als \"fünfter Beatle\", weil er fast alle Alben der Band produzierte?",
+          "answer": "George Martin"
+        },
+        {
+          "id": "musik-8-01",
+          "level": 8,
+          "question": "Welcher Soulsänger veröffentlichte 1971 das Album \"What's Going On\"?",
+          "answer": "Marvin Gaye"
+        },
+        {
+          "id": "musik-9-01",
+          "level": 9,
+          "question": "Wer gründete in Detroit das Plattenlabel Motown?",
+          "answer": "Berry Gordy"
+        }
+      ]
+    },
+    {
+      "id": "serien",
+      "name": "Serien",
+      "clues": [
+        {
+          "id": "serien-1-01",
+          "level": 1,
+          "question": "Wie heißt die Heimatstadt der Simpsons?",
+          "answer": "Springfield"
+        },
+        {
+          "id": "serien-2-01",
+          "level": 2,
+          "question": "Wie heißt das Café, in dem sich die \"Friends\" ständig treffen?",
+          "answer": "Central Perk"
+        },
+        {
+          "id": "serien-3-01",
+          "level": 3,
+          "question": "In welcher Serie ermitteln die FBI-Agenten Fox Mulder und Dana Scully?",
+          "answer": "Akte X"
+        },
+        {
+          "id": "serien-3-02",
+          "level": 3,
+          "question": "In welcher Serie gehört das Haus Stark zu den großen Familien?",
+          "answer": "Game of Thrones"
+        },
+        {
+          "id": "serien-4-01",
+          "level": 4,
+          "question": "Welche HBO-Serie erzählt vom Mafiaboss Tony Soprano, der eine Psychotherapie beginnt?",
+          "answer": "Die Sopranos"
+        },
+        {
+          "id": "serien-4-02",
+          "level": 4,
+          "question": "Welche Serie erzählt vom Chemielehrer Walter White?",
+          "answer": "Breaking Bad"
+        },
+        {
+          "id": "serien-5-01",
+          "level": 5,
+          "question": "In welcher Kleinstadt spielt \"Stranger Things\"?",
+          "answer": "In Hawkins, Indiana"
+        },
+        {
+          "id": "serien-5-02",
+          "level": 5,
+          "question": "Welche HBO-Miniserie von 2019 erzählt von der Reaktorkatastrophe des Jahres 1986?",
+          "answer": "Chernobyl"
+        },
+        {
+          "id": "serien-5-03",
+          "level": 5,
+          "question": "Wie heißt der Papiergroßhändler, bei dem die Angestellten der US-Serie \"The Office\" arbeiten?",
+          "answer": "Dunder Mifflin",
+          "note": "In der britischen Originalserie heißt die Firma Wernham Hogg."
+        },
+        {
+          "id": "serien-6-01",
+          "level": 6,
+          "question": "In welcher US-Stadt spielt die Serie \"The Wire\"?",
+          "answer": "In Baltimore"
+        },
+        {
+          "id": "serien-6-02",
+          "level": 6,
+          "question": "In welcher fiktiven Kleinstadt spielt die deutsche Netflix-Serie \"Dark\"?",
+          "answer": "In Winden"
+        },
+        {
+          "id": "serien-7-01",
+          "level": 7,
+          "question": "Wessen Leiche wird zu Beginn von \"Twin Peaks\" in Plastik gewickelt am Seeufer gefunden?",
+          "answer": "Die von Laura Palmer"
+        },
+        {
+          "id": "serien-7-02",
+          "level": 7,
+          "question": "Wie heißt die Werbeagentur, bei der Don Draper zu Beginn von \"Mad Men\" arbeitet?",
+          "answer": "Sterling Cooper"
+        },
+        {
+          "id": "serien-8-01",
+          "level": 8,
+          "question": "Welcher Schauspieler verkörperte von 2005 bis 2010 den zehnten Doctor in \"Doctor Who\"?",
+          "answer": "David Tennant"
+        },
+        {
+          "id": "serien-9-01",
+          "level": 9,
+          "question": "Welche Zahlenfolge muss in \"Lost\" immer wieder in den Computer der Luke eingegeben werden?",
+          "answer": "4, 8, 15, 16, 23, 42"
+        }
+      ]
+    },
+    {
+      "id": "games",
+      "name": "Games",
+      "clues": [
+        {
+          "id": "games-1-01",
+          "level": 1,
+          "question": "Welcher Klempner rettet Prinzessin Peach?",
+          "answer": "Mario"
+        },
+        {
+          "id": "games-2-01",
+          "level": 2,
+          "question": "In welchem Spiel baut man ganze Welten aus Blöcken?",
+          "answer": "Minecraft"
+        },
+        {
+          "id": "games-3-01",
+          "level": 3,
+          "question": "Wie heißt der blaue Igel von Sega?",
+          "answer": "Sonic"
+        },
+        {
+          "id": "games-3-02",
+          "level": 3,
+          "question": "Wie heißt die Archäologin, die seit 1996 die Hauptfigur der Reihe \"Tomb Raider\" ist?",
+          "answer": "Lara Croft"
+        },
+        {
+          "id": "games-4-01",
+          "level": 4,
+          "question": "Aus welchem Land stammt die Firma Nintendo?",
+          "answer": "Aus Japan"
+        },
+        {
+          "id": "games-4-02",
+          "level": 4,
+          "question": "Welches Unternehmen brachte die Spielkonsole PlayStation auf den Markt?",
+          "answer": "Sony"
+        },
+        {
+          "id": "games-5-01",
+          "level": 5,
+          "question": "Welches polnische Studio entwickelte \"The Witcher 3: Wild Hunt\"?",
+          "answer": "CD Projekt Red"
+        },
+        {
+          "id": "games-5-02",
+          "level": 5,
+          "question": "Wie heißt das Puzzlespiel mit fallenden Klötzchen aus dem Jahr 1984?",
+          "answer": "Tetris"
+        },
+        {
+          "id": "games-5-03",
+          "level": 5,
+          "question": "Wie heißt der schwertführende Held der Reihe \"The Legend of Zelda\"?",
+          "answer": "Link",
+          "note": "Zelda ist die Prinzessin, nicht der Held."
+        },
+        {
+          "id": "games-6-01",
+          "level": 6,
+          "question": "Welchen Ego-Shooter veröffentlichte id Software im Dezember 1993?",
+          "answer": "Doom"
+        },
+        {
+          "id": "games-6-02",
+          "level": 6,
+          "question": "Zu welcher Spielereihe von Rockstar Games gehört die fiktive Großstadt Los Santos?",
+          "answer": "Grand Theft Auto"
+        },
+        {
+          "id": "games-7-01",
+          "level": 7,
+          "question": "Welcher Nintendo-Entwickler erfand die Spielfiguren Mario, Link und Donkey Kong?",
+          "answer": "Shigeru Miyamoto"
+        },
+        {
+          "id": "games-7-02",
+          "level": 7,
+          "question": "Welches japanische Studio entwickelte \"Dark Souls\" und \"Bloodborne\"?",
+          "answer": "FromSoftware"
+        },
+        {
+          "id": "games-8-01",
+          "level": 8,
+          "question": "Welcher japanische Spieleentwickler schuf die Reihe \"Metal Gear\"?",
+          "answer": "Hideo Kojima"
+        },
+        {
+          "id": "games-9-01",
+          "level": 9,
+          "question": "Unter welchem Namen trat die Figur Mario 1981 in \"Donkey Kong\" erstmals auf?",
+          "answer": "Jumpman"
+        }
+      ]
+    },
+    {
+      "id": "netzkultur",
+      "name": "Netzkultur",
+      "clues": [
+        {
+          "id": "netzkultur-1-01",
+          "level": 1,
+          "question": "Welches Videoportal hat ein rotes Symbol mit weißem Play-Dreieck?",
+          "answer": "YouTube"
+        },
+        {
+          "id": "netzkultur-2-01",
+          "level": 2,
+          "question": "Wie nennt man ein witziges Bild mit Text, das sich im Netz verbreitet?",
+          "answer": "Ein Meme"
+        },
+        {
+          "id": "netzkultur-3-01",
+          "level": 3,
+          "question": "Welches Zeichen leitet einen Hashtag ein?",
+          "answer": "Die Raute"
+        },
+        {
+          "id": "netzkultur-4-01",
+          "level": 4,
+          "question": "Wofür steht die Abkürzung LOL?",
+          "answer": "Laughing out loud"
+        },
+        {
+          "id": "netzkultur-5-01",
+          "level": 5,
+          "question": "Welche Plattform begrenzte Beiträge jahrelang auf 140 Zeichen?",
+          "answer": "Twitter, heute X"
+        }
+      ]
+    },
+    {
+      "id": "deutsche-popkultur",
+      "name": "Deutsche Popkultur",
+      "clues": [
+        {
+          "id": "deutsche-popkultur-3-01",
+          "level": 3,
+          "question": "Wer landete 1983 mit \"99 Luftballons\" einen weltweiten Hit?",
+          "answer": "Nena",
+          "note": "Sowohl die Band als auch ihre Sängerin traten unter dem Namen Nena auf."
+        },
+        {
+          "id": "deutsche-popkultur-4-01",
+          "level": 4,
+          "question": "Welche 1970 gestartete Krimireihe der ARD wird traditionell am Sonntagabend gezeigt?",
+          "answer": "Tatort"
+        },
+        {
+          "id": "deutsche-popkultur-5-01",
+          "level": 5,
+          "question": "Welcher deutsche Film von 1998 mit Franka Potente erzählt dieselbe halbe Stunde dreimal mit unterschiedlichem Ausgang?",
+          "answer": "Lola rennt"
+        },
+        {
+          "id": "deutsche-popkultur-6-01",
+          "level": 6,
+          "question": "Welcher deutsche Film gewann 2007 den Oscar als bester fremdsprachiger Film?",
+          "answer": "Das Leben der Anderen"
+        },
+        {
+          "id": "deutsche-popkultur-7-01",
+          "level": 7,
+          "question": "Wer erfand die Fernsehshow \"Wetten, dass..?\" und moderierte sie ab 1981 als Erster?",
+          "answer": "Frank Elstner"
+        }
+      ]
+    },
+    {
+      "id": "comic-und-anime",
+      "name": "Comic und Anime",
+      "clues": [
+        {
+          "id": "comic-und-anime-5-01",
+          "level": 5,
+          "question": "Welches japanische Studio produzierte \"Chihiros Reise ins Zauberland\"?",
+          "answer": "Studio Ghibli"
+        },
+        {
+          "id": "comic-und-anime-6-01",
+          "level": 6,
+          "question": "Welcher Anime-Film von 1988 spielt in Neo-Tokyo und beruht auf einem Manga von Katsuhiro Otomo?",
+          "answer": "Akira"
+        },
+        {
+          "id": "comic-und-anime-7-01",
+          "level": 7,
+          "question": "Wer schrieb die Texte der Asterix-Bände bis zu seinem Tod im Jahr 1977?",
+          "answer": "René Goscinny",
+          "note": "Gezeichnet wurden die Bände von Albert Uderzo."
+        },
+        {
+          "id": "comic-und-anime-8-01",
+          "level": 8,
+          "question": "Welcher Zeichner gilt als \"Gott des Manga\" und schuf \"Astro Boy\"?",
+          "answer": "Osamu Tezuka"
+        },
+        {
+          "id": "comic-und-anime-9-01",
+          "level": 9,
+          "question": "In welchem Jahr hatte Batman seinen ersten Auftritt in \"Detective Comics\" Nr. 27?",
+          "answer": "1939"
+        }
+      ]
+    }
+  ]
+}

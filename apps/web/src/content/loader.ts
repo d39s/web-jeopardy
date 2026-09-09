@@ -1,5 +1,10 @@
-import { formatIssues, validateGameDefinition, validateTopicIndex } from '@jeopardy/game-core';
-import type { GameDefinition, TopicIndex } from '@jeopardy/game-core';
+import {
+  formatIssues,
+  validateGameDefinition,
+  validateQuestionPool,
+  validateTopicIndex,
+} from '@jeopardy/game-core';
+import type { GameDefinition, QuestionPool, TopicIndex } from '@jeopardy/game-core';
 import { de } from '../i18n/de';
 
 export type LoadErrorKind = 'network' | 'parse' | 'invalid';
@@ -59,24 +64,28 @@ export async function fetchTopicIndex(signal?: AbortSignal): Promise<LoadResult<
   return { ok: true, data: result.data };
 }
 
-/** Lädt ein Fragenset erst beim Spielstart – die Startseite braucht nur den Index. */
-export async function fetchTopic(
+/**
+ * Lädt den Fragenvorrat einer Kategorie. Erst nach ihrer Auswahl nötig – der
+ * Index allein reicht für die erste Stufe der Startseite, und ein Pool ist um
+ * ein Vielfaches größer als seine Beschreibung.
+ */
+export async function fetchPool(
   file: string,
   title: string,
   signal?: AbortSignal,
-): Promise<LoadResult<GameDefinition>> {
+): Promise<LoadResult<QuestionPool>> {
   const raw = await fetchJson(`${topicsBase}${file}`, signal);
   if (!raw.ok) {
-    return { ok: false, error: { ...raw.error, message: de.errors.topicLoad(title) } };
+    return { ok: false, error: { ...raw.error, message: de.errors.poolLoad(title) } };
   }
 
-  const result = validateGameDefinition(raw.data);
+  const result = validateQuestionPool(raw.data);
   if (!result.ok) {
     return {
       ok: false,
       error: {
         kind: 'invalid',
-        message: de.errors.topicLoad(title),
+        message: de.errors.poolLoad(title),
         issues: formatIssues(result.issues),
       },
     };

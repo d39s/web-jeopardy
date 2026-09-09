@@ -26,9 +26,84 @@ export interface Category {
   clues: Clue[];
 }
 
-/** Schwierigkeitsstufen eines Fragensets. */
-export const DIFFICULTIES = [1, 2, 3] as const;
+/**
+ * Stufen einer einzelnen Frage. Die Skala ist breiter als der Regler, weil
+ * jedes Brett fünf davon nebeneinander zeigt: Von der leichtesten Stellung
+ * (1 bis 5) bis zur schwersten (5 bis 9) wandert ein Fenster über die Skala.
+ */
+export const CLUE_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+export type ClueLevel = (typeof CLUE_LEVELS)[number];
+
+/** Anschlag der Fragenskala – kommt in Prüfmeldungen vor. */
+export const MAX_CLUE_LEVEL: ClueLevel = 9;
+
+/** Stellungen des Schwierigkeitsreglers. */
+export const DIFFICULTIES = [1, 2, 3, 4, 5] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** Anschlag des Reglers. */
+export const MAX_DIFFICULTY: Difficulty = 5;
+
+/**
+ * Welche Stufe jede der fünf Zeilen bekommt, abhängig vom Reglerwert.
+ *
+ * Jede Stellung liefert fünf **verschiedene**, aufsteigende Stufen: Innerhalb
+ * des Bretts steigt die Härte von der 100er- zur 500er-Zeile, sonst gäbe es
+ * keinen Grund, die teuren Karten zu wagen. Der Regler verschiebt dieses
+ * Fenster um genau eine Stufe je Stellung – deshalb reicht die Fragenskala bis
+ * 9 und nicht nur bis 5.
+ */
+export const DIFFICULTY_BANDS: Record<Difficulty, readonly ClueLevel[]> = {
+  1: [1, 2, 3, 4, 5],
+  2: [2, 3, 4, 5, 6],
+  3: [3, 4, 5, 6, 7],
+  4: [4, 5, 6, 7, 8],
+  5: [5, 6, 7, 8, 9],
+};
+
+/** Punktestufen der fünf Zeilen. Gezogene Bretter nutzen immer diese Werte. */
+export const POINT_STEPS = [100, 200, 300, 400, 500] as const;
+
+/**
+ * Eine Frage im Vorrat. Anders als `Clue` trägt sie keine Punkte: Die ergeben
+ * sich erst beim Ziehen aus der Zeile, in der die Frage landet.
+ */
+export interface PoolClue {
+  id: string;
+  /** Absolute Schwierigkeit 1 bis 9, unabhängig von der späteren Zeile. */
+  level: ClueLevel;
+  question: string;
+  answer: string;
+  /** Optionaler Moderatorenhinweis, wird nie auf dem Spielfeld angezeigt. */
+  note?: string;
+}
+
+/**
+ * Rubrik eines Pools – beim Ziehen wird daraus eine Spalte des Spielfelds.
+ * Eine Rubrik mit Fragen auf allen fünf Stufen steht für jede Reglerstellung
+ * zur Verfügung; fehlen Stufen, kommt sie nur für einen Teil davon infrage.
+ */
+export interface PoolRubric {
+  id: string;
+  name: string;
+  /** Ohne Angabe ergibt sich die Farbe aus der Position im gezogenen Brett. */
+  color?: CategoryColor;
+  clues: PoolClue[];
+}
+
+/**
+ * Fragenvorrat einer Themenkategorie – eine Datei je Kategorie. Aus ihm zieht
+ * jede Partie ein eigenes Spielfeld, siehe `drawBoard`.
+ */
+export interface QuestionPool {
+  schemaVersion: 1;
+  id: string;
+  title: string;
+  description?: string;
+  author?: string;
+  locale?: string;
+  rubrics: PoolRubric[];
+}
 
 export interface GameDefinition {
   schemaVersion: 1;
@@ -36,7 +111,7 @@ export interface GameDefinition {
   title: string;
   /** Themenkategorie, in der das Fragenset zur Auswahl steht. */
   category: string;
-  /** 1 bis 3 – wird auf der Startseite als Fragezeichen angezeigt. */
+  /** Reglerstellung 1 bis 5, aus der die Zeilenstufen entstanden sind. */
   difficulty: Difficulty;
   description?: string;
   author?: string;
@@ -47,30 +122,20 @@ export interface GameDefinition {
 
 /**
  * Themenkategorie der Startseite – nicht zu verwechseln mit `Category`, den
- * fünf Spalten des Spielfelds. Eine Themenkategorie bündelt Fragensets
- * unterschiedlicher Schwierigkeit.
+ * fünf Spalten des Spielfelds. Jede Themenkategorie hat genau einen Fragenpool;
+ * die Schwierigkeit wählt der Regler, nicht die Auswahl.
  */
 export interface TopicCategory {
   id: string;
   title: string;
   description?: string;
-}
-
-export interface TopicIndexEntry {
-  id: string;
-  title: string;
-  description?: string;
-  /** Verweis auf eine Themenkategorie im selben Index. */
-  category: string;
-  difficulty: Difficulty;
-  /** Dateiname relativ zum Themenverzeichnis. */
+  /** Datei des Fragenpools, relativ zum Themenverzeichnis. */
   file: string;
 }
 
 export interface TopicIndex {
-  schemaVersion: 1;
+  schemaVersion: 2;
   categories: TopicCategory[];
-  topics: TopicIndexEntry[];
 }
 
 // ---------------------------------------------------------------------------

@@ -1,18 +1,35 @@
 #!/usr/bin/env tsx
 /**
- * Prüft alle Fragensets in content/topics gegen die Schemas aus @jeopardy/game-core
- * und stellt sicher, dass Index und Dateien zusammenpassen.
+ * Prüft den Themenindex und alle Fragenpools in content/topics gegen die
+ * Schemas aus @jeopardy/game-core. Zusätzlich wird für jede Kategorie und jede
+ * Reglerstellung ein Brett gezogen: Ein Pool, aus dem sich kein gültiges
+ * Spielfeld ziehen lässt, wäre erst in der Oberfläche aufgefallen.
+ *
  * Beendet sich mit Exit-Code 1, sobald ein Problem gefunden wurde.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { formatIssues, validateGameDefinition, validateTopicIndex } from '@jeopardy/game-core';
+import {
+  CATEGORY_COUNT,
+  DIFFICULTIES,
+  drawBoard,
+  fittingRubrics,
+  formatIssues,
+  validateGameDefinition,
+  validateQuestionPool,
+  validateTopicIndex,
+} from '@jeopardy/game-core';
+import type { QuestionPool } from '@jeopardy/game-core';
 
 const topicsDir = fileURLToPath(new URL('../content/topics', import.meta.url));
 const indexFile = 'index.json';
 
+/** Wie viele Ziehungen je Stufe geprüft werden – deckt auch seltene Wege ab. */
+const DRAWS_PER_LEVEL = 25;
+
 const problems: string[] = [];
+const warnings: string[] = [];
 
 function report(file: string, messages: string[]): void {
   for (const message of messages) problems.push(`${file}: ${message}`);
@@ -20,6 +37,11 @@ function report(file: string, messages: string[]): void {
 
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(join(topicsDir, file), 'utf8'));
+}
+
+function fail(): never {
+  console.error(problems.map((problem) => `  - ${problem}`).join('\n'));
+  process.exit(1);
 }
 
 let indexData: unknown;
@@ -33,78 +55,96 @@ try {
 const indexResult = validateTopicIndex(indexData);
 if (!indexResult.ok) {
   report(indexFile, formatIssues(indexResult.issues));
-  console.error(problems.join('\n'));
-  process.exit(1);
+  fail();
 }
 
 const index = indexResult.data;
-const listedFiles = new Set(index.topics.map((topic) => topic.file));
+const pools: QuestionPool[] = [];
 
-const jsonFiles = readdirSync(topicsDir).filter(
-  (file) => file.endsWith('.json') && file !== indexFile,
-);
-
-for (const file of jsonFiles) {
-  if (!listedFiles.has(file)) {
-    report(indexFile, [`Die Datei ${file} ist in der Themenliste nicht eingetragen.`]);
-  }
-}
-
-for (const topic of index.topics) {
-  let data: unknown;
-  try {
-    data = readJson(topic.file);
-  } catch (error) {
-    report(topic.file, [`Datei konnte nicht gelesen werden: ${(error as Error).message}`]);
-    continue;
-  }
-
-  const result = validateGameDefinition(data);
-  if (!result.ok) {
-    report(topic.file, formatIssues(result.issues));
-    continue;
-  }
-
-  if (result.data.id !== topic.id) {
-    report(topic.file, [`ID "${result.data.id}" weicht vom Index-Eintrag "${topic.id}" ab.`]);
-  }
-  if (result.data.title !== topic.title) {
-    report(topic.file, [`Titel weicht vom Index-Eintrag "${topic.title}" ab.`]);
-  }
-  if (result.data.category !== topic.category) {
-    report(topic.file, [
-      `Themenkategorie "${result.data.category}" weicht vom Index-Eintrag "${topic.category}" ab.`,
-    ]);
-  }
-  if (result.data.difficulty !== topic.difficulty) {
-    report(topic.file, [
-      `Schwierigkeit ${result.data.difficulty} weicht vom Index-Eintrag ${topic.difficulty} ab.`,
-    ]);
-  }
-}
-
-if (problems.length > 0) {
-  console.error(`${problems.length} Problem(e) in den Fragensets gefunden:\n`);
-  console.error(problems.map((problem) => `  - ${problem}`).join('\n'));
-  process.exit(1);
-}
-
-// Eine Kategorie ohne Fragensets wäre auf der Startseite eine leere Sackgasse.
 for (const category of index.categories) {
-  const count = index.topics.filter((topic) => topic.category === category.id).length;
-  if (count === 0) {
-    report(indexFile, [`Die Themenkategorie "${category.id}" enthält kein Fragenset.`]);
+  let raw: unknown;
+  try {
+    raw = readJson(category.file);
+  } catch (error) {
+    report(category.file, [`Datei nicht lesbar: ${(error as Error).message}`]);
+    continue;
+  }
+
+  const result = validateQuestionPool(raw);
+  if (!result.ok) {
+    report(category.file, formatIssues(result.issues));
+    continue;
+  }
+
+  const pool = result.data;
+  pools.push(pool);
+
+  // Index und Pool müssen dasselbe meinen – sonst zeigt die Startseite einen
+  // anderen Titel als das Spielfeld.
+  if (pool.id !== category.id) {
+    report(category.file, [`id "${pool.id}" passt nicht zur Kategorie "${category.id}".`]);
+  }
+  if (pool.title !== category.title) {
+    report(category.file, [`title "${pool.title}" weicht vom Index ab ("${category.title}").`]);
+  }
+
+  for (const level of DIFFICULTIES) {
+    for (let seed = 0; seed < DRAWS_PER_LEVEL; seed++) {
+      const drawn = drawBoard({ pool, level, seed });
+      if (!drawn.ok) {
+        report(category.file, [
+          `Stufe ${level} lässt sich nicht ziehen: nur ${drawn.problem.usable} von ` +
+            `${drawn.problem.required} Spalten kamen zustande.`,
+        ]);
+        break;
+      }
+
+      const check = validateGameDefinition(drawn.definition);
+      if (!check.ok) {
+        report(category.file, [
+          `Stufe ${level}, Ziehung ${seed} ergibt ein ungültiges Brett: ` +
+            formatIssues(check.issues).join('; '),
+        ]);
+        break;
+      }
+    }
+
+    // Genau fünf passende Rubriken heißt: immer dieselben fünf Spalten.
+    const fitting = fittingRubrics(pool, level).length;
+    if (fitting <= CATEGORY_COUNT) {
+      warnings.push(
+        `${category.file}: Stufe ${level} hat nur ${fitting} passende Rubriken – ` +
+          'die Spaltenauswahl wiederholt sich.',
+      );
+    }
+  }
+}
+
+// Eine Datei, die niemand lädt, ist entweder vergessen oder Altlast.
+const referenced = new Set([indexFile, ...index.categories.map((category) => category.file)]);
+for (const file of readdirSync(topicsDir)) {
+  if (file.endsWith('.json') && !referenced.has(file)) {
+    report(file, ['Die Datei steht in keinem Index-Eintrag.']);
   }
 }
 
 if (problems.length > 0) {
-  console.error(`${problems.length} Problem(e) in den Fragensets gefunden:\n`);
-  console.error(problems.map((problem) => `  - ${problem}`).join('\n'));
-  process.exit(1);
+  console.error(`${problems.length} Problem(e) in den Fragenpools gefunden:\n`);
+  fail();
 }
 
-const clueCount = index.topics.length * 25;
-console.log(
-  `${index.categories.length} Kategorie(n) mit ${index.topics.length} Fragenset(s) und ` +
-    `insgesamt ${clueCount} Fragen sind gültig.`,
+const clueCount = pools.reduce(
+  (sum, pool) => sum + pool.rubrics.reduce((inner, rubric) => inner + rubric.clues.length, 0),
+  0,
 );
+const rubricCount = pools.reduce((sum, pool) => sum + pool.rubrics.length, 0);
+
+console.log(
+  `${pools.length} Kategorie(n) mit ${rubricCount} Rubriken und insgesamt ` +
+    `${clueCount} Fragen sind gültig; jede Stufe lässt sich ziehen.`,
+);
+
+if (warnings.length > 0) {
+  console.log(`\n${warnings.length} Hinweis(e) zur Abwechslung:`);
+  console.log(warnings.map((warning) => `  - ${warning}`).join('\n'));
+}

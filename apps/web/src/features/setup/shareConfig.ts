@@ -1,10 +1,17 @@
-import { MAX_TEAMS_UI, MAX_TEAM_NAME_LENGTH, TIMER_OPTIONS } from '@jeopardy/game-core';
-import type { WrongPenalty } from '@jeopardy/game-core';
+import {
+  DIFFICULTIES,
+  MAX_TEAMS_UI,
+  MAX_TEAM_NAME_LENGTH,
+  TIMER_OPTIONS,
+  formatSeed,
+  parseSeed,
+} from '@jeopardy/game-core';
+import type { Difficulty, WrongPenalty } from '@jeopardy/game-core';
 
 /**
  * Spielkonfiguration als lesbarer Link.
  *
- * Format: `?thema=<themen-id>&teams=<Name1,Name2>&timer=<sekunden>&vetozeit=<sekunden>&abzug=<halb|0>`
+ * Format: `?kategorie=<id>&stufe=<1-5>&ziehung=<nummer>&teams=<Name1,Name2>&timer=<sekunden>&vetozeit=<sekunden>&abzug=<halb|0>`
  *
  * Bewusst kein Base64: Der Link bleibt lesbar und lässt sich notfalls von Hand
  * tippen. Die Teamnamen werden einzeln URL-kodiert und mit einem echten Komma
@@ -12,11 +19,17 @@ import type { WrongPenalty } from '@jeopardy/game-core';
  * mit dem Trennzeichen. `timer` entfällt, wenn ohne Zeitbegrenzung gespielt wird,
  * `vetozeit` entfällt, solange die Veto-Zeit an die Bedenkzeit gekoppelt ist.
  *
+ * `ziehung` ist die Nummer, aus der das Spielfeld gezogen wird. Ohne sie bekäme
+ * jeder Empfänger andere Fragen – dieselbe Partie ließe sich also nicht zu
+ * zweit moderieren und auch nicht wiederholen.
+ *
  * Ein eigenes, hochgeladenes Fragenset lässt sich nicht abbilden (zu groß für
- * eine Adresszeile) – dafür gibt es nur die Themen aus dem Index.
+ * eine Adresszeile) – dafür gibt es nur die Kategorien aus dem Index.
  */
 
-export const SHARE_PARAM_TOPIC = 'thema';
+export const SHARE_PARAM_CATEGORY = 'kategorie';
+export const SHARE_PARAM_LEVEL = 'stufe';
+export const SHARE_PARAM_DRAW = 'ziehung';
 export const SHARE_PARAM_TEAMS = 'teams';
 export const SHARE_PARAM_TIMER = 'timer';
 export const SHARE_PARAM_VETO = 'vetozeit';
@@ -25,8 +38,8 @@ export const SHARE_PARAM_DEDUCT = 'abzug';
 /** Trennt die Teamnamen im Link – im Namen selbst erscheint es nur kodiert. */
 const TEAM_SEPARATOR = ',';
 
-/** Themen-IDs stammen aus Dateinamen; alles andere ist kein gültiger Verweis. */
-const TOPIC_ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/i;
+/** Kategorie-IDs stammen aus dem Index; alles andere ist kein gültiger Verweis. */
+const CATEGORY_ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/i;
 
 /** Steuerzeichen aus einem Link haben in Teamnamen nichts zu suchen. */
 function stripControlChars(value: string): string {
@@ -39,8 +52,12 @@ function stripControlChars(value: string): string {
 }
 
 export interface SharedConfig {
-  /** Themen-ID aus dem Index; null, wenn der Link keine brauchbare Angabe hatte. */
-  topicId: string | null;
+  /** Kategorie-ID aus dem Index; null, wenn der Link keine brauchbare Angabe hatte. */
+  categoryId: string | null;
+  /** Reglerstellung 1 bis 5; null, wenn der Link nichts Brauchbares nannte. */
+  level: Difficulty | null;
+  /** Nummer der Ziehung; null zieht beim Empfänger ein neues Spielfeld. */
+  seed: number | null;
   /** Bereinigte Teamnamen, höchstens `MAX_TEAMS_UI` Einträge. */
   teamNames: string[];
   /** Bedenkzeit je Frage in Sekunden; null bedeutet ohne Zeitbegrenzung. */
@@ -62,10 +79,24 @@ export function isTimerOption(seconds: number): boolean {
   return (TIMER_OPTIONS as readonly number[]).includes(seconds);
 }
 
-function sanitizeTopicId(value: string | null): string | null {
+function sanitizeCategoryId(value: string | null): string | null {
   if (value === null) return null;
   const trimmed = value.trim();
-  return TOPIC_ID_PATTERN.test(trimmed) ? trimmed : null;
+  return CATEGORY_ID_PATTERN.test(trimmed) ? trimmed : null;
+}
+
+/** Stufe aus dem Link; alles außerhalb der Skala fällt auf null zurück. */
+function parseLevel(raw: string | null): Difficulty | null {
+  if (raw === null) return null;
+  const value = Number(decodeComponent(raw)?.trim() ?? '');
+  return (DIFFICULTIES as readonly number[]).includes(value) ? (value as Difficulty) : null;
+}
+
+/** Ziehungsnummer aus dem Link; unbrauchbare Werte zieht der Empfänger neu. */
+function parseDraw(raw: string | null): number | null {
+  if (raw === null) return null;
+  const decoded = decodeComponent(raw);
+  return decoded === null ? null : parseSeed(decoded);
 }
 
 function sanitizeName(value: string): string {
@@ -144,9 +175,14 @@ function parseTimerOption(raw: string | null): number | null {
 export function buildShareQuery(config: SharedConfig): string {
   const parts: string[] = [];
 
-  const topicId = sanitizeTopicId(config.topicId);
-  if (topicId !== null) {
-    parts.push(`${SHARE_PARAM_TOPIC}=${encodeURIComponent(topicId)}`);
+  const categoryId = sanitizeCategoryId(config.categoryId);
+  if (categoryId !== null) {
+    parts.push(`${SHARE_PARAM_CATEGORY}=${encodeURIComponent(categoryId)}`);
+
+    // Stufe und Ziehung stehen immer dabei, sobald es eine Kategorie gibt:
+    // Ohne sie wäre der Link keine Partie, sondern nur ein Themenvorschlag.
+    if (config.level !== null) parts.push(`${SHARE_PARAM_LEVEL}=${config.level}`);
+    if (config.seed !== null) parts.push(`${SHARE_PARAM_DRAW}=${formatSeed(config.seed)}`);
   }
 
   const names = config.teamNames
@@ -189,31 +225,30 @@ export function buildShareLink(config: SharedConfig, baseUrl: string): string {
  * der Link als fehlerhaft.
  */
 export function parseShareParams(search: string): ShareParseResult {
-  const rawTopic = readRawParam(search, SHARE_PARAM_TOPIC);
+  const rawCategory = readRawParam(search, SHARE_PARAM_CATEGORY);
+  const rawLevel = readRawParam(search, SHARE_PARAM_LEVEL);
+  const rawDraw = readRawParam(search, SHARE_PARAM_DRAW);
   const rawTeams = readRawParam(search, SHARE_PARAM_TEAMS);
   const rawTimer = readRawParam(search, SHARE_PARAM_TIMER);
   const rawVeto = readRawParam(search, SHARE_PARAM_VETO);
   const rawDeduct = readRawParam(search, SHARE_PARAM_DEDUCT);
 
-  if (
-    rawTopic === null &&
-    rawTeams === null &&
-    rawTimer === null &&
-    rawVeto === null &&
-    rawDeduct === null
-  ) {
+  const present = [rawCategory, rawLevel, rawDraw, rawTeams, rawTimer, rawVeto, rawDeduct];
+  if (present.every((value) => value === null)) {
     return { status: 'none' };
   }
 
   const config: SharedConfig = {
-    topicId: sanitizeTopicId(rawTopic === null ? null : decodeComponent(rawTopic)),
+    categoryId: sanitizeCategoryId(rawCategory === null ? null : decodeComponent(rawCategory)),
+    level: parseLevel(rawLevel),
+    seed: parseDraw(rawDraw),
     teamNames: parseTeamNames(rawTeams),
     timerSeconds: parseTimerOption(rawTimer),
     vetoSeconds: parseTimerOption(rawVeto),
     wrongPenalty: parsePenalty(rawDeduct),
   };
 
-  if (config.topicId === null && config.teamNames.length === 0) {
+  if (config.categoryId === null && config.teamNames.length === 0) {
     return { status: 'invalid' };
   }
   return { status: 'ok', config };

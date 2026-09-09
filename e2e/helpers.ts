@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
-/** Startet ein Spiel mit der gewünschten Teamanzahl und dem ersten Thema. */
+/** Startet ein Spiel mit der gewünschten Teamanzahl aus der ersten Kategorie. */
 export async function startGame(page: Page, teamCount = 2): Promise<void> {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'Jeopardy' })).toBeVisible();
@@ -21,40 +21,52 @@ export async function startGame(page: Page, teamCount = 2): Promise<void> {
     await page.getByRole('button', { name: 'Team hinzufügen' }).click();
   }
 
-  await chooseTopic(page);
+  await chooseCategory(page);
   await page.getByRole('button', { name: 'Spiel starten' }).click();
   await expect(page.getByRole('button', { name: /, 100 Punkte$/ }).first()).toBeVisible();
 }
 
 /**
- * Die Auswahl läuft in zwei Stufen: erst die Themenkategorie, dann das
- * Fragenset. Ohne Angabe wird jeweils das erste genommen.
+ * Wählt eine Themenkategorie und wartet, bis ihr Fragenvorrat geladen ist –
+ * vorher lässt sich kein Spiel starten.
  */
-export async function chooseTopic(
-  page: Page,
-  category = 'Allgemeinwissen',
-  topic = category,
-): Promise<void> {
-  const kategorie = page.getByRole('button', { name: new RegExp(`^${category} `) });
-  // Der barrierefreie Name beginnt mit dem Titel und nennt danach die
-  // Schwierigkeit – so trifft die Suche genau ein Fragenset, auch wenn die
-  // Kategorie mehrere Stufen enthält.
-  const fragenset = page.getByRole('button', { name: new RegExp(`^${topic} Schwierigkeit`) });
-
-  // Erst warten, bis die Themenliste steht: sonst greift die Sichtbarkeitsprüfung
-  // unter Last zu früh und die Kategoriestufe wird stillschweigend übersprungen.
-  await expect(kategorie.or(fragenset).first()).toBeVisible();
-  if (await kategorie.isVisible()) await kategorie.click();
-
-  await fragenset.click();
+export async function chooseCategory(page: Page, category = 'Allgemeinwissen'): Promise<void> {
+  await page.getByRole('button', { name: new RegExp(`^${category}`) }).click();
+  await expect(page.getByRole('button', { name: 'Neu mischen' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Spiel starten' })).toBeEnabled();
 }
 
-export function clueCard(page: Page, category: string, points: number) {
-  return page.getByRole('button', { name: `${category}, ${points} Punkte` });
+/** Stellt die Schwierigkeit über den Regler ein (1 bis 5). */
+export async function setDifficulty(page: Page, level: number): Promise<void> {
+  await page.getByLabel('Schwierigkeit des Spielfelds').fill(String(level));
 }
 
-export function scoredClueCard(page: Page, category: string, points: number) {
-  return page.getByRole('button', { name: new RegExp(`^${category}, ${points} Punkte – bereits`) });
+/**
+ * Namen der gezogenen Spalten in Reihenfolge des Bretts. Welche Rubriken es
+ * trifft, entscheidet die Ziehung – Tests greifen deshalb über die Position zu.
+ */
+export async function columnNames(page: Page): Promise<string[]> {
+  const labels = await page
+    .getByRole('button', { name: /, 100 Punkte/ })
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-label') ?? ''));
+
+  return labels.map((label) => label.split(', ')[0] ?? '');
+}
+
+/**
+ * Karte über Spalte (0 bis 4) und Punktzahl. Gesucht wird bewusst unabhängig
+ * davon, ob die Karte schon gewertet ist: Sonst würde sich die Position mit
+ * jeder gespielten Karte verschieben.
+ */
+export function clueCard(page: Page, column: number, points: number) {
+  return page.getByRole('button', { name: new RegExp(`, ${points} Punkte`) }).nth(column);
+}
+
+/** Dieselbe Karte, aber nur solange sie schon gewertet ist. */
+export function scoredClueCard(page: Page, column: number, points: number) {
+  return clueCard(page, column, points).and(
+    page.getByRole('button', { name: /– bereits gespielt/ }),
+  );
 }
 
 /** Veto-Knopf im geöffneten Popup. */
@@ -86,16 +98,16 @@ export async function revealAnswer(page: Page): Promise<void> {
  */
 export async function playClue(
   page: Page,
-  category: string,
+  column: number,
   points: number,
   winner: string | null,
   vetoTeams: string[] = [],
 ): Promise<void> {
-  await clueCard(page, category, points).click();
+  await clueCard(page, column, points).click();
   for (const team of vetoTeams) await vetoButton(page, team).click();
   await revealAnswer(page);
   await settleButton(page, winner ?? 'Keine richtige Antwort gegeben').click();
-  await expect(scoredClueCard(page, category, points)).toBeVisible();
+  await expect(scoredClueCard(page, column, points)).toBeVisible();
 }
 
 /**

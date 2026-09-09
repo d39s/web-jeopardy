@@ -1,34 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { invalidDefinitionSamples, sampleDefinition } from './fixtures';
-import { formatIssues, validateGameDefinition, validateTopicIndex } from './schema';
+import { invalidDefinitionSamples, sampleDefinition, samplePool } from './fixtures';
+import {
+  formatIssues,
+  validateGameDefinition,
+  validateQuestionPool,
+  validateTopicIndex,
+} from './schema';
+import { CLUE_LEVELS } from './types';
+import type { QuestionPool } from './types';
 
 interface TestIndex {
-  schemaVersion: 1;
-  categories: { id: string; title: string; description?: string }[];
-  topics: {
-    id: string;
-    title: string;
-    category: string;
-    difficulty: number;
-    file: string;
-  }[];
+  schemaVersion: 2;
+  categories: { id: string; title: string; description?: string; file: string }[];
 }
 
 /** Gültiger Themenindex als Ausgangspunkt für die Negativfälle. */
 function sampleIndex(): TestIndex {
   return {
-    schemaVersion: 1,
-    categories: [{ id: 'testkategorie', title: 'Testkategorie', description: 'Zum Prüfen.' }],
-    topics: [
+    schemaVersion: 2,
+    categories: [
       {
-        id: 'testthema',
-        title: 'Testthema',
-        category: 'testkategorie',
-        difficulty: 1,
-        file: 'testthema.json',
+        id: 'testkategorie',
+        title: 'Testkategorie',
+        description: 'Zum Prüfen.',
+        file: 'pool-testkategorie.json',
       },
     ],
   };
+}
+
+/** Tiefe Kopie des Beispielpools, damit Negativfälle sich nicht gegenseitig stören. */
+function poolCopy(): QuestionPool {
+  return JSON.parse(JSON.stringify(samplePool)) as QuestionPool;
 }
 
 describe('validierung der fragensets', () => {
@@ -67,37 +70,35 @@ describe('validierung der fragensets', () => {
 
   it('lehnt einen themenindex mit falscher dateiendung ab', () => {
     const index = sampleIndex();
-    const topic = index.topics[0];
-    if (!topic) throw new Error('Testindex unvollständig.');
-    topic.file = 'testthema.txt';
+    const category = index.categories[0];
+    if (!category) throw new Error('Testindex unvollständig.');
+    category.file = 'pool-testkategorie.txt';
+
     expect(validateTopicIndex(index).ok).toBe(false);
   });
 
-  it('lehnt einen verweis auf eine unbekannte themenkategorie ab', () => {
-    const index = sampleIndex();
-    const topic = index.topics[0];
-    if (!topic) throw new Error('Testindex unvollständig.');
-    topic.category = 'gibt-es-nicht';
+  it('verlangt zu jeder kategorie einen fragenpool', () => {
+    const index = sampleIndex() as { categories: { file?: string }[] };
+    delete index.categories[0]?.file;
 
-    const result = validateTopicIndex(index);
-    if (result.ok) throw new Error('Der Index hätte abgelehnt werden müssen.');
-    expect(formatIssues(result.issues)[0]).toMatch(/^topics\.0\.category:/);
+    expect(validateTopicIndex(index).ok).toBe(false);
   });
 
   it('lehnt doppelte themenkategorien ab', () => {
     const index = sampleIndex();
-    index.categories.push({ id: 'testkategorie', title: 'Noch einmal' });
+    index.categories.push({
+      id: 'testkategorie',
+      title: 'Noch einmal',
+      file: 'pool-zweimal.json',
+    });
 
     expect(validateTopicIndex(index).ok).toBe(false);
   });
 
-  it.each([0, 4, 2.5])('lehnt die schwierigkeit %s ab', (difficulty) => {
-    const index = sampleIndex();
-    const topic = index.topics[0];
-    if (!topic) throw new Error('Testindex unvollständig.');
-    topic.difficulty = difficulty;
-
-    expect(validateTopicIndex(index).ok).toBe(false);
+  it('lehnt die alte indexfassung ab', () => {
+    // Version 1 führte fertige Fragensets; die Oberfläche kann damit nichts
+    // mehr anfangen und soll das früh melden statt leer zu bleiben.
+    expect(validateTopicIndex({ ...sampleIndex(), schemaVersion: 1 }).ok).toBe(false);
   });
 
   it('verlangt mindestens eine themenkategorie', () => {
@@ -105,5 +106,87 @@ describe('validierung der fragensets', () => {
     index.categories = [];
 
     expect(validateTopicIndex(index).ok).toBe(false);
+  });
+});
+
+describe('validierung der fragenpools', () => {
+  it('akzeptiert den beispielpool', () => {
+    expect(validateQuestionPool(samplePool).ok).toBe(true);
+  });
+
+  it('verlangt genug rubriken für ein spielfeld', () => {
+    const pool = poolCopy();
+    pool.rubrics = pool.rubrics.slice(0, 4);
+
+    expect(validateQuestionPool(pool).ok).toBe(false);
+  });
+
+  it('verlangt genug fragen je rubrik für eine volle spalte', () => {
+    const pool = poolCopy();
+    pool.rubrics[0]!.clues = pool.rubrics[0]!.clues.slice(0, 4);
+
+    expect(validateQuestionPool(pool).ok).toBe(false);
+  });
+
+  it.each([0, 10, 2.5])('lehnt die stufe %s ab', (level) => {
+    const pool = poolCopy();
+    (pool.rubrics[0]!.clues[0] as { level: number }).level = level;
+
+    const result = validateQuestionPool(pool);
+    if (result.ok) throw new Error('Der Pool hätte abgelehnt werden müssen.');
+    expect(formatIssues(result.issues)[0]).toMatch(/^rubrics\.0\.clues\.0\.level:/);
+  });
+
+  it('nimmt die stufen der ganzen skala an', () => {
+    // Die Fragenskala reicht weiter als der Regler – bis 9.
+    for (const level of CLUE_LEVELS) {
+      const pool = poolCopy();
+      (pool.rubrics[0]!.clues[0] as { level: number }).level = level;
+      expect(validateQuestionPool(pool).ok).toBe(true);
+    }
+  });
+
+  it('lehnt doppelte ids ab, auch über rubriken hinweg', () => {
+    const pool = poolCopy();
+    pool.rubrics[1]!.clues[0]!.id = pool.rubrics[0]!.clues[0]!.id;
+
+    expect(validateQuestionPool(pool).ok).toBe(false);
+  });
+
+  it('lehnt eine id ab, die schon eine rubrik trägt', () => {
+    const pool = poolCopy();
+    pool.rubrics[1]!.clues[0]!.id = pool.rubrics[0]!.id;
+
+    expect(validateQuestionPool(pool).ok).toBe(false);
+  });
+
+  it('meldet dieselbe frage in zwei rubriken', () => {
+    // Sonst stünde sie irgendwann zweimal auf demselben Brett.
+    const pool = poolCopy();
+    pool.rubrics[1]!.clues[0]!.question = pool.rubrics[0]!.clues[0]!.question;
+
+    const result = validateQuestionPool(pool);
+    if (result.ok) throw new Error('Der Pool hätte abgelehnt werden müssen.');
+    expect(formatIssues(result.issues)[0]).toMatch(/^rubrics\.1\.clues\.0\.question:/);
+  });
+
+  it('übersieht eine dublette nicht wegen abweichender zeichensetzung', () => {
+    const pool = poolCopy();
+    const original = pool.rubrics[0]!.clues[0]!.question;
+    pool.rubrics[1]!.clues[0]!.question = `  ${original.toUpperCase().replace('?', '!')} `;
+
+    expect(validateQuestionPool(pool).ok).toBe(false);
+  });
+
+  it('lehnt unbekannte felder ab', () => {
+    expect(validateQuestionPool({ ...samplePool, unbekanntesFeld: true }).ok).toBe(false);
+  });
+
+  it('lehnt punkte in einer pool-frage ab', () => {
+    // Punkte entstehen erst beim Ziehen aus der Zeile.
+    const pool = poolCopy();
+    (pool.rubrics[0]!.clues[0] as unknown as { points: number }).points = 100;
+
+    expect(validateQuestionPool(pool).ok).toBe(false);
   });
 });

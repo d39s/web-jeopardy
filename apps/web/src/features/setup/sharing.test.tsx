@@ -3,50 +3,10 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { chooseCategory, drawNumber, mockContentRequests } from '../../test/content';
 import { renderWithGame } from '../../test/renderWithGame';
 import { SetupPage } from './SetupPage';
 import { timerSliderValue } from './TimerSetup';
-
-const topicIndex = {
-  schemaVersion: 1,
-  categories: [{ id: 'testkategorie', title: 'Testkategorie', description: 'Zum Ausprobieren.' }],
-  topics: [
-    {
-      id: 'testthema',
-      title: 'Testthema',
-      description: 'Zum Ausprobieren.',
-      category: 'testkategorie',
-      difficulty: 1,
-      file: 'testthema.json',
-    },
-    {
-      id: 'zweites',
-      title: 'Zweites Thema',
-      category: 'testkategorie',
-      difficulty: 3,
-      file: 'zweites.json',
-    },
-  ],
-};
-
-/** Zwei Stufen: erst die Kategorie, dann das Fragenset. */
-async function chooseTopic(title = 'Testthema'): Promise<void> {
-  await userEvent.click(await screen.findByRole('button', { name: /Testkategorie/ }));
-  await userEvent.click(screen.getByRole('button', { name: new RegExp(title) }));
-}
-
-function mockTopicRequests(): void {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn((url: string) =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(url.endsWith('index.json') ? topicIndex : sampleDefinition),
-      } as Response),
-    ),
-  );
-}
 
 /** Startseite unter einer Adresse mit oder ohne Teilen-Parameter. */
 async function renderSetup(entry = '/') {
@@ -60,11 +20,19 @@ async function renderSetup(entry = '/') {
   return result;
 }
 
-/** Startseite rendern und gleich ein Fragenset wählen. */
-async function renderWithTopic(entry = '/') {
+/** Startseite rendern und gleich eine Kategorie wählen. */
+async function renderWithCategory(entry = '/') {
   const result = await renderSetup(entry);
-  await chooseTopic();
+  await chooseCategory();
   return result;
+}
+
+/**
+ * Erwarteter Link. Die Ziehungsnummer entsteht beim Aufbau der Seite und ist
+ * deshalb nicht vorhersagbar – sie wird von der Seite selbst abgelesen.
+ */
+function erwarteterLink(rest: string, kategorie = 'testkategorie', stufe = 3): string {
+  return `${window.location.origin}/?kategorie=${kategorie}&stufe=${stufe}&ziehung=${drawNumber()}${rest}`;
 }
 
 /** Ersetzt die Zwischenablage; gibt die Aufzeichnung der kopierten Texte zurück. */
@@ -81,7 +49,7 @@ function linkField(): HTMLInputElement {
 }
 
 beforeEach(() => {
-  mockTopicRequests();
+  mockContentRequests();
   window.history.replaceState(null, '', '/');
 });
 
@@ -91,24 +59,40 @@ afterEach(() => {
 });
 
 describe('spiel teilen', () => {
-  it('zeigt einen link mit thema, teams und bedenkzeit', async () => {
-    await renderWithTopic();
+  it('zeigt einen link mit kategorie, stufe, ziehung, teams und bedenkzeit', async () => {
+    await renderWithCategory();
 
-    expect(linkField()).toHaveValue(
-      `${window.location.origin}/?thema=testthema&teams=Team%20A,Team%20B`,
-    );
+    expect(linkField()).toHaveValue(erwarteterLink('&teams=Team%20A,Team%20B'));
 
     fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
       target: { value: String(timerSliderValue(45)) },
     });
 
-    expect(linkField()).toHaveValue(
-      `${window.location.origin}/?thema=testthema&teams=Team%20A,Team%20B&timer=45`,
-    );
+    expect(linkField()).toHaveValue(erwarteterLink('&teams=Team%20A,Team%20B&timer=45'));
+  });
+
+  it('übernimmt die eingestellte stufe in den link', async () => {
+    await renderWithCategory();
+
+    fireEvent.change(screen.getByLabelText('Schwierigkeit des Spielfelds'), {
+      target: { value: '5' },
+    });
+
+    expect(linkField()).toHaveValue(erwarteterLink('&teams=Team%20A,Team%20B', 'testkategorie', 5));
+  });
+
+  it('tauscht die ziehungsnummer im link, sobald neu gemischt wird', async () => {
+    await renderWithCategory();
+    const vorher = linkField().value;
+
+    await userEvent.click(screen.getByRole('button', { name: 'Neu mischen' }));
+
+    expect(linkField().value).not.toBe(vorher);
+    expect(linkField()).toHaveValue(erwarteterLink('&teams=Team%20A,Team%20B'));
   });
 
   it('nimmt eine eigene veto-zeit auf und lässt die kopplung weg', async () => {
-    await renderWithTopic();
+    await renderWithCategory();
 
     fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
       target: { value: String(timerSliderValue(45)) },
@@ -121,24 +105,25 @@ describe('spiel teilen', () => {
     });
 
     expect(linkField()).toHaveValue(
-      `${window.location.origin}/?thema=testthema&teams=Team%20A,Team%20B&timer=45&vetozeit=20`,
+      erwarteterLink('&teams=Team%20A,Team%20B&timer=45&vetozeit=20'),
     );
   });
 
-  it('übernimmt geänderte teamnamen und das gewählte thema in den link', async () => {
-    await renderWithTopic();
+  it('übernimmt geänderte teamnamen und die gewählte kategorie in den link', async () => {
+    await renderWithCategory();
 
     await userEvent.clear(screen.getByLabelText('Name von Team 1'));
     await userEvent.type(screen.getByLabelText('Name von Team 1'), 'Die Grünen Füchse');
-    await userEvent.click(screen.getByRole('button', { name: /Zweites Thema/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Andere Kategorie' }));
+    await chooseCategory('Zweite Kategorie');
 
     expect(linkField()).toHaveValue(
-      `${window.location.origin}/?thema=zweites&teams=Die%20Gr%C3%BCnen%20F%C3%BCchse,Team%20B`,
+      erwarteterLink('&teams=Die%20Gr%C3%BCnen%20F%C3%BCchse,Team%20B', 'zweite'),
     );
   });
 
   it('kopiert den link in die zwischenablage und meldet den erfolg', async () => {
-    await renderWithTopic();
+    await renderWithCategory();
     const writeText = stubClipboard();
     const erwartet = linkField().value;
 
@@ -146,12 +131,12 @@ describe('spiel teilen', () => {
 
     await waitFor(() => expect(screen.getByText('Link kopiert.')).toBeInTheDocument());
     expect(writeText).toHaveBeenCalledWith(erwartet);
-    expect(erwartet).toContain('thema=testthema');
+    expect(erwartet).toContain('kategorie=testkategorie');
     expect(erwartet).toContain('teams=Team%20A,Team%20B');
   });
 
   it('meldet, wenn der link nicht kopiert werden kann', async () => {
-    await renderWithTopic();
+    await renderWithCategory();
     stubClipboard('fehler');
 
     await userEvent.click(screen.getByRole('button', { name: 'Link kopieren' }));
@@ -161,7 +146,7 @@ describe('spiel teilen', () => {
     );
   });
 
-  it('bietet ohne verfügbares thema keinen link an', async () => {
+  it('bietet ohne verfügbare kategorie keinen link an', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
     renderWithGame(
       <MemoryRouter>
@@ -177,7 +162,7 @@ describe('spiel teilen', () => {
   });
 
   it('weist bei einem eigenen fragenset darauf hin, dass der link entfällt', async () => {
-    await renderWithTopic();
+    await renderWithCategory();
     const file = new File([JSON.stringify(sampleDefinition)], 'thema.json', {
       type: 'application/json',
     });
@@ -199,19 +184,21 @@ describe('geteilten link öffnen', () => {
     expect(screen.queryByText('Geteiltes Spiel')).not.toBeInTheDocument();
   });
 
-  it('zeigt thema, bedenkzeit und die geteilten teamnamen zur bestätigung', async () => {
-    await renderSetup('/?thema=zweites&teams=Adler,Falken&timer=45');
+  it('zeigt kategorie, stufe, ziehung, bedenkzeit und die geteilten teamnamen', async () => {
+    await renderSetup('/?kategorie=zweite&stufe=4&ziehung=3mv&teams=Adler,Falken&timer=45');
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Geteiltes Spiel')).toBeInTheDocument();
-    expect(within(dialog).getByText('Thema: Zweites Thema')).toBeInTheDocument();
+    expect(within(dialog).getByText('Kategorie: Zweite Kategorie')).toBeInTheDocument();
+    expect(within(dialog).getByText('Schwierigkeit: Fordernd')).toBeInTheDocument();
+    expect(within(dialog).getByText('Ziehung 3mv')).toBeInTheDocument();
     expect(within(dialog).getByText('Bedenkzeit: 45 Sekunden')).toBeInTheDocument();
     expect(within(dialog).getByLabelText('Name von Team 1')).toHaveValue('Adler');
     expect(within(dialog).getByLabelText('Name von Team 2')).toHaveValue('Falken');
   });
 
-  it('übernimmt geänderte namen, thema und bedenkzeit in die startseite', async () => {
-    await renderSetup('/?thema=zweites&teams=Adler,Falken&timer=45');
+  it('übernimmt geänderte namen, kategorie, stufe und ziehung in die startseite', async () => {
+    await renderSetup('/?kategorie=zweite&stufe=4&ziehung=3mv&teams=Adler,Falken&timer=45');
     const dialog = await screen.findByRole('dialog');
 
     await userEvent.clear(within(dialog).getByLabelText('Name von Team 2'));
@@ -222,14 +209,16 @@ describe('geteilten link öffnen', () => {
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Adler');
     expect(screen.getByLabelText('Name von Team 2')).toHaveValue('Die Falken');
     expect(screen.getByLabelText('Bedenkzeit je Frage')).toHaveValue(String(timerSliderValue(45)));
-    expect(screen.getByRole('button', { name: /Zweites Thema/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByText('Kategorie: Zweite Kategorie')).toBeInTheDocument();
+    expect(screen.getByLabelText('Schwierigkeit des Spielfelds')).toHaveValue('4');
+    // Dieselbe Ziehung wie im Link – sonst wäre es nicht dieselbe Partie.
+    await waitFor(() => expect(screen.getByText('Ziehung 3mv')).toBeInTheDocument());
   });
 
   it('zeigt die geteilte veto-zeit und übernimmt sie in den regler', async () => {
-    await renderSetup('/?thema=zweites&teams=Adler,Falken&timer=45&vetozeit=20');
+    await renderSetup(
+      '/?kategorie=zweite&stufe=4&ziehung=3mv&teams=Adler,Falken&timer=45&vetozeit=20',
+    );
     const dialog = await screen.findByRole('dialog');
 
     expect(within(dialog).getByText('Veto-Zeit: 20 Sekunden')).toBeInTheDocument();
@@ -244,7 +233,7 @@ describe('geteilten link öffnen', () => {
   });
 
   it('nennt die kopplung, wenn der link keine brauchbare veto-zeit enthält', async () => {
-    await renderSetup('/?thema=zweites&teams=Adler&timer=45&vetozeit=7');
+    await renderSetup('/?kategorie=zweite&stufe=4&ziehung=3mv&teams=Adler&timer=45&vetozeit=7');
     const dialog = await screen.findByRole('dialog');
 
     expect(
@@ -261,8 +250,8 @@ describe('geteilten link öffnen', () => {
   });
 
   it('entfernt die parameter aus der adresszeile', async () => {
-    window.history.replaceState(null, '', '/?thema=zweites&teams=Adler');
-    await renderSetup('/?thema=zweites&teams=Adler');
+    window.history.replaceState(null, '', '/?kategorie=zweite&stufe=4&ziehung=3mv&teams=Adler');
+    await renderSetup('/?kategorie=zweite&stufe=4&ziehung=3mv&teams=Adler');
     const dialog = await screen.findByRole('dialog');
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Namen übernehmen' }));
@@ -271,7 +260,7 @@ describe('geteilten link öffnen', () => {
   });
 
   it('lässt die geteilten werte auf wunsch fallen', async () => {
-    await renderSetup('/?thema=zweites&teams=Adler,Falken&timer=45');
+    await renderSetup('/?kategorie=zweite&stufe=4&ziehung=3mv&teams=Adler,Falken&timer=45');
     const dialog = await screen.findByRole('dialog');
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Nicht übernehmen' }));
@@ -283,8 +272,8 @@ describe('geteilten link öffnen', () => {
     );
   });
 
-  it('ignoriert ein unbekanntes thema und eine unzulässige bedenkzeit', async () => {
-    await renderSetup('/?thema=gibtesnicht&teams=Adler&timer=7');
+  it('ignoriert eine unbekannte kategorie und eine unzulässige bedenkzeit', async () => {
+    await renderSetup('/?kategorie=gibtesnicht&teams=Adler&timer=7');
     const dialog = await screen.findByRole('dialog');
 
     expect(within(dialog).getByText(/Link ist unvollständig oder fehlerhaft/)).toBeInTheDocument();
@@ -293,17 +282,17 @@ describe('geteilten link öffnen', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Namen übernehmen' }));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    // Ohne brauchbares Thema bleibt die Auswahl bei den Kategorien stehen; die
-    // Namen aus dem Link kommen trotzdem an.
+    // Ohne brauchbare Kategorie bleibt die Auswahl stehen; die Namen aus dem
+    // Link kommen trotzdem an.
     expect(screen.getByRole('button', { name: /Testkategorie/ })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Testthema/ })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Schwierigkeit des Spielfelds')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Adler');
     expect(screen.getByRole('button', { name: 'Spiel starten' })).toBeDisabled();
   });
 
   it('begrenzt zu viele geteilte teams auf die obergrenze der oberfläche', async () => {
     const namen = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10'];
-    await renderSetup(`/?thema=testthema&teams=${namen.join(',')}`);
+    await renderSetup(`/?kategorie=testkategorie&teams=${namen.join(',')}`);
     const dialog = await screen.findByRole('dialog');
 
     expect(within(dialog).getAllByRole('textbox')).toHaveLength(8);
@@ -311,14 +300,13 @@ describe('geteilten link öffnen', () => {
   });
 
   it('weist auf einen fehlerhaften link hin und bleibt bedienbar', async () => {
-    await renderSetup('/?thema=&teams=');
+    await renderSetup('/?kategorie=&teams=');
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(
       screen.getByText('Der geteilte Link ist unvollständig oder fehlerhaft.'),
     ).toBeInTheDocument();
-    // Die Seite bleibt bedienbar: Kategorien stehen bereit, gestartet wird nach
-    // der Wahl eines Fragensets.
+    // Die Seite bleibt bedienbar: Die Kategorien stehen bereit.
     expect(screen.getByRole('button', { name: /Testkategorie/ })).toBeInTheDocument();
     expect(screen.getByLabelText('Name von Team 1')).toHaveValue('Team A');
   });

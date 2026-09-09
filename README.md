@@ -6,7 +6,7 @@ vorgesehen; die Auslieferung erfolgt als Docker-Container.
 
 - [Technisches Konzept](docs/technisches-konzept.md) – Architektur, Datenmodell, Design, Betrieb
 - [Arbeitsplan & Subtasks](docs/arbeitsplan.md) – Aufgabenschnitt, Commit-Regeln, Umsetzungsstand
-- [Fragensets anlegen](content/README.md) – Aufbau und Regeln der JSON-Dateien
+- [Fragen pflegen](content/README.md) – Aufbau der Fragenpools, Schwierigkeit, Import
 - Architekturentscheidungen: [Schnittstellen-Vertrag](docs/adr/0001-schnittstellen-vertrag.md) ·
   [Technologie-Stack](docs/adr/0002-technologie-stack.md) ·
   [Transport-Naht](docs/adr/0003-transport-naht.md) ·
@@ -15,12 +15,36 @@ vorgesehen; die Auslieferung erfolgt als Docker-Container.
 ## Spielablauf
 
 Startseite: Teams festlegen (ein Team genügt – dann läuft das Spiel als Übungsmodus ohne
-Ranking) und Thema wählen, entweder aus den mitgelieferten Fragensets oder als eigene
-JSON-Datei. Auf dem Spielfeld öffnet ein Klick auf eine Karte die Frage; die Musterlösung und
-die Punktebuttons erscheinen erst nach „Antwort anzeigen". Erst ein Punktebutton wertet die
+Ranking), eine Themenkategorie wählen und die Schwierigkeit von 1 bis 5 einstellen. Beim
+Start zieht das Spiel aus dem Fragenvorrat der Kategorie ein eigenes 5×5-Spielfeld: fünf
+Rubriken als Spalten, je fünf Fragen in aufsteigender Härte. **Jede Partie bekommt andere
+Fragen** – wer dieselbe noch einmal spielen will, teilt den Link, in dem die Ziehungsnummer
+steht. Alternativ lässt sich weiterhin ein fertiges Fragenset als JSON-Datei laden.
+
+Auf dem Spielfeld öffnet ein Klick auf eine Karte die Frage; die Musterlösung und die
+Punktebuttons erscheinen erst nach „Antwort anzeigen". Erst ein Punktebutton wertet die
 Frage – dann wird die Karte grau. Punkte werden addiert oder abgezogen und fallen nie unter
 null. Teamnamen lassen sich jederzeit oben ändern, die Punktebuttons übernehmen den Namen
 sofort. Ein laufendes Spiel übersteht das Schließen des Browsers.
+
+### Schwierigkeit und Ziehung
+
+Jede Frage im Vorrat trägt eine Stufe von 1 bis 9. Der Regler schiebt darüber ein Fenster
+von fünf Stufen – eine je Zeile. In **jeder** Reglerstellung bekommt das Brett damit fünf
+verschiedene, aufsteigende Stufen: Die 100er-Karte ist immer die leichteste, die 500er immer
+die schwerste. Die Skala reicht bis 9, weil das Fenster fünf Stufen breit ist und der Regler
+es um vier Stellungen weiterschiebt:
+
+| Regler       | 100er | 200er | 300er | 400er | 500er |
+| ------------ | ----: | ----: | ----: | ----: | ----: |
+| 1 Locker     |     1 |     2 |     3 |     4 |     5 |
+| 2 Leicht     |     2 |     3 |     4 |     5 |     6 |
+| 3 Ausgewogen |     3 |     4 |     5 |     6 |     7 |
+| 4 Fordernd   |     4 |     5 |     6 |     7 |     8 |
+| 5 Für Kenner |     5 |     6 |     7 |     8 |     9 |
+
+Punkte bleiben immer 100 bis 500: Sie ordnen das Brett und sind nur innerhalb einer Partie
+vergleichbar. Details zum Vorrat stehen in [content/README.md](content/README.md).
 
 ## Schnellstart
 
@@ -42,7 +66,7 @@ npm run dev          # http://localhost:5173
 | `npm run test:coverage`    | Tests mit Coverage-Schwellen für `game-core`    |
 | `npm run test:junit`       | Wie oben, zusätzlich JUnit-Bericht für CI       |
 | `npm run test:e2e`         | End-to-End-Tests (Playwright)                   |
-| `npm run validate:content` | Prüft alle Fragensets in `content/topics`       |
+| `npm run validate:content` | Prüft Index und Fragenpools in `content/topics` |
 | `npm run build:info`       | Commit und Datum für die Fußzeile bereitstellen |
 
 ## Continuous Integration
@@ -76,8 +100,8 @@ docker compose up --build     # http://localhost:8080
 
 Das Image baut die Anwendung und liefert sie über nginx aus (rund 62 MB). Besonderheiten:
 
-- **Fragensets ohne neues Image:** `content/topics` ist als Volume eingebunden. Neue oder
-  geänderte JSON-Dateien wirken nach einem Neuladen der Seite, ein Rebuild ist nicht nötig.
+- **Fragen ohne neues Image:** `content/topics` ist als Volume eingebunden. Geänderte
+  Fragenpools wirken nach einem Neuladen der Seite, ein Rebuild ist nicht nötig.
 - **Verlaufsadressen:** unbekannte Pfade beantwortet `index.html`, `/game` funktioniert also
   auch beim direkten Aufruf.
 - **Zwischenspeicher:** gehashte Dateien in `/assets` werden dauerhaft gecacht,
@@ -90,8 +114,8 @@ Das Image baut die Anwendung und liefert sie über nginx aus (rund 62 MB). Beson
 
 ```
 apps/web/           Oberfläche (React, Vite, Tailwind)
-packages/game-core/ Spiellogik ohne Framework-Bezug (Typen, Schemas, Reducer)
-content/topics/     Fragensets als JSON
+packages/game-core/ Spiellogik ohne Framework-Bezug (Typen, Schemas, Reducer, Ziehung)
+content/topics/     Fragenpools als JSON, ein Pool je Themenkategorie
 docker/             Dockerfile, nginx-Konfiguration, Compose
 docs/               Konzept, Arbeitsplan, ADRs
 e2e/                End-to-End-Tests

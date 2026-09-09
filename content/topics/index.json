@@ -1,123 +1,29 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "categories": [
     {
       "id": "allgemeinwissen",
       "title": "Allgemeinwissen",
-      "description": "Quer durch Erdkunde, Geschichte, Natur, Sprache und Zahlen."
+      "description": "Quer durch Erdkunde, Geschichte, Natur, Sprache und Zahlen.",
+      "file": "pool-allgemeinwissen.json"
     },
     {
       "id": "popkultur",
       "title": "Popkultur",
-      "description": "Kino, Musik, Serien, Games und Netzkultur."
+      "description": "Kino, Musik, Serien, Games und Netzkultur.",
+      "file": "pool-popkultur.json"
     },
     {
       "id": "it",
       "title": "IT und Technik",
-      "description": "Netzwerke, Hardware, Software, Sicherheit und Internetgeschichte."
+      "description": "Netzwerke, Hardware, Software, Sicherheit und Internetgeschichte.",
+      "file": "pool-it.json"
     },
     {
       "id": "historische-persoenlichkeiten",
       "title": "Historische Persönlichkeiten",
-      "description": "Aussagen statt Fragen: Gesucht sind Menschen aus fünf Epochen deutscher Geschichte."
-    }
-  ],
-  "topics": [
-    {
-      "id": "allgemeinwissen",
-      "title": "Allgemeinwissen",
-      "description": "Erdkunde, Geschichte, Natur, Sprache und Zahlen – für jede Runde geeignet.",
-      "category": "allgemeinwissen",
-      "difficulty": 1,
-      "file": "allgemeinwissen.json"
-    },
-    {
-      "id": "popkultur",
-      "title": "Popkultur",
-      "description": "Kino, Musik, Serien, Games und Internet – der lockere Abendklassiker.",
-      "category": "popkultur",
-      "difficulty": 1,
-      "file": "popkultur.json"
-    },
-    {
-      "id": "it-grundlagen",
-      "title": "IT-Grundlagen",
-      "description": "Netzwerke, Hardware, Software, Sicherheit und ein Stück Internetgeschichte.",
-      "category": "it",
-      "difficulty": 1,
-      "file": "it-grundlagen.json"
-    },
-    {
-      "id": "allgemeinwissen-fortgeschritten",
-      "title": "Allgemeinwissen – Fortgeschritten",
-      "description": "Eine Stufe über dem Klassiker: Länder, Weltgeschichte, Naturwissenschaft, Kunst und der menschliche Körper.",
-      "category": "allgemeinwissen",
-      "difficulty": 2,
-      "file": "allgemeinwissen-fortgeschritten.json"
-    },
-    {
-      "id": "allgemeinwissen-experten",
-      "title": "Allgemeinwissen – Experten",
-      "description": "Für Runden, die es genau wissen wollen: Erdkunde, Jahreszahlen, Wissenschaft, Wortherkunft und Mythologie.",
-      "category": "allgemeinwissen",
-      "difficulty": 3,
-      "file": "allgemeinwissen-experten.json"
-    },
-    {
-      "id": "popkultur-fortgeschritten",
-      "title": "Popkultur – Fortgeschritten",
-      "description": "Kino der Neunziger, Musikgeschichte, Kultserien, Videospiele und deutsche Popkultur – für alle, die mehr als die Klassiker kennen.",
-      "category": "popkultur",
-      "difficulty": 2,
-      "file": "popkultur-fortgeschritten.json"
-    },
-    {
-      "id": "popkultur-experten",
-      "title": "Popkultur – Experten",
-      "description": "Regiehandschriften, Plattenlabels, Serien-Details, Spieleschmieden und Comic-Geschichte – hier fordert schon die erste Frage.",
-      "category": "popkultur",
-      "difficulty": 3,
-      "file": "popkultur-experten.json"
-    },
-    {
-      "id": "it-fortgeschritten",
-      "title": "IT für Fortgeschrittene",
-      "description": "Netzwerke, Web, Datenbanken, Programmierung und Sicherheit für alle, die schon etwas tiefer stecken.",
-      "category": "it",
-      "difficulty": 2,
-      "file": "it-fortgeschritten.json"
-    },
-    {
-      "id": "it-experten",
-      "title": "IT für Experten",
-      "description": "Rechnerarchitektur, Betriebssysteme, verteilte Systeme, Kryptografie und Protokolle – hier ist Fachwissen gefragt.",
-      "category": "it",
-      "difficulty": 3,
-      "file": "it-experten.json"
-    },
-    {
-      "id": "persoenlichkeiten-einstieg",
-      "title": "Historische Persönlichkeiten – Einstieg",
-      "description": "Namen, die im Geschichtsunterricht fallen: von der Paulskirche bis zur Wiedervereinigung.",
-      "category": "historische-persoenlichkeiten",
-      "difficulty": 1,
-      "file": "persoenlichkeiten-einstieg.json"
-    },
-    {
-      "id": "persoenlichkeiten-fortgeschritten",
-      "title": "Historische Persönlichkeiten – Fortgeschritten",
-      "description": "Zweite Reihe der Geschichtsbücher: Wegbereiter, Erfinder, Widerständige und Wortführer.",
-      "category": "historische-persoenlichkeiten",
-      "difficulty": 2,
-      "file": "persoenlichkeiten-fortgeschritten.json"
-    },
-    {
-      "id": "persoenlichkeiten-experten",
-      "title": "Historische Persönlichkeiten – Experten",
-      "description": "Für Runden mit Geschichtsstudium: Paulskirchenlinke, Kulturkampf, Verfassungsväter, Kreisauer Kreis und Ostpolitik.",
-      "category": "historische-persoenlichkeiten",
-      "difficulty": 3,
-      "file": "persoenlichkeiten-experten.json"
+      "description": "Von der Antike bis heute: Gesucht sind Menschen, die Geschichte gemacht haben.",
+      "file": "pool-historische-persoenlichkeiten.json"
     }
   ]
 }

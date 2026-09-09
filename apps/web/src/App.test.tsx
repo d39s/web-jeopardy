@@ -1,79 +1,62 @@
-import { sampleDefinition } from '@jeopardy/game-core';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
-
-const topicIndex = {
-  schemaVersion: 1,
-  categories: [{ id: 'testkategorie', title: 'Testkategorie', description: 'Zum Ausprobieren.' }],
-  topics: [
-    {
-      id: 'testthema',
-      title: 'Testthema',
-      category: 'testkategorie',
-      difficulty: 1,
-      file: 'testthema.json',
-    },
-  ],
-};
+import { chooseCategory, mockContentRequests } from './test/content';
 
 beforeEach(() => {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn((url: string) =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(url.endsWith('index.json') ? topicIndex : sampleDefinition),
-      } as Response),
-    ),
-  );
+  mockContentRequests();
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+/** Karten einer Punktestufe, unabhängig davon, welche Rubriken gezogen wurden. */
+function cardsWorth(points: number): HTMLElement[] {
+  return screen.getAllByRole('button', { name: new RegExp(`, ${points} Punkte$`) });
+}
+
 describe('anwendung', () => {
   it('zeigt zunächst die startseite mit den kategorien', async () => {
     render(<App />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Jeopardy' })).toBeInTheDocument();
-    // Erste Stufe der Auswahl: die Fragensets stehen erst hinter der Kategorie.
+    // Erste Stufe der Auswahl: Der Regler kommt erst hinter der Kategorie.
     await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
-    expect(screen.queryByText('Testthema')).not.toBeInTheDocument();
+    expect(screen.getByText('Zweite Kategorie')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Schwierigkeit des Spielfelds')).not.toBeInTheDocument();
   });
 
   it('führt von der startseite über das spielfeld bis zur wertung', async () => {
     render(<App />);
-    await waitFor(() => expect(screen.getByText('Testkategorie')).toBeInTheDocument());
+    await chooseCategory();
 
-    await userEvent.click(screen.getByRole('button', { name: /Testkategorie/ }));
-    await userEvent.click(screen.getByRole('button', { name: /Testthema/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
 
-    // Spielfeld mit Kategorien und Teamleiste
-    await waitFor(() => expect(screen.getByText('Wissenschaft')).toBeInTheDocument());
+    // Spielfeld mit 25 gezogenen Karten und Teamleiste. Welche Rubriken es
+    // trifft, entscheidet die Ziehung – geprüft wird deshalb die Form.
+    await waitFor(() => expect(cardsWorth(100)).toHaveLength(5));
+    expect(screen.getAllByRole('button', { name: /, \d+ Punkte$/ })).toHaveLength(25);
     expect(screen.getByDisplayValue('Team A')).toBeInTheDocument();
 
     // Karte öffnen: Frage sichtbar, Antwort noch nicht
-    await userEvent.click(screen.getByRole('button', { name: 'Wissenschaft, 100 Punkte' }));
-    expect(
-      screen.getByText('Welches Gas atmen Pflanzen bei der Fotosynthese auf?'),
-    ).toBeInTheDocument();
-    expect(screen.queryByText('Kohlenstoffdioxid')).not.toBeInTheDocument();
+    const karte = cardsWorth(100)[0]!;
+    const kartenname = karte.getAttribute('aria-label') ?? '';
+    await userEvent.click(karte);
+    expect(screen.getByText(/Frage auf Stufe/)).toBeInTheDocument();
+    expect(screen.queryByText(/^Rubrik [A-F] \d\.\d$/)).not.toBeInTheDocument();
 
     // Kein Veto: aufdecken und den Gewinner wählen
     await userEvent.click(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' }));
-    expect(screen.getByText('Kohlenstoffdioxid')).toBeInTheDocument();
+    expect(screen.getByText(/^Rubrik [A-F] \d\.\d$/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Team A' }));
 
     // Karte ist jetzt gesperrt, Punktestand steht
     await waitFor(() =>
       expect(
         // Der Name beginnt mit dem gespielt-Hinweis und nennt danach den Ausgang.
-        screen.getByRole('button', { name: /^Wissenschaft, 100 Punkte – bereits gespielt/ }),
+        screen.getByRole('button', { name: new RegExp(`^${kartenname} – bereits gespielt`) }),
       ).toBeDisabled(),
     );
     expect(screen.getByText('Team A: 100 Punkte')).toBeInTheDocument();

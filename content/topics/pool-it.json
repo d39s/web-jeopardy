@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 1,
+  "id": "it",
+  "title": "IT und Technik",
+  "description": "Netzwerke, Hardware, Software, Sicherheit und Internetgeschichte.",
+  "author": "Projektteam",
+  "locale": "de-DE",
+  "rubrics": [
+    {
+      "id": "netzwerke",
+      "name": "Netzwerke",
+      "clues": [
+        {
+          "id": "netzwerke-1-01",
+          "level": 1,
+          "question": "Welche Portnummer nutzt HTTPS standardmäßig?",
+          "answer": "Port 443"
+        },
+        {
+          "id": "netzwerke-2-01",
+          "level": 2,
+          "question": "Wofür steht das Kürzel IP in \"IP-Adresse\"?",
+          "answer": "Internet Protocol"
+        },
+        {
+          "id": "netzwerke-3-01",
+          "level": 3,
+          "question": "Welcher Dienst übersetzt Domainnamen in IP-Adressen?",
+          "answer": "DNS, das Domain Name System"
+        },
+        {
+          "id": "netzwerke-3-02",
+          "level": 3,
+          "question": "Welches Protokoll weist Geräten im Netz automatisch eine IP-Adresse zu?",
+          "answer": "DHCP, das Dynamic Host Configuration Protocol"
+        },
+        {
+          "id": "netzwerke-4-01",
+          "level": 4,
+          "question": "Auf welcher Schicht des OSI-Modells arbeitet ein klassischer Switch?",
+          "answer": "Auf Schicht 2, der Sicherungsschicht",
+          "note": "Ein Router arbeitet auf Schicht 3; sogenannte Layer-3-Switches können beides."
+        },
+        {
+          "id": "netzwerke-4-02",
+          "level": 4,
+          "question": "Wie viele Bit hat eine IPv6-Adresse?",
+          "answer": "128 Bit"
+        },
+        {
+          "id": "netzwerke-5-01",
+          "level": 5,
+          "question": "Welches Gerät verbindet zwei unterschiedliche Netze miteinander?",
+          "answer": "Ein Router",
+          "note": "Switch verbindet Geräte innerhalb eines Netzes – häufige Verwechslung."
+        },
+        {
+          "id": "netzwerke-5-02",
+          "level": 5,
+          "question": "Wie viele nutzbare Hostadressen bietet ein IPv4-Netz mit der Präfixlänge /24?",
+          "answer": "254 – von 256 Adressen gehen Netz- und Broadcastadresse ab"
+        },
+        {
+          "id": "netzwerke-6-01",
+          "level": 6,
+          "question": "Welches Protokoll ermittelt im lokalen Netz zu einer IPv4-Adresse die passende MAC-Adresse?",
+          "answer": "ARP, das Address Resolution Protocol"
+        },
+        {
+          "id": "netzwerke-7-01",
+          "level": 7,
+          "question": "Welches Feld im IPv4-Header sorgt dafür, dass ein Paket nicht endlos im Netz kreist?",
+          "answer": "Das TTL-Feld (Time to Live)"
+        }
+      ]
+    },
+    {
+      "id": "hardware",
+      "name": "Hardware",
+      "clues": [
+        {
+          "id": "hardware-1-01",
+          "level": 1,
+          "question": "Wofür steht die Abkürzung CPU?",
+          "answer": "Central Processing Unit, der Hauptprozessor"
+        },
+        {
+          "id": "hardware-2-01",
+          "level": 2,
+          "question": "Welcher Speicher verliert seinen Inhalt beim Ausschalten?",
+          "answer": "Der Arbeitsspeicher (RAM)"
+        },
+        {
+          "id": "hardware-3-01",
+          "level": 3,
+          "question": "In welcher Einheit wird die Taktfrequenz eines Prozessors angegeben?",
+          "answer": "In Hertz, meist Gigahertz"
+        },
+        {
+          "id": "hardware-4-01",
+          "level": 4,
+          "question": "Wie heißt die Hauptplatine, die alle Komponenten verbindet?",
+          "answer": "Das Mainboard oder Motherboard"
+        },
+        {
+          "id": "hardware-5-01",
+          "level": 5,
+          "question": "Wie heißt die Rechnerarchitektur, in der Programmcode und Daten im selben Speicher liegen?",
+          "answer": "Die Von-Neumann-Architektur",
+          "note": "Die Harvard-Architektur trennt Programm- und Datenspeicher."
+        },
+        {
+          "id": "hardware-5-02",
+          "level": 5,
+          "question": "Wofür steht SSD bei Festplatten?",
+          "answer": "Solid State Drive"
+        },
+        {
+          "id": "hardware-6-01",
+          "level": 6,
+          "question": "Wie heißt das Verfahren, bei dem ein Prozessor die Abarbeitung eines Befehls in überlappende Stufen zerlegt?",
+          "answer": "Pipelining, deutsch Fließbandverarbeitung"
+        },
+        {
+          "id": "hardware-7-01",
+          "level": 7,
+          "question": "Wofür steht die Abkürzung RISC bei Prozessorarchitekturen?",
+          "answer": "Reduced Instruction Set Computer"
+        },
+        {
+          "id": "hardware-8-01",
+          "level": 8,
+          "question": "In welcher Darstellung speichern Prozessoren üblicherweise negative ganze Zahlen?",
+          "answer": "Im Zweierkomplement"
+        },
+        {
+          "id": "hardware-9-01",
+          "level": 9,
+          "question": "Welches Gesetz beschreibt, wie der nicht parallelisierbare Anteil eines Programms den Gewinn durch zusätzliche Rechenkerne begrenzt?",
+          "answer": "Das Amdahlsche Gesetz"
+        }
+      ]
+    },
+    {
+      "id": "software",
+      "name": "Software und Systeme",
+      "clues": [
+        {
+          "id": "software-1-01",
+          "level": 1,
+          "question": "Welches Betriebssystem hat einen Pinguin als Maskottchen?",
+          "answer": "Linux"
+        },
+        {
+          "id": "software-2-01",
+          "level": 2,
+          "question": "Wie nennt man ein Programm, das Quelltext in Maschinencode übersetzt?",
+          "answer": "Einen Compiler"
+        },
+        {
+          "id": "software-3-01",
+          "level": 3,
+          "question": "Welche Programmiersprache führt jeder Webbrowser direkt aus?",
+          "answer": "JavaScript"
+        },
+        {
+          "id": "software-4-01",
+          "level": 4,
+          "question": "Wofür steht die Abkürzung API?",
+          "answer": "Application Programming Interface"
+        },
+        {
+          "id": "software-5-01",
+          "level": 5,
+          "question": "Wie heißt der Vorgang, bei dem der Prozessor von einem Prozess auf einen anderen umschaltet und dabei dessen Register sichert und lädt?",
+          "answer": "Der Kontextwechsel, englisch Context Switch"
+        },
+        {
+          "id": "software-5-02",
+          "level": 5,
+          "question": "Wie heißt die heute verbreitetste Versionsverwaltung?",
+          "answer": "Git"
+        },
+        {
+          "id": "software-6-01",
+          "level": 6,
+          "question": "Welcher Unix-Systemaufruf erzeugt einen neuen Prozess als Kopie des aufrufenden?",
+          "answer": "fork()"
+        },
+        {
+          "id": "software-7-01",
+          "level": 7,
+          "question": "Wie nennt man einen beendeten Unix-Prozess, dessen Rückgabewert der Elternprozess noch nicht abgeholt hat?",
+          "answer": "Einen Zombie-Prozess"
+        },
+        {
+          "id": "software-8-01",
+          "level": 8,
+          "question": "Wie heißt der Puffer im Prozessor, der Übersetzungen von virtuellen in physische Adressen zwischenspeichert?",
+          "answer": "Der TLB, der Translation Lookaside Buffer"
+        },
+        {
+          "id": "software-9-01",
+          "level": 9,
+          "question": "Wie heißt der Effekt, bei dem ein niedrig priorisierter Prozess über eine gehaltene Sperre einen hoch priorisierten ausbremst?",
+          "answer": "Prioritätsinversion"
+        }
+      ]
+    },
+    {
+      "id": "sicherheit",
+      "name": "IT-Sicherheit",
+      "clues": [
+        {
+          "id": "sicherheit-1-01",
+          "level": 1,
+          "question": "Wie nennt man ein System, das Netzwerkverkehr nach Regeln filtert?",
+          "answer": "Eine Firewall"
+        },
+        {
+          "id": "sicherheit-2-01",
+          "level": 2,
+          "question": "Wie heißt die Anmeldung mit zwei unabhängigen Nachweisen?",
+          "answer": "Zwei-Faktor-Authentifizierung"
+        },
+        {
+          "id": "sicherheit-3-01",
+          "level": 3,
+          "question": "Wie nennt man einen Angriff, der einen Dienst durch eine Flut von Anfragen lahmlegt?",
+          "answer": "Ein Denial-of-Service-Angriff (DoS), verteilt ausgeführt DDoS"
+        },
+        {
+          "id": "sicherheit-3-02",
+          "level": 3,
+          "question": "Wie nennt man gefälschte Nachrichten, die Zugangsdaten abgreifen wollen?",
+          "answer": "Phishing"
+        },
+        {
+          "id": "sicherheit-4-01",
+          "level": 4,
+          "question": "Welche Angriffsart schleust über ein Eingabefeld eigene Datenbankbefehle in eine Anwendung ein?",
+          "answer": "SQL-Injection"
+        },
+        {
+          "id": "sicherheit-4-02",
+          "level": 4,
+          "question": "Welche Schadsoftware verschlüsselt Daten und fordert Lösegeld?",
+          "answer": "Ransomware"
+        },
+        {
+          "id": "sicherheit-5-01",
+          "level": 5,
+          "question": "Mit welchem Verfahren speichert man Passwörter, ohne sie lesbar abzulegen?",
+          "answer": "Als Hash, zum Beispiel mit bcrypt oder Argon2"
+        },
+        {
+          "id": "sicherheit-5-02",
+          "level": 5,
+          "question": "Welches Verfahren löste DES als US-Verschlüsselungsstandard ab?",
+          "answer": "AES, der Advanced Encryption Standard (Rijndael)"
+        },
+        {
+          "id": "sicherheit-5-03",
+          "level": 5,
+          "question": "Wie heißt der zufällige Zusatzwert, der vor dem Hashen mit einem Passwort verbunden wird?",
+          "answer": "Der Salt, deutsch das Salz"
+        },
+        {
+          "id": "sicherheit-6-01",
+          "level": 6,
+          "question": "Welches nach seinen beiden Erfindern benannte Verfahren handelt über einen unsicheren Kanal einen gemeinsamen Schlüssel aus?",
+          "answer": "Der Diffie-Hellman-Schlüsselaustausch"
+        },
+        {
+          "id": "sicherheit-6-02",
+          "level": 6,
+          "question": "Wie heißt ein absichtlich verwundbares System, das Angreifer anlocken und beobachtbar machen soll?",
+          "answer": "Ein Honeypot"
+        },
+        {
+          "id": "sicherheit-7-01",
+          "level": 7,
+          "question": "Auf welchem mathematisch schweren Problem beruht die Sicherheit von RSA?",
+          "answer": "Auf der Faktorisierung großer Zahlen in ihre Primfaktoren"
+        },
+        {
+          "id": "sicherheit-7-02",
+          "level": 7,
+          "question": "Welcher Angriff bringt einen angemeldeten Nutzer dazu, unbemerkt eine Aktion in einer Webanwendung auszulösen? Gesucht ist die englische Abkürzung.",
+          "answer": "CSRF, Cross-Site Request Forgery",
+          "note": "Nicht zu verwechseln mit XSS (Cross-Site Scripting), wo fremder Skriptcode ausgeführt wird."
+        },
+        {
+          "id": "sicherheit-8-01",
+          "level": 8,
+          "question": "Wie heißt das Verfahren, das aus einem geheimen Schlüssel und einer Nachricht mit zwei geschachtelten Hashdurchläufen einen Authentifizierungscode bildet?",
+          "answer": "HMAC, der Hash-based Message Authentication Code"
+        },
+        {
+          "id": "sicherheit-9-01",
+          "level": 9,
+          "question": "Wie nennt man ein Verfahren, mit dem jemand die Kenntnis eines Geheimnisses beweist, ohne das Geheimnis selbst preiszugeben?",
+          "answer": "Ein Zero-Knowledge-Beweis, deutsch Null-Wissen-Beweis"
+        }
+      ]
+    },
+    {
+      "id": "internet",
+      "name": "Internet und Protokolle",
+      "clues": [
+        {
+          "id": "internet-1-01",
+          "level": 1,
+          "question": "Wofür stehen die drei Buchstaben WWW?",
+          "answer": "World Wide Web"
+        },
+        {
+          "id": "internet-2-01",
+          "level": 2,
+          "question": "Wer erfand das World Wide Web?",
+          "answer": "Tim Berners-Lee"
+        },
+        {
+          "id": "internet-3-01",
+          "level": 3,
+          "question": "Wofür steht die Abkürzung HTML?",
+          "answer": "Hypertext Markup Language"
+        },
+        {
+          "id": "internet-4-01",
+          "level": 4,
+          "question": "Wie hieß das Forschungsnetz, aus dem das Internet hervorging?",
+          "answer": "Das ARPANET"
+        },
+        {
+          "id": "internet-5-01",
+          "level": 5,
+          "question": "Welcher Statuscode meldet \"Seite nicht gefunden\"?",
+          "answer": "404"
+        },
+        {
+          "id": "internet-5-02",
+          "level": 5,
+          "question": "Welches Protokoll tauscht im Internet Routen zwischen autonomen Systemen aus?",
+          "answer": "BGP, das Border Gateway Protocol"
+        },
+        {
+          "id": "internet-6-01",
+          "level": 6,
+          "question": "Bei welchem Protokoll begrüßt ein Client den Server mit dem Kommando EHLO?",
+          "answer": "Bei SMTP, dem Simple Mail Transfer Protocol"
+        },
+        {
+          "id": "internet-7-01",
+          "level": 7,
+          "question": "Welches Protokoll fragt Verzeichnisdienste ab, etwa zur zentralen Verwaltung von Benutzerkonten?",
+          "answer": "LDAP, das Lightweight Directory Access Protocol"
+        },
+        {
+          "id": "internet-8-01",
+          "level": 8,
+          "question": "Welche Erweiterung des Domain Name System sichert dessen Antworten mit digitalen Signaturen ab?",
+          "answer": "DNSSEC"
+        },
+        {
+          "id": "internet-9-01",
+          "level": 9,
+          "question": "Mit welchem Protokoll fragt ein Client beim Aussteller ab, ob ein Zertifikat gesperrt wurde?",
+          "answer": "Mit OCSP, dem Online Certificate Status Protocol",
+          "note": "Die Sperrliste CRL erfüllt denselben Zweck, wird aber als Liste heruntergeladen."
+        }
+      ]
+    },
+    {
+      "id": "web",
+      "name": "Web und HTTP",
+      "clues": [
+        {
+          "id": "web-3-01",
+          "level": 3,
+          "question": "Welcher HTTP-Statuscode trägt den Namen \"Moved Permanently\"?",
+          "answer": "301"
+        },
+        {
+          "id": "web-4-01",
+          "level": 4,
+          "question": "Welcher HTTP-Header gibt an, von welchem Medientyp der übertragene Inhalt ist?",
+          "answer": "Content-Type"
+        },
+        {
+          "id": "web-5-01",
+          "level": 5,
+          "question": "Welche HTTP-Methode liefert nur die Kopfzeilen einer Antwort, ohne den eigentlichen Inhalt?",
+          "answer": "HEAD"
+        },
+        {
+          "id": "web-6-01",
+          "level": 6,
+          "question": "Wofür steht die Abkürzung CORS, die Browsern Zugriffe über Domaingrenzen hinweg erlaubt?",
+          "answer": "Cross-Origin Resource Sharing"
+        },
+        {
+          "id": "web-7-01",
+          "level": 7,
+          "question": "Auf welchem Transportprotokoll setzt HTTP/3 auf?",
+          "answer": "Auf QUIC, das seinerseits UDP nutzt"
+        }
+      ]
+    },
+    {
+      "id": "datenbanken",
+      "name": "Datenbanken",
+      "clues": [
+        {
+          "id": "datenbanken-3-01",
+          "level": 3,
+          "question": "Wofür steht die Abkürzung SQL?",
+          "answer": "Structured Query Language"
+        },
+        {
+          "id": "datenbanken-4-01",
+          "level": 4,
+          "question": "Wie heißt der Schlüssel, der jeden Datensatz einer relationalen Tabelle eindeutig identifiziert?",
+          "answer": "Der Primärschlüssel",
+          "note": "Ein Fremdschlüssel verweist dagegen auf eine andere Tabelle."
+        },
+        {
+          "id": "datenbanken-5-01",
+          "level": 5,
+          "question": "Wofür stehen die vier Buchstaben des Akronyms ACID bei Datenbanktransaktionen?",
+          "answer": "Atomicity, Consistency, Isolation, Durability – Atomarität, Konsistenz, Isolation, Dauerhaftigkeit"
+        },
+        {
+          "id": "datenbanken-6-01",
+          "level": 6,
+          "question": "Welcher Join liefert alle Zeilen der linken Tabelle, auch wenn rechts keine passende Zeile existiert?",
+          "answer": "Der LEFT OUTER JOIN, kurz LEFT JOIN"
+        },
+        {
+          "id": "datenbanken-7-01",
+          "level": 7,
+          "question": "Welche Normalform verlangt, dass jedes Nichtschlüsselattribut vom gesamten Schlüssel abhängt und nicht nur von einem Teil davon?",
+          "answer": "Die zweite Normalform (2NF)"
+        }
+      ]
+    },
+    {
+      "id": "programmieren",
+      "name": "Programmieren",
+      "clues": [
+        {
+          "id": "programmieren-3-01",
+          "level": 3,
+          "question": "Wie heißt die Datenstruktur, die nach dem Prinzip \"zuletzt hinein, zuerst heraus\" arbeitet?",
+          "answer": "Der Stapelspeicher, englisch Stack",
+          "note": "Die Warteschlange (Queue) arbeitet umgekehrt: zuerst hinein, zuerst heraus."
+        },
+        {
+          "id": "programmieren-4-01",
+          "level": 4,
+          "question": "Wie nennt man es, wenn eine Funktion sich selbst aufruft?",
+          "answer": "Rekursion"
+        },
+        {
+          "id": "programmieren-5-01",
+          "level": 5,
+          "question": "Welche Laufzeitkomplexität hat die binäre Suche in einem sortierten Array?",
+          "answer": "O(log n), also logarithmisch"
+        },
+        {
+          "id": "programmieren-6-01",
+          "level": 6,
+          "question": "Welches Entwurfsmuster stellt sicher, dass es von einer Klasse nur eine einzige Instanz gibt?",
+          "answer": "Das Singleton"
+        },
+        {
+          "id": "programmieren-7-01",
+          "level": 7,
+          "question": "Wie nennt man den Zustand, in dem zwei Abläufe sich gegenseitig sperren und keiner mehr weiterkommt?",
+          "answer": "Eine Verklemmung, englisch Deadlock"
+        }
+      ]
+    },
+    {
+      "id": "verteilte-systeme",
+      "name": "Verteilte Systeme",
+      "clues": [
+        {
+          "id": "verteilte-systeme-5-01",
+          "level": 5,
+          "question": "Wofür stehen die drei Buchstaben des CAP-Theorems?",
+          "answer": "Consistency, Availability, Partition Tolerance – Konsistenz, Verfügbarkeit, Partitionstoleranz"
+        },
+        {
+          "id": "verteilte-systeme-6-01",
+          "level": 6,
+          "question": "Wie heißt das klassische Zwei-Phasen-Verfahren, mit dem sich verteilte Knoten auf Ausführen oder Abbrechen einer Transaktion einigen?",
+          "answer": "Das Zwei-Phasen-Commit-Protokoll (Two-Phase Commit, 2PC)"
+        },
+        {
+          "id": "verteilte-systeme-7-01",
+          "level": 7,
+          "question": "Welcher Konsensalgorithmus wurde als verständlichere Alternative zu Paxos entworfen?",
+          "answer": "Raft"
+        },
+        {
+          "id": "verteilte-systeme-8-01",
+          "level": 8,
+          "question": "Wie heißt das Verfahren, das Schlüssel so auf Knoten verteilt, dass beim Hinzufügen eines Knotens nur wenige Schlüssel umziehen müssen?",
+          "answer": "Consistent Hashing, deutsch konsistentes Hashing"
+        },
+        {
+          "id": "verteilte-systeme-9-01",
+          "level": 9,
+          "question": "Wie heißen die logischen Uhren, die Leslie Lamport zur Ordnung von Ereignissen in verteilten Systemen einführte?",
+          "answer": "Lamport-Uhren beziehungsweise Lamport-Zeitstempel",
+          "note": "Vektoruhren sind eine spätere Erweiterung und hier nicht gemeint."
+        }
+      ]
+    }
+  ]
+}

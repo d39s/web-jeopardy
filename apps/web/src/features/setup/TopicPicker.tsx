@@ -1,42 +1,41 @@
-import type { GameDefinition, TopicCategory, TopicIndexEntry } from '@jeopardy/game-core';
+import type { QuestionPool, TopicCategory } from '@jeopardy/game-core';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { de } from '../../i18n/de';
 import { cn } from '../../lib/cn';
 import type { LoadError } from '../../content/loader';
-import { DifficultyMarks } from './DifficultyMarks';
 
 export interface TopicPickerProps {
   categories: TopicCategory[];
-  topics: TopicIndexEntry[];
   loading: boolean;
   error: LoadError | null;
-  /** Gewählte Themenkategorie; null zeigt die Kategorieauswahl. */
+  /** Gewählte Kategorie; null zeigt die Auswahl. */
   selectedCategory: string | null;
-  selectedId: string | null;
-  uploaded: GameDefinition | null;
+  /** Vorrat der gewählten Kategorie; null, solange er noch nicht da ist. */
+  pool: QuestionPool | null;
+  poolLoading: boolean;
   onSelectCategory: (id: string | null) => void;
-  onSelect: (id: string) => void;
-  onUpload: (file: File) => void;
 }
 
 /** Gemeinsame Optik der Auswahlkarten – gleich hoch, gleicher Rahmen. */
 const cardClasses = 'h-full w-full rounded-card border bg-surface p-4 text-left transition-colors';
 
+/** Fragen und Rubriken eines Vorrats – sagt, wie viel Abwechslung zu erwarten ist. */
+function poolSize(pool: QuestionPool): string {
+  const clues = pool.rubrics.reduce((sum, rubric) => sum + rubric.clues.length, 0);
+  return de.setup.poolSize(clues, pool.rubrics.length);
+}
+
 export function TopicPicker({
   categories,
-  topics,
   loading,
   error,
   selectedCategory,
-  selectedId,
-  uploaded,
+  pool,
+  poolLoading,
   onSelectCategory,
-  onSelect,
-  onUpload,
 }: TopicPickerProps) {
   const category = categories.find((entry) => entry.id === selectedCategory) ?? null;
-  const shown = category ? topics.filter((topic) => topic.category === category.id) : [];
 
   return (
     <section className="flex flex-col gap-4">
@@ -69,90 +68,40 @@ export function TopicPicker({
         </Card>
       ) : null}
 
-      {!loading && !error && topics.length === 0 ? (
+      {!loading && !error && categories.length === 0 ? (
         <p className="text-text-muted">{de.setup.topicsEmpty}</p>
       ) : null}
 
-      {/* Erste Stufe: Kategorien, bewusst ohne Schwierigkeit – die steht am Thema. */}
       {category === null ? (
         <ul className="grid items-stretch gap-3 sm:grid-cols-2">
-          {categories.map((entry) => {
-            const count = topics.filter((topic) => topic.category === entry.id).length;
-
-            return (
-              <li key={entry.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelectCategory(entry.id)}
-                  className={cn(cardClasses, 'border-border hover:bg-surface-hi')}
-                >
-                  <span className="block font-semibold">{entry.title}</span>
-                  {entry.description ? (
-                    <span className="mt-1 block text-sm text-text-muted">{entry.description}</span>
-                  ) : null}
-                  <span className="mt-2 block text-sm text-text-muted">
-                    {de.setup.categoryTopicCount(count)}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
+          {categories.map((entry) => (
+            <li key={entry.id}>
+              <button
+                type="button"
+                onClick={() => onSelectCategory(entry.id)}
+                className={cn(cardClasses, 'border-border hover:bg-surface-hi')}
+              >
+                <span className="block font-semibold">{entry.title}</span>
+                {entry.description ? (
+                  <span className="mt-1 block text-sm text-text-muted">{entry.description}</span>
+                ) : null}
+              </button>
+            </li>
+          ))}
         </ul>
       ) : (
-        // Zweite Stufe: die Fragensets der Kategorie, jeweils mit Schwierigkeit.
-        <ul className="grid items-stretch gap-3 sm:grid-cols-2">
-          {shown.map((topic) => {
-            const selected = !uploaded && topic.id === selectedId;
-
-            return (
-              <li key={topic.id}>
-                <button
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => onSelect(topic.id)}
-                  className={cn(
-                    cardClasses,
-                    selected ? 'border-cat-1 bg-surface-hi' : 'border-border hover:bg-surface-hi',
-                  )}
-                >
-                  <span className="flex items-baseline justify-between gap-3">
-                    <span className="min-w-0 font-semibold">{topic.title}</span>
-                    <DifficultyMarks level={topic.difficulty} />
-                  </span>
-                  {topic.description ? (
-                    <span className="mt-1 block text-sm text-text-muted">{topic.description}</span>
-                  ) : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        // Zweite Stufe: Die Kategorie steht fest, die Härte wählt der Regler
+        // darunter. Der Umfang des Vorrats sagt, wie viel Abwechslung er hergibt.
+        <Card className="border-cat-1 p-4">
+          <p className="font-semibold">{category.title}</p>
+          {category.description ? (
+            <p className="mt-1 text-sm text-text-muted">{category.description}</p>
+          ) : null}
+          <p className="mt-2 text-sm text-text-muted">
+            {poolLoading || pool === null ? de.setup.poolLoading : poolSize(pool)}
+          </p>
+        </Card>
       )}
-
-      <div className="flex flex-col gap-2">
-        <h3 className="font-semibold">{de.setup.uploadHeading}</h3>
-        <p className="text-sm text-text-muted">{de.setup.uploadHint}</p>
-        <label className="flex w-fit flex-col gap-1 text-sm text-text-muted">
-          {de.setup.uploadLabel}
-          <input
-            type="file"
-            accept="application/json,.json"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) onUpload(file);
-              event.target.value = '';
-            }}
-            className={cn(
-              'rounded-btn border border-border bg-surface-hi p-2 text-text',
-              'file:mr-3 file:rounded-btn file:border-0 file:bg-cat-1 file:px-3 file:py-1',
-              'file:font-semibold file:text-bg',
-            )}
-          />
-        </label>
-        {uploaded ? (
-          <p className="text-sm text-cat-4">{de.setup.uploadSuccess(uploaded.title)}</p>
-        ) : null}
-      </div>
     </section>
   );
 }
