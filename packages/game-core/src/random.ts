@@ -24,7 +24,13 @@ export interface Random {
  * dass dieselbe Nummer dieselbe Reihenfolge ergibt.
  */
 export function createRandom(seed: number): Random {
-  let state = seed >>> 0 || 1;
+  // Die Nummer wird erst durchmischt: Ohne das lägen benachbarte Ziehungen
+  // dicht beieinander und 0 fiele mit 1 zusammen. Der Finalizer aus splitmix32
+  // verteilt schon kleinste Unterschiede über alle 32 Bit.
+  let state = seed >>> 0;
+  state = Math.imul(state ^ (state >>> 16), 0x45d9f3b) >>> 0;
+  state = Math.imul(state ^ (state >>> 16), 0x45d9f3b) >>> 0;
+  state = (state ^ (state >>> 16)) >>> 0;
 
   const next = () => {
     state = (state + 0x6d2b79f5) >>> 0;

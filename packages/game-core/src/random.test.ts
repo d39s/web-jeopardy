@@ -16,6 +16,17 @@ describe('reproduzierbarer zufall', () => {
     expect(first).not.toEqual(second);
   });
 
+  it('trennt auch benachbarte nummern deutlich', () => {
+    // Ohne Durchmischung der Nummer läge 0 auf derselben Folge wie 1 – zwei
+    // Partien nacheinander bekämen dann dasselbe Spielfeld.
+    const karten = Array.from({ length: 10 }, (_, index) => index);
+    const folgen = Array.from({ length: 10 }, (_, seed) =>
+      createRandom(seed).shuffle(karten).join(','),
+    );
+
+    expect(new Set(folgen).size).toBe(folgen.length);
+  });
+
   it('bleibt im bereich zwischen null und eins', () => {
     const random = createRandom(99);
 
