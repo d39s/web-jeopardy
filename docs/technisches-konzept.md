@@ -494,7 +494,8 @@ Optionale Moderator-Shortcuts (Backlog `BL-3`): `Leertaste` = Antwort anzeigen; 
 - **Autosave** des `GameState` (inkl. `definition`) nach jeder Action in `localStorage` unter `jeopardy:v1:state`, debounced (200 ms).
 - Beim App-Start: gespeicherten State per Zod prüfen; bei Treffer Hinweis **„Laufendes Spiel fortsetzen?"** auf der Startseite (Fortsetzen / Verwerfen).
 - Bei `schemaVersion`-Mismatch oder Validierungsfehler wird der Eintrag verworfen statt zu crashen.
-- Teamnamen der letzten Runde werden zusätzlich unter `jeopardy:v1:lastTeams` als Vorbelegung gespeichert.
+- Die Einstellungen der zuletzt gestarteten Partie – Teams, Thema, Schwierigkeit, Bedenk- und Veto-Zeit sowie Abzugsregel – werden zusätzlich unter `jeopardy:v1:lastSetup` gespeichert und belegen die Startseite vor; nach „Neues Spiel" steht die letzte Runde also wieder da. Die Ziehung gehört bewusst nicht dazu: Jede Partie zieht ein frisches Brett. Jeder Wert wird einzeln geprüft und fällt sonst auf seinen Standard zurück; ein Thema, das der Index nicht mehr kennt, führt zurück zur Auswahl.
+- Der Vorgänger `jeopardy:v1:lastTeams` (nur Teamnamen) wird weiterhin gelesen, damit bestehende Installationen ihre Teams behalten.
 
 ---
 

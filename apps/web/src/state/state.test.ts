@@ -3,11 +3,12 @@ import type { GameState } from '@jeopardy/game-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearPersistedState,
-  loadLastTeams,
+  loadLastSetup,
   loadPersistedState,
   persistState,
-  saveLastTeams,
+  saveLastSetup,
 } from './persistence';
+import type { LastSetup } from './persistence';
 import { createLocalTransport } from './transport';
 
 function startedState(): GameState {
@@ -112,11 +113,62 @@ describe('persistenz', () => {
     expect(() => persistState(initialGameState, null)).not.toThrow();
   });
 
-  it('merkt sich die zuletzt genutzten teams', () => {
-    const teams = createDefaultTeams(3);
-    saveLastTeams(teams, storage);
+  it('merkt sich die einstellungen der letzten partie', () => {
+    const setup: LastSetup = {
+      teams: createDefaultTeams(3),
+      categoryId: 'wissenschaft',
+      level: 4,
+      timerSeconds: 30,
+      vetoSeconds: 15,
+      wrongPenalty: 'half',
+    };
+    saveLastSetup(setup, storage);
 
-    expect(loadLastTeams(storage)).toEqual(teams);
-    expect(loadLastTeams(createMemoryStorage())).toBeNull();
+    expect(loadLastSetup(storage)).toEqual(setup);
+    expect(loadLastSetup(createMemoryStorage())).toBeNull();
+  });
+
+  it('ersetzt unbrauchbare einstellungen durch die standards', () => {
+    storage.setItem(
+      'jeopardy:v1:lastSetup',
+      JSON.stringify({
+        teams: [{ id: 'team-a', name: 'Team A' }, 'kein team'],
+        categoryId: 42,
+        level: 9,
+        timerSeconds: 7,
+        vetoSeconds: 'gleich',
+        wrongPenalty: 'doppelt',
+      }),
+    );
+
+    expect(loadLastSetup(storage)).toEqual({
+      teams: [{ id: 'team-a', name: 'Team A' }],
+      categoryId: null,
+      level: null,
+      timerSeconds: null,
+      vetoSeconds: null,
+      wrongPenalty: 'full',
+    });
+  });
+
+  it('übernimmt die teams aus dem vorgängerformat', () => {
+    const teams = createDefaultTeams(3);
+    storage.setItem('jeopardy:v1:lastTeams', JSON.stringify(teams));
+
+    expect(loadLastSetup(storage)).toEqual({
+      teams,
+      categoryId: null,
+      level: null,
+      timerSeconds: null,
+      vetoSeconds: null,
+      wrongPenalty: 'full',
+    });
+  });
+
+  it('verwirft einen beschädigten eintrag der einstellungen', () => {
+    storage.setItem('jeopardy:v1:lastSetup', '{kein json');
+
+    expect(loadLastSetup(storage)).toBeNull();
+    expect(() => saveLastSetup({} as LastSetup, null)).not.toThrow();
   });
 });

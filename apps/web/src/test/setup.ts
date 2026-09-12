@@ -1,4 +1,17 @@
 import '@testing-library/jest-dom/vitest';
+import { beforeEach } from 'vitest';
+
+/**
+ * Die Oberfläche merkt sich Einstellungen im localStorage. Jeder Test beginnt
+ * daher mit leerem Speicher – sonst trägt eine gemerkte Partie in den nächsten.
+ */
+beforeEach(() => {
+  try {
+    globalThis.localStorage?.clear();
+  } catch {
+    // Ohne Speicher gibt es nichts aufzuräumen.
+  }
+});
 
 /**
  * jsdom implementiert `<dialog>` nur teilweise. Damit Komponententests dasselbe
