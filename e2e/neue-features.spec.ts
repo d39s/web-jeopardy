@@ -6,6 +6,7 @@ import {
   playClue,
   revealAnswer,
   scoredClueCard,
+  setDifficulty,
   settleButton,
   setTimer,
   startGame,
@@ -161,4 +162,27 @@ test('geteilter link belegt kategorie, stufe, ziehung, teams und regel vor', asy
   await clueCard(page, 0, 100).click();
   await revealAnswer(page);
   await expect(settleButton(page, 'Rote Riesen')).toBeVisible();
+});
+
+test('neues spiel übernimmt die einstellungen der letzten runde', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Halbe Punktzahl/ }).click();
+  await setTimer(page, 45);
+  await chooseCategory(page, 'Popkultur');
+  await setDifficulty(page, 5);
+  await page.getByRole('button', { name: 'Spiel starten' }).click();
+  await expect(page.getByRole('button', { name: /, 100 Punkte$/ }).first()).toBeVisible();
+
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Neues Spiel' }).click();
+
+  // Thema, Stufe, Bedenkzeit und Regel stehen wieder da – nur das Brett ist neu.
+  await expect(page.getByText('Kategorie: Popkultur')).toBeVisible();
+  await expect(page.getByLabel('Schwierigkeit des Spielfelds')).toHaveValue('5');
+  await expect(page.getByLabel('Bedenkzeit je Frage')).toHaveValue('5');
+  await expect(page.getByRole('button', { name: /Halbe Punktzahl/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByRole('button', { name: 'Spiel starten' })).toBeEnabled();
 });

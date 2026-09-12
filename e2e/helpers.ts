@@ -31,6 +31,10 @@ export async function startGame(page: Page, teamCount = 2): Promise<void> {
  * vorher lässt sich kein Spiel starten.
  */
 export async function chooseCategory(page: Page, category = 'Allgemeinwissen'): Promise<void> {
+  // Aus der letzten Partie kann schon ein Thema gewählt sein – dann erst zurück.
+  const zurueck = page.getByRole('button', { name: 'Andere Kategorie' });
+  if (await zurueck.isVisible().catch(() => false)) await zurueck.click();
+
   await page.getByRole('button', { name: new RegExp(`^${category}`) }).click();
   await expect(page.getByRole('button', { name: 'Neu mischen' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Spiel starten' })).toBeEnabled();

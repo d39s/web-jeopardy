@@ -16,7 +16,7 @@ import { fetchPool, fetchTopicIndex, parseUploadedFile } from '../../content/loa
 import type { LoadError } from '../../content/loader';
 import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
-import { loadLastTeams, saveLastTeams } from '../../state/persistence';
+import { loadLastSetup, saveLastSetup } from '../../state/persistence';
 import { DEFAULT_DIFFICULTY, DifficultySetup } from './DifficultySetup';
 import { DrawSetup } from './DrawSetup';
 import { ShareSection } from './ShareSection';
@@ -44,20 +44,32 @@ export function SetupPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [teams, setTeams] = useState<Team[]>(() => loadLastTeams() ?? createDefaultTeams(2));
+  /**
+   * Einstellungen der letzten Partie. Sie füllen die Seite vor, damit eine
+   * weitere Runde nicht alles erneut verlangt – das Spielfeld ausgenommen, das
+   * jede Partie neu zieht. Einmal beim Aufbau gelesen; danach zählt allein die
+   * Eingabe auf dieser Seite.
+   */
+  const [lastSetup] = useState(loadLastSetup);
+
+  const [teams, setTeams] = useState<Team[]>(() =>
+    lastSetup && lastSetup.teams.length > 0 ? lastSetup.teams : createDefaultTeams(2),
+  );
   const [categories, setCategories] = useState<TopicCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    lastSetup?.categoryId ?? null,
+  );
   const [pool, setPool] = useState<QuestionPool | null>(null);
   const [poolLoading, setPoolLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<LoadError | null>(null);
   const [uploaded, setUploaded] = useState<GameDefinition | null>(null);
   const [starting, setStarting] = useState(false);
-  const [level, setLevel] = useState<Difficulty>(DEFAULT_DIFFICULTY);
-  const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
-  const [wrongPenalty, setWrongPenalty] = useState<WrongPenalty>('full');
+  const [level, setLevel] = useState<Difficulty>(lastSetup?.level ?? DEFAULT_DIFFICULTY);
+  const [timerSeconds, setTimerSeconds] = useState<number | null>(lastSetup?.timerSeconds ?? null);
+  const [wrongPenalty, setWrongPenalty] = useState<WrongPenalty>(lastSetup?.wrongPenalty ?? 'full');
   // null koppelt die Veto-Zeit an die Bedenkzeit – das ist der Standard.
-  const [vetoSeconds, setVetoSeconds] = useState<number | null>(null);
+  const [vetoSeconds, setVetoSeconds] = useState<number | null>(lastSetup?.vetoSeconds ?? null);
 
   /**
    * Nummer der Ziehung. Sie entsteht beim Aufbau der Seite, steht im geteilten
@@ -103,6 +115,8 @@ export function SetupPage() {
     const category = categories.find((entry) => entry.id === selectedCategory);
     if (!category) {
       setPool(null);
+      // Ein gemerktes Thema, das der Index nicht mehr kennt, führt zurück zur Auswahl.
+      if (selectedCategory !== null && categories.length > 0) setSelectedCategory(null);
       return;
     }
 
@@ -126,6 +140,12 @@ export function SetupPage() {
 
   const resumable = state.definition !== null && state.phase !== 'setup';
   const canStart = uploaded !== null || pool !== null;
+
+  /**
+   * Ein gemerktes Thema kann aus dem Index verschwunden sein. Regler und
+   * Ziehung gehören dann nicht auf die Seite: Die Auswahl beginnt von vorn.
+   */
+  const knownCategory = categories.some((entry) => entry.id === selectedCategory);
 
   /** Ohne Bedenkzeit ist eine eigene Veto-Zeit gegenstandslos – siehe VetoSetup. */
   const startVetoSeconds = effectiveVetoSetting(vetoSeconds, timerSeconds);
@@ -202,7 +222,15 @@ export function SetupPage() {
     if (definition === null) return;
 
     const normalized = normalizeTeams(teams);
-    saveLastTeams(normalized);
+    saveLastSetup({
+      teams: normalized,
+      // Ein hochgeladenes Fragenset hat kein Thema aus dem Index.
+      categoryId: uploaded !== null ? null : selectedCategory,
+      level,
+      timerSeconds,
+      vetoSeconds,
+      wrongPenalty,
+    });
     dispatch({
       type: 'game/start',
       definition,
@@ -255,7 +283,7 @@ export function SetupPage() {
       />
 
       {/* Regler und Ziehung betreffen nur gezogene Bretter, nicht den Upload. */}
-      {uploaded === null && selectedCategory !== null ? (
+      {uploaded === null && knownCategory ? (
         <>
           <DifficultySetup value={level} onChange={setLevel} />
           <DrawSetup seed={seed} onReshuffle={() => setSeed(createSeed())} />

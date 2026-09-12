@@ -3,7 +3,13 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { chooseCategory, clueIdsOf, mockContentRequests, testPool } from '../../test/content';
+import {
+  chooseCategory,
+  clueIdsOf,
+  drawNumber,
+  mockContentRequests,
+  testPool,
+} from '../../test/content';
 import { renderWithGame, startedState } from '../../test/renderWithGame';
 import { SetupPage } from './SetupPage';
 import { timerSliderValue } from './TimerSetup';
@@ -264,5 +270,71 @@ describe('startseite', () => {
     // Die Reihenfolge der Meldungen folgt dem Schema – geprüft wird, dass die
     // fehlenden Pflichtfelder feldgenau benannt sind.
     expect(screen.getByText(/^category:/)).toBeInTheDocument();
+  });
+});
+
+describe('gemerkte einstellungen', () => {
+  it('füllt die startseite mit den werten der letzten partie', async () => {
+    const first = renderSetup();
+    await chooseCategory('Zweite Kategorie');
+
+    await userEvent.clear(screen.getByLabelText('Name von Team 1'));
+    await userEvent.type(screen.getByLabelText('Name von Team 1'), 'Die Adler');
+    fireEvent.change(screen.getByLabelText('Schwierigkeit des Spielfelds'), {
+      target: { value: '5' },
+    });
+    fireEvent.change(screen.getByLabelText('Bedenkzeit je Frage'), {
+      target: { value: String(timerSliderValue(45)) },
+    });
+    fireEvent.change(screen.getByLabelText('Veto-Zeit je Übernahme'), {
+      target: { value: String(timerSliderValue(20)) },
+    });
+    await userEvent.click(screen.getByRole('button', { name: /Halbe Punktzahl/ }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
+    await waitFor(() => expect(first.transport.getState().phase).toBe('playing'));
+
+    // Nach „Neues Spiel" baut sich die Startseite neu auf – so wie hier.
+    first.unmount();
+    renderSetup();
+
+    expect(await screen.findByText('Kategorie: Zweite Kategorie')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Die Adler')).toBeInTheDocument();
+    expect(screen.getByLabelText('Schwierigkeit des Spielfelds')).toHaveValue('5');
+    expect(screen.getByLabelText('Bedenkzeit je Frage')).toHaveValue(String(timerSliderValue(45)));
+    expect(screen.getByLabelText('Veto-Zeit je Übernahme')).toHaveValue(
+      String(timerSliderValue(20)),
+    );
+    expect(screen.getByRole('button', { name: /Halbe Punktzahl/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('zieht für die nächste partie ein neues brett', async () => {
+    const first = renderSetup();
+    await chooseCategory();
+    const ziehung = drawNumber();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Spiel starten' }));
+    await waitFor(() => expect(first.transport.getState().phase).toBe('playing'));
+    first.unmount();
+
+    renderSetup();
+    await waitFor(() => expect(screen.getByText(/^Ziehung /)).toBeInTheDocument());
+    expect(drawNumber()).not.toBe(ziehung);
+  });
+
+  it('führt zurück zur auswahl, wenn es das gemerkte thema nicht mehr gibt', async () => {
+    globalThis.localStorage.setItem(
+      'jeopardy:v1:lastSetup',
+      JSON.stringify({ teams: [], categoryId: 'weggefallen', wrongPenalty: 'full' }),
+    );
+
+    renderSetup();
+
+    expect(await screen.findByText('Testkategorie')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Schwierigkeit des Spielfelds')).not.toBeInTheDocument();
+    expect(screen.getByText(/Zuerst die Kategorie wählen/)).toBeInTheDocument();
   });
 });
