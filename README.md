@@ -169,7 +169,7 @@ e2e/                End-to-End-Tests
 Unten auf der Startseite steht, welcher Stand gerade läuft:
 
 ```
-Version 0.1.0 · Commit d186d11 · Stand 09.09.2026
+Version 2.1.0 · Commit d186d11 · Stand 09.09.2026
 ```
 
 So ist auf jedem Beamer und in jedem Screenshot ablesbar, welches Build zu sehen ist.
@@ -184,13 +184,13 @@ Maßgeblich ist die `version` in der `package.json` im Wurzelverzeichnis. **Jede
 | **MINOR** | Neue Funktion, abwärtskompatibel                                           |
 | **PATCH** | Fehlerbehebung ohne neue Funktion                                          |
 
-Solange die Version bei `0.x` steht, gilt die Vorabphase: Funktionen und Brüche gehen in
-MINOR, Korrekturen in PATCH. Die Version wandert nicht mit jedem Commit, sondern mit dem
-Release. Ein Release setzt alle Arbeitsbereiche gemeinsam und legt das Git-Tag an, aus dem
-die Pipeline die Image-Tags ableitet:
+Bis 0.2.0 galt eine Vorabphase, in der auch Brüche nur MINOR erhöht haben. **Seit 2.1.0 gilt
+SemVer ohne Ausnahme:** Ein Bruch erhöht immer MAJOR. Die Version wandert nicht mit jedem
+Commit, sondern mit dem Release. Ein Release setzt alle Arbeitsbereiche gemeinsam und legt das
+Git-Tag an, aus dem die Pipeline die Image-Tags ableitet:
 
 ```bash
-npm version minor --workspaces --include-workspace-root
+npm version <major|minor|patch> --workspaces --include-workspace-root
 git push --follow-tags
 ```
 
