@@ -39,7 +39,8 @@ export const de = {
   /** Fußzeile der Startseite – welcher Stand gerade ausgeliefert wird. */
   version: {
     version: (version: string) => `Version ${version}`,
-    commit: (commit: string) => `Commit ${commit}`,
+    commit: 'Commit',
+    commitLink: (commit: string) => `Commit ${commit} auf GitHub ansehen`,
     builtAt: (date: string) => `Stand ${date}`,
     commitUnknown: 'unbekannt',
     separator: ' · ',

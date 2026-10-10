@@ -19,6 +19,8 @@ ist möglich; **kein Import in die Anwendungsdatenbank ohne gesonderten Auftrag*
 ## 1. Lieferung und Dateiformat
 
 - UTF-8, PostgreSQL-Syntax, explizite Feldlisten, Semikolons; keine Markdown-Codezäune.
+- Texte mit echten Umlauten und ß (`für`, `Größe`), keine Umschreibungen wie `fuer` oder
+  `Groesse`. Nur IDs sind auf ASCII beschränkt.
 - SQL unter `content/sql/<datum>-<kategorie-id>-<zweck>.sql`.
 - Begleitbericht mit gleichem Namen und `.md`: Umfang, Quellen, Prüfergebnisse, offene Fragen.
 - Keine Zugangsdaten, Secrets oder DB-Dumps in den Dateien.
