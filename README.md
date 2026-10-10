@@ -172,7 +172,8 @@ Unten auf der Startseite steht, welcher Stand gerade läuft:
 Version 2.1.0 · Commit d186d11 · Stand 09.09.2026
 ```
 
-So ist auf jedem Beamer und in jedem Screenshot ablesbar, welches Build zu sehen ist.
+So ist auf jedem Beamer und in jedem Screenshot ablesbar, welches Build zu sehen ist. Der
+Commit-Hash führt per Klick zum Stand im [GitHub-Repository](https://github.com/d39s/Web-jeopardy).
 
 Maßgeblich ist die `version` in der `package.json` im Wurzelverzeichnis. **Jede weitere
 Änderung und jedes Release folgt [Semantic Versioning](https://semver.org/lang/de/)** –
