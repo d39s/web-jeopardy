@@ -1,0 +1,23 @@
+{
+  "name": "@jeopardy/api",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "db:migrate": "tsx src/manage.ts migrate",
+    "db:import": "tsx src/manage.ts import",
+    "db:seed": "tsx src/manage.ts seed"
+  },
+  "dependencies": {
+    "@jeopardy/game-core": "*",
+    "@fastify/cors": "^11.0.0",
+    "fastify": "^5.0.0",
+    "pg": "^8.16.0",
+    "tsx": "^4.23.12"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.0"
+  }
+}

@@ -33,10 +33,10 @@ export function SettleButtons({
   const penalty = wrongPenaltyPoints(points, wrongPenalty);
 
   return (
-    <section className="flex flex-col gap-2">
+    <section className="flex flex-col gap-2 border-t border-border pt-3">
       <h3 className="text-sm uppercase tracking-wide text-text-muted">{de.clue.settleHeading}</h3>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-2">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-2">
         {participants.map((team) => (
           <Button
             key={team.id}
@@ -49,12 +49,11 @@ export function SettleButtons({
             <span className="min-w-0 truncate">{team.name}</span>
           </Button>
         ))}
+        <Button variant="danger" size={size} className="min-w-0" onClick={() => onSettle(null)}>
+          <span aria-hidden="true">{de.clue.settleMarkNobody}</span>
+          <span className="min-w-0 whitespace-normal">{de.clue.settleNobody}</span>
+        </Button>
       </div>
-
-      <Button variant="danger" size={size} className="w-full" onClick={() => onSettle(null)}>
-        <span aria-hidden="true">{de.clue.settleMarkNobody}</span>
-        <span className="min-w-0 truncate">{de.clue.settleNobody}</span>
-      </Button>
 
       <p className="text-sm text-text-muted">
         {penalty === 0 ? de.clue.settleHintKeep : de.clue.settleHintDeduct(penalty)}

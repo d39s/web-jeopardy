@@ -1,5 +1,6 @@
-// Pipeline für jenkins.d39s.de. Prüfungen laufen im playwright-Pod, das Image
-// baut kaniko über die gemeinsame Library (harbor.d39s.de/library/web-jeopardy).
+// Pipeline für jenkins.d39s.de. Prüfungen laufen im playwright-Pod, die Images
+// baut kaniko über die gemeinsame Library (harbor.d39s.de/library/web-jeopardy
+// und harbor.d39s.de/library/web-jeopardy-api).
 //
 // Die Tags ergeben sich aus der Library: br-<branch> auf Zweigen, pr-<nummer>
 // bei Pull Requests, latest auf dem Hauptzweig und Versionen aus Git-Tags.
@@ -20,12 +21,15 @@ pipeline {
                 kubernetes {
                     inheritFrom 'playwright'
                     defaultContainer 'playwright'
+                    // Wegwerf-Datenbank im Test-Pod; niemals die produktive DB verwenden.
+                    yamlFile 'docker/jenkins-test-pod.yaml'
                 }
             }
 
             environment {
                 CI = 'true'
                 PLAYWRIGHT_JUNIT_OUTPUT_NAME = 'reports/e2e.xml'
+                DATABASE_URL = 'postgresql://jeopardy_test:ci-only@127.0.0.1:5432/jeopardy_test'
             }
 
             stages {
@@ -51,7 +55,7 @@ pipeline {
                     }
                 }
 
-                stage('Fragensets') {
+                stage('Seed- und Importdaten') {
                     steps {
                         sh 'npm run validate:content'
                     }
@@ -60,6 +64,13 @@ pipeline {
                 stage('Unit- und Komponententests') {
                     steps {
                         sh 'npm run test:junit'
+                    }
+                }
+
+                stage('PostgreSQL-Integration') {
+                    steps {
+                        sh 'npx tsx scripts/wait-for-db.ts'
+                        sh 'npm run test:db -- --reporter=default --reporter=junit --outputFile.junit=reports/database.xml'
                     }
                 }
 
@@ -86,7 +97,7 @@ pipeline {
             }
         }
 
-        stage('Image bauen') {
+        stage('Webimage bauen') {
             agent {
                 kubernetes {
                     inheritFrom 'kaniko'
@@ -109,8 +120,29 @@ pipeline {
                 '''
 
                 // Der Build-Kontext ist das Repository-Wurzelverzeichnis, das
-                // Dockerfile liegt unter docker/ und kopiert content/ mit hinein.
-                kaniko dockerfile: 'docker/Dockerfile', cache: true
+                // Webimage enthält nur die Oberfläche, keine Fragenpools.
+                kaniko dockerfile: 'docker/Dockerfile',
+                    image: 'library/web-jeopardy', cache: true
+            }
+        }
+
+        stage('API-Image bauen') {
+            // Eigener Pod und Checkout: Kaniko verändert das Container-Dateisystem.
+            // Zwei Builds dürfen deshalb nicht im selben Kaniko-Container laufen.
+            agent {
+                kubernetes {
+                    inheritFrom 'kaniko'
+                    defaultContainer 'kaniko'
+                }
+            }
+
+            environment {
+                GODEBUG = 'http2client=0'
+            }
+
+            steps {
+                kaniko dockerfile: 'docker/api.Dockerfile',
+                    image: 'library/web-jeopardy-api', cache: true
             }
         }
     }

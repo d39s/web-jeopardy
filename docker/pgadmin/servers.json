@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Jeopardy (lokal)",
+      "Group": "Lokale Datenbanken",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "jeopardy",
+      "Username": "jeopardy",
+      "SSLMode": "prefer"
+    }
+  }
+}

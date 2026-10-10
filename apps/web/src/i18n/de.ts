@@ -7,6 +7,39 @@ export const de = {
     title: 'Jeopardy',
   },
 
+  review: {
+    entry: 'Fragen bewerten',
+    heading: 'Schwierigkeit einschätzen',
+    intro:
+      'Kategorie wählen, selbst überlegen und die Antwort aufdecken. Danach die Schwierigkeit einschätzen.',
+    category: 'Kategorie für die Bewertung',
+    allCategories: 'Alle Kategorien',
+    categoriesError:
+      'Die Kategorien konnten nicht geladen werden. Fragen aus allen Kategorien bleiben verfügbar.',
+    verdictHeading: 'Wie passt die Schwierigkeit?',
+    scoringDetails: 'So wird die Schwierigkeit angepasst',
+    back: 'Zurück zum Spiel',
+    reveal: 'Antwort anzeigen',
+    answer: 'Antwort',
+    loading: 'Zufällige Frage wird geladen …',
+    saving: 'Bewertung wird gespeichert …',
+    loadError: 'Die Frage konnte nicht geladen werden.',
+    saveError:
+      'Die Bewertung konnte nicht gespeichert werden. Bitte erneut versuchen oder eine neue Frage laden.',
+    retry: 'Neue Frage laden',
+    saved: 'Bewertung gespeichert.',
+    difficulty: (level: number) => `Schwierigkeit: ${level} von 9`,
+    score: (score: number, votes: number) =>
+      `Schwierigkeitswert: ${score.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · Bewertungen: ${votes}`,
+    hint: '„Zu schwer“ erhöht den Wert um 0,2; „zu leicht“ senkt ihn um 0,2. Die gerundete Stufe gilt für neue Spiele.',
+    verdicts: {
+      fits: 'Schwierigkeit passt',
+      'too-hard': 'zu schwer',
+      'too-easy': 'zu leicht',
+      unsure: 'nicht einschätzbar',
+    },
+  },
+
   /** Fußzeile der Startseite – welcher Stand gerade ausgeliefert wird. */
   version: {
     version: (version: string) => `Version ${version}`,

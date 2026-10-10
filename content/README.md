@@ -1,8 +1,11 @@
 # Fragen pflegen
 
-Jede Themenkategorie hat genau **einen Fragenpool**: eine JSON-Datei in `content/topics/`,
-dazu ein Eintrag in `content/topics/index.json`. Aus dem Pool zieht jede Partie ihr eigenes
-5×5-Spielfeld – es gibt keine fertigen Fragensets mehr. Nach jeder Änderung prüfen:
+Jede Themenkategorie hat genau **einen Fragenpool**. Zur Laufzeit liegen Fragen und Rubriken
+in PostgreSQL und werden über die Fragen-API geladen. Die JSON-Dateien in `content/topics/`
+mit `index.json` bleiben als Initialbestand und bewusste Importquelle erhalten. Aus dem Pool
+zieht jede Partie ihr eigenes 5×5-Spielfeld. Fertige Spiele können weiterhin separat importiert
+werden. Einrichtung und API: [Fragen-Datenbank](../docs/fragen-datenbank.md).
+Nach jeder Änderung an den Importdateien prüfen:
 
 ```bash
 npm run validate:content
@@ -134,9 +137,11 @@ das Fenster lückenlos bedienen, haben aber immer Vorrang.
 
 ## Ohne Neubau ausliefern
 
-Im Container liegt dieses Verzeichnis unter `/usr/share/nginx/html/topics` und ist als Volume
-eingebunden. Geänderte Pools wirken also nach einem Neuladen der Seite; ein neues Image ist
-dafür nicht nötig.
+Im API-Container liegt dieses Verzeichnis unter `/app/content/topics` als schreibgeschütztes
+Volume. Nach Änderungen `docker compose exec api npm run db:import` ausführen: Die im Index
+aufgeführten Pools werden atomar ersetzt. Erst danach werden die Änderungen beim Neuladen
+sichtbar. Der automatische Seed läuft nur einmal und überschreibt keine DB-Änderungen.
+Alternativ erlaubt die abgesicherte PUT-API die Pflege ohne JSON-Dateien.
 
 ## Fertige Spielfelder importieren
 

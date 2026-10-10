@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
+import { saveGamePreset } from '../../state/persistence';
 import { ClueDialog } from '../clue/ClueDialog';
 import { ResultOverlay } from '../scoreboard/ResultOverlay';
 import { Scoreboard } from '../scoreboard/Scoreboard';
@@ -48,9 +49,10 @@ export function GamePage() {
 
   const newGame = useCallback(() => {
     if (!window.confirm(de.board.newGameConfirm)) return;
+    saveGamePreset(state);
     dispatch({ type: 'game/reset' });
     void navigate('/');
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, state]);
 
   if (!state.definition) return null;
 
@@ -58,17 +60,19 @@ export function GamePage() {
     <main className="flex h-full flex-col gap-3 p-3 sm:gap-4 sm:p-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{state.definition.title}</h1>
-        <div className="flex gap-2">
+        <nav aria-label="Spielaktionen" className="flex flex-wrap items-center gap-2">
           {finished ? (
             <Button variant="primary" onClick={() => setResultDismissed(false)}>
               {de.board.showResult}
             </Button>
           ) : null}
-          <Button onClick={fullscreen.toggle}>
+          <Button className="px-3 py-2 text-sm" onClick={fullscreen.toggle}>
             {fullscreen.active ? de.board.exitFullscreen : de.board.fullscreen}
           </Button>
-          <Button onClick={newGame}>{de.board.newGame}</Button>
-        </div>
+          <Button className="px-3 py-2 text-sm text-text-muted" onClick={newGame}>
+            {de.board.newGame}
+          </Button>
+        </nav>
       </header>
 
       <Scoreboard />

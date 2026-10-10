@@ -27,6 +27,7 @@ function renderSetup(state = initialGameState) {
 }
 
 beforeEach(() => {
+  localStorage.removeItem('jeopardy:v1:lastSetup');
   mockContentRequests();
 });
 

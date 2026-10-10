@@ -65,16 +65,21 @@ export function ClueDialog() {
     <Modal open={open !== null} onClose={close} labelledBy={TITLE_ID}>
       {open ? (
         <div className={cn('flex flex-col', gap)}>
-          <header className="flex items-baseline justify-between gap-4">
+          <header className="flex items-center justify-between gap-3">
             <p
               className="min-w-0 truncate text-base font-bold uppercase tracking-wide sm:text-lg"
               style={{ color: resolveCategoryColor(open.category, categoryIndex) }}
             >
               {open.category.name}
             </p>
-            <h2 id={TITLE_ID} className="shrink-0 text-lg font-bold text-text-muted sm:text-xl">
-              {de.clue.pointsLabel(open.clue.points)}
-            </h2>
+            <div className="flex shrink-0 items-center gap-3">
+              <h2 id={TITLE_ID} className="text-lg font-bold text-text-muted sm:text-xl">
+                {de.clue.pointsLabel(open.clue.points)}
+              </h2>
+              <Button className="px-3 py-1 text-sm text-text-muted" onClick={close}>
+                {de.clue.close}
+              </Button>
+            </div>
           </header>
 
           <p
@@ -165,15 +170,6 @@ export function ClueDialog() {
               </div>
             </div>
           )}
-
-          <div className="flex justify-end">
-            <Button
-              className="opacity-70 hover:opacity-100 focus-visible:opacity-100"
-              onClick={close}
-            >
-              {de.clue.close}
-            </Button>
-          </div>
         </div>
       ) : null}
     </Modal>

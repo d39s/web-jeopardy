@@ -1,8 +1,47 @@
-import { validateGameState } from '@jeopardy/game-core';
-import type { GameState, Team } from '@jeopardy/game-core';
+import { setupPresetSchema, validateGameState } from '@jeopardy/game-core';
+import type { GameState, SetupPreset, Team } from '@jeopardy/game-core';
 
 const STATE_KEY = 'jeopardy:v1:state';
 const TEAMS_KEY = 'jeopardy:v1:lastTeams';
+const SETUP_KEY = 'jeopardy:v1:lastSetup';
+
+export function saveSetupPreset(preset: SetupPreset, storage: Storage | null = getStorage()): void {
+  try {
+    storage?.setItem(SETUP_KEY, JSON.stringify(preset));
+  } catch {
+    // Das Spiel bleibt auch ohne verfügbaren Speicher nutzbar.
+  }
+}
+
+export function loadSetupPreset(storage: Storage | null = getStorage()): SetupPreset | null {
+  try {
+    const raw = storage?.getItem(SETUP_KEY);
+    if (!raw) return null;
+    const result = setupPresetSchema.safeParse(JSON.parse(raw));
+    return result.success ? (result.data as SetupPreset) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Vor dem Reset aufrufen: Einstellungen behalten, Punkte und Ziehung nicht. */
+export function saveGamePreset(state: GameState, storage: Storage | null = getStorage()): void {
+  if (!state.definition) return;
+  const previous = loadSetupPreset(storage);
+  saveSetupPreset(
+    {
+      categoryId: state.definition.category,
+      level: state.definition.difficulty,
+      teams: state.teams,
+      timerSeconds: state.timerSeconds,
+      vetoSeconds: state.vetoSeconds,
+      wrongPenalty: state.wrongPenalty,
+      uploaded: previous?.uploaded?.id === state.definition.id ? state.definition : null,
+    },
+    storage,
+  );
+  saveLastTeams(state.teams, storage);
+}
 
 /**
  * localStorage kann fehlen, gesperrt sein (privater Modus, Kiosk) oder – etwa in

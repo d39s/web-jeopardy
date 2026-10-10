@@ -28,6 +28,7 @@ describe('themenindex laden', () => {
     const result = await fetchTopicIndex();
     expect(result.ok && result.data.categories).toHaveLength(1);
     expect(result.ok && result.data.categories[0]?.file).toBe('pool-testkategorie.json');
+    expect(fetch).toHaveBeenCalledWith('/api/v1/topics/index.json', { signal: undefined });
   });
 
   it('meldet einen netzwerkfehler', async () => {
@@ -56,14 +57,15 @@ describe('fragenvorrat laden', () => {
   it('liefert einen gültigen vorrat', async () => {
     mockFetch({ json: () => Promise.resolve(samplePool) });
 
-    const result = await fetchPool('pool-testkategorie.json', 'Testkategorie');
+    const result = await fetchPool('testkategorie', 'Testkategorie');
     expect(result.ok && result.data.rubrics).toHaveLength(samplePool.rubrics.length);
+    expect(fetch).toHaveBeenCalledWith('/api/v1/pools/testkategorie.json', { signal: undefined });
   });
 
   it('meldet einen http-fehler mit statuscode', async () => {
     mockFetch({ ok: false, status: 404, json: () => Promise.resolve({}) });
 
-    const result = await fetchPool('fehlt.json', 'Fehlt');
+    const result = await fetchPool('fehlt', 'Fehlt');
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.message).toContain('Fehlt');
   });
@@ -71,13 +73,22 @@ describe('fragenvorrat laden', () => {
   it('meldet einen vorrat, der dem schema nicht entspricht', async () => {
     mockFetch({ json: () => Promise.resolve({ ...samplePool, rubrics: [] }) });
 
-    const result = await fetchPool('kaputt.json', 'Kaputt');
+    const result = await fetchPool('kaputt', 'Kaputt');
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.kind).toBe('invalid');
   });
 });
 
 describe('eigenes fragenset einlesen', () => {
+  it('funktioniert ohne erreichbare API und ohne HTTP-Aufruf', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const result = await parseUploadedFile(
+      new File([JSON.stringify(sampleDefinition)], 'spiel.json'),
+    );
+    expect(result.ok).toBe(true);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('akzeptiert eine gültige datei', async () => {
     const file = new File([JSON.stringify(sampleDefinition)], 'thema.json');
 

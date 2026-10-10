@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { sampleDefinition } from '@jeopardy/game-core';
+import { expect, test } from './fixtures';
 import {
   chooseCategory,
   clueCard,
@@ -10,6 +11,25 @@ import {
   startGame,
   vetoButton,
 } from './helpers';
+
+test('fertiges JSON-Spiel lässt sich auch ohne Fragen-API importieren und spielen', async ({
+  page,
+}) => {
+  await page.route('**/api/v1/**', (route) => route.abort());
+  await page.goto('/');
+  await page.getByLabel('JSON-Datei auswählen').setInputFiles({
+    name: 'fertiges-spiel.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(sampleDefinition)),
+  });
+  await expect(page.getByText(/Eigenes Fragenset geladen: Testthema/)).toBeVisible();
+  await page.getByRole('button', { name: 'Spiel starten' }).click();
+  await expect(page.getByRole('button', { name: /Punkte$/ })).toHaveCount(25);
+  await clueCard(page, 0, 100).click();
+  await revealAnswer(page);
+  await settleButton(page, 'Team A').click();
+  await expect(scoredClueCard(page, 0, 100)).toBeDisabled();
+});
 
 test('spielfeld passt ohne scrollen auf einen bildschirm', async ({ page }) => {
   await startGame(page);

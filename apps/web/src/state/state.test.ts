@@ -7,6 +7,9 @@ import {
   loadPersistedState,
   persistState,
   saveLastTeams,
+  loadSetupPreset,
+  saveSetupPreset,
+  saveGamePreset,
 } from './persistence';
 import { createLocalTransport } from './transport';
 
@@ -118,5 +121,60 @@ describe('persistenz', () => {
 
     expect(loadLastTeams(storage)).toEqual(teams);
     expect(loadLastTeams(createMemoryStorage())).toBeNull();
+  });
+
+  it('merkt sich Einstellungen unabhängig vom zurückgesetzten Spielstand', () => {
+    const state = {
+      ...startedState(),
+      timerSeconds: 60,
+      vetoSeconds: 20,
+      wrongPenalty: 'half' as const,
+    };
+    saveGamePreset(state, storage);
+    clearPersistedState(storage);
+    expect(loadSetupPreset(storage)).toEqual({
+      categoryId: sampleDefinition.category,
+      level: sampleDefinition.difficulty,
+      teams: state.teams,
+      timerSeconds: 60,
+      vetoSeconds: 20,
+      wrongPenalty: 'half',
+      uploaded: null,
+    });
+  });
+
+  it('behält importierte Spiele und aktualisierte Teamnamen als Vorlage', () => {
+    const state = startedState();
+    saveSetupPreset(
+      {
+        categoryId: sampleDefinition.category,
+        level: sampleDefinition.difficulty,
+        teams: state.teams,
+        timerSeconds: null,
+        vetoSeconds: null,
+        wrongPenalty: 'full',
+        uploaded: sampleDefinition,
+      },
+      storage,
+    );
+    saveGamePreset({ ...state, teams: [{ ...state.teams[0]!, name: 'Neuer Name' }] }, storage);
+    expect(loadSetupPreset(storage)?.uploaded).toEqual(sampleDefinition);
+    expect(loadSetupPreset(storage)?.teams[0]?.name).toBe('Neuer Name');
+  });
+
+  it('verwirft ungültige Vorlagen und toleriert gesperrten Speicher', () => {
+    storage.setItem('jeopardy:v1:lastSetup', '{kaputt');
+    expect(loadSetupPreset(storage)).toBeNull();
+    storage.setItem('jeopardy:v1:lastSetup', JSON.stringify({ level: 99 }));
+    expect(loadSetupPreset(storage)).toBeNull();
+    expect(loadSetupPreset(null)).toBeNull();
+    const blocked = {
+      ...storage,
+      getItem: () => {
+        throw new Error('gesperrt');
+      },
+    };
+    expect(loadSetupPreset(blocked)).toBeNull();
+    expect(() => saveGamePreset(startedState(), null)).not.toThrow();
   });
 });

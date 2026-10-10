@@ -18,7 +18,7 @@ export interface LoadError {
 
 export type LoadResult<T> = { ok: true; data: T } | { ok: false; error: LoadError };
 
-const topicsBase = `${import.meta.env.BASE_URL}topics/`;
+const apiBase = `${import.meta.env.BASE_URL}api/v1/`;
 
 async function fetchJson(url: string, signal?: AbortSignal): Promise<LoadResult<unknown>> {
   let response: Response;
@@ -47,7 +47,7 @@ async function fetchJson(url: string, signal?: AbortSignal): Promise<LoadResult<
 }
 
 export async function fetchTopicIndex(signal?: AbortSignal): Promise<LoadResult<TopicIndex>> {
-  const raw = await fetchJson(`${topicsBase}index.json`, signal);
+  const raw = await fetchJson(`${apiBase}topics/index.json`, signal);
   if (!raw.ok) return raw;
 
   const result = validateTopicIndex(raw.data);
@@ -70,11 +70,11 @@ export async function fetchTopicIndex(signal?: AbortSignal): Promise<LoadResult<
  * ein Vielfaches größer als seine Beschreibung.
  */
 export async function fetchPool(
-  file: string,
+  id: string,
   title: string,
   signal?: AbortSignal,
 ): Promise<LoadResult<QuestionPool>> {
-  const raw = await fetchJson(`${topicsBase}${file}`, signal);
+  const raw = await fetchJson(`${apiBase}pools/${encodeURIComponent(id)}.json`, signal);
   if (!raw.ok) {
     return { ok: false, error: { ...raw.error, message: de.errors.poolLoad(title) } };
   }

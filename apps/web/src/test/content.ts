@@ -31,8 +31,8 @@ function poolFor(id: string, title: string): QuestionPool {
 export const testPool = poolFor('testkategorie', 'Testkategorie');
 
 const poolsByFile = new Map<string, QuestionPool>([
-  ['pool-testkategorie.json', testPool],
-  ['pool-zweite.json', poolFor('zweite', 'Zweite Kategorie')],
+  ['testkategorie.json', testPool],
+  ['zweite.json', poolFor('zweite', 'Zweite Kategorie')],
 ]);
 
 /** Beantwortet die Index- und Vorrat-Anfragen der Startseite. */

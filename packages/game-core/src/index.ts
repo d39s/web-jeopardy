@@ -7,3 +7,5 @@ export * from './teams';
 export * from './reducer';
 export * from './selectors';
 export * from './fixtures';
+export * from './review';
+export * from './setup';

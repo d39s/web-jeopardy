@@ -16,7 +16,12 @@ import { fetchPool, fetchTopicIndex, parseUploadedFile } from '../../content/loa
 import type { LoadError } from '../../content/loader';
 import { de } from '../../i18n/de';
 import { useDispatch, useGameState } from '../../state/GameProvider';
-import { loadLastTeams, saveLastTeams } from '../../state/persistence';
+import {
+  loadLastTeams,
+  loadSetupPreset,
+  saveLastTeams,
+  saveSetupPreset,
+} from '../../state/persistence';
 import { DEFAULT_DIFFICULTY, DifficultySetup } from './DifficultySetup';
 import { DrawSetup } from './DrawSetup';
 import { ShareSection } from './ShareSection';
@@ -44,20 +49,25 @@ export function SetupPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [teams, setTeams] = useState<Team[]>(() => loadLastTeams() ?? createDefaultTeams(2));
+  const [preset] = useState(loadSetupPreset);
+  const [teams, setTeams] = useState<Team[]>(
+    () => preset?.teams ?? loadLastTeams() ?? createDefaultTeams(2),
+  );
   const [categories, setCategories] = useState<TopicCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    preset?.categoryId ?? null,
+  );
   const [pool, setPool] = useState<QuestionPool | null>(null);
   const [poolLoading, setPoolLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<LoadError | null>(null);
-  const [uploaded, setUploaded] = useState<GameDefinition | null>(null);
+  const [uploaded, setUploaded] = useState<GameDefinition | null>(preset?.uploaded ?? null);
   const [starting, setStarting] = useState(false);
-  const [level, setLevel] = useState<Difficulty>(DEFAULT_DIFFICULTY);
-  const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
-  const [wrongPenalty, setWrongPenalty] = useState<WrongPenalty>('full');
+  const [level, setLevel] = useState<Difficulty>(preset?.level ?? DEFAULT_DIFFICULTY);
+  const [timerSeconds, setTimerSeconds] = useState<number | null>(preset?.timerSeconds ?? null);
+  const [wrongPenalty, setWrongPenalty] = useState<WrongPenalty>(preset?.wrongPenalty ?? 'full');
   // null koppelt die Veto-Zeit an die Bedenkzeit – das ist der Standard.
-  const [vetoSeconds, setVetoSeconds] = useState<number | null>(null);
+  const [vetoSeconds, setVetoSeconds] = useState<number | null>(preset?.vetoSeconds ?? null);
 
   /**
    * Nummer der Ziehung. Sie entsteht beim Aufbau der Seite, steht im geteilten
@@ -87,6 +97,9 @@ export function SetupPage() {
       setLoading(false);
       if (result.ok) {
         setCategories(result.data.categories);
+        setSelectedCategory((selected) =>
+          result.data.categories.some((category) => category.id === selected) ? selected : null,
+        );
       } else {
         setError(result.error);
       }
@@ -109,7 +122,7 @@ export function SetupPage() {
     const controller = new AbortController();
     setPoolLoading(true);
 
-    void fetchPool(category.file, category.title, controller.signal).then((result) => {
+    void fetchPool(category.id, category.title, controller.signal).then((result) => {
       if (controller.signal.aborted) return;
       setPoolLoading(false);
       if (result.ok) {
@@ -203,6 +216,15 @@ export function SetupPage() {
 
     const normalized = normalizeTeams(teams);
     saveLastTeams(normalized);
+    saveSetupPreset({
+      categoryId: definition.category,
+      level: definition.difficulty,
+      teams: normalized,
+      timerSeconds,
+      vetoSeconds: startVetoSeconds,
+      wrongPenalty,
+      uploaded,
+    });
     dispatch({
       type: 'game/start',
       definition,
@@ -288,6 +310,10 @@ export function SetupPage() {
         </Button>
         {canStart ? null : <p className="text-sm text-text-muted">{de.setup.startHint}</p>}
       </div>
+
+      <section className="border-t border-border pt-6">
+        <Button onClick={() => void navigate('/review')}>{de.review.entry}</Button>
+      </section>
 
       <BuildInfo />
     </main>

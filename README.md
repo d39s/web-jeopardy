@@ -7,6 +7,8 @@ vorgesehen; die Auslieferung erfolgt als Docker-Container.
 - [Technisches Konzept](docs/technisches-konzept.md) – Architektur, Datenmodell, Design, Betrieb
 - [Arbeitsplan & Subtasks](docs/arbeitsplan.md) – Aufgabenschnitt, Commit-Regeln, Umsetzungsstand
 - [Fragen pflegen](content/README.md) – Aufbau der Fragenpools, Schwierigkeit, Import
+- [Fragen-Datenbank und API](docs/fragen-datenbank.md) – PostgreSQL, lokale Einrichtung,
+  Zugriff weiterer Anwendungen, Import und Backup
 - Architekturentscheidungen: [Schnittstellen-Vertrag](docs/adr/0001-schnittstellen-vertrag.md) ·
   [Technologie-Stack](docs/adr/0002-technologie-stack.md) ·
   [Transport-Naht](docs/adr/0003-transport-naht.md) ·
@@ -26,6 +28,9 @@ Punktebuttons erscheinen erst nach „Antwort anzeigen". Erst ein Punktebutton w
 Frage – dann wird die Karte grau. Punkte werden addiert oder abgezogen und fallen nie unter
 null. Teamnamen lassen sich jederzeit oben ändern, die Punktebuttons übernehmen den Namen
 sofort. Ein laufendes Spiel übersteht das Schließen des Browsers.
+Bei **„Neues Spiel“** – auch aus der Auswertung – sind Teams, Kategorie, Schwierigkeit,
+Bedenkzeit, Veto-Zeit und Abzugsregel vorbelegt. Die Ziehung wird erneuert und die Punkte
+beginnen bei null. Importierte JSON-Spiele bleiben als Vorlage ausgewählt.
 
 ### Schwierigkeit und Ziehung
 
@@ -46,10 +51,20 @@ es um vier Stellungen weiterschiebt:
 Punkte bleiben immer 100 bis 500: Sie ordnen das Brett und sind nur innerhalb einer Partie
 vergleichbar. Details zum Vorrat stehen in [content/README.md](content/README.md).
 
+## Fragen bewerten
+
+Über **„Fragen bewerten“** auf der Startseite lässt sich die Schwierigkeit zufälliger
+Fragen kalibrieren: erst Frage, dann Antwort und Bewertung. „Zu schwer“ erhöht den
+Schwierigkeitswert um 0,2, „zu leicht“ senkt ihn um 0,2; Zustimmung und Enthaltung werden
+gezählt. PostgreSQL speichert Score und Historie. Neue Spiele nutzen die gerundete Stufe;
+laufende und importierte JSON-Spiele bleiben unverändert.
+Details: [Schwierigkeitsbewertung](docs/fragen-datenbank.md#schwierigkeitsbewertung).
+
 ## Schnellstart
 
 ```bash
 npm install
+docker compose up -d postgres api --build
 npm run dev          # http://localhost:5173
 ```
 
@@ -58,6 +73,11 @@ npm run dev          # http://localhost:5173
 | Befehl                     | Zweck                                           |
 | -------------------------- | ----------------------------------------------- |
 | `npm run dev`              | Entwicklungsserver                              |
+| `npm run dev:api`          | Fragen-API (benötigt `DATABASE_URL`)            |
+| `npm run db:migrate`       | PostgreSQL-Schema migrieren                     |
+| `npm run db:seed`          | Fragen einmalig initialisieren                  |
+| `npm run db:import`        | JSON-Pools bewusst in PostgreSQL übernehmen     |
+| `npm run test:db`          | Integration gegen separate PostgreSQL-Test-DB   |
 | `npm run build`            | Produktions-Build nach `apps/web/dist`          |
 | `npm run preview`          | Gebautes Ergebnis lokal ausliefern              |
 | `npm run lint`             | ESLint über das gesamte Monorepo                |
@@ -74,13 +94,18 @@ npm run dev          # http://localhost:5173
 Gebaut und geprüft wird auf **jenkins.d39s.de**; die Pipeline steht im `Jenkinsfile` und nutzt
 die gemeinsame [jenkins-library](https://jenkins.d39s.de). Zwei Stufen:
 
-1. **Prüfen** im `playwright`-Pod: `npm ci`, Formatprüfung, Lint, Typecheck, Fragensets,
-   Unit- und Komponententests, End-to-End-Tests. Die Testberichte entstehen als JUnit unter
+1. **Prüfen** im `playwright`-Pod: `npm ci`, Formatprüfung, Lint, Typecheck, Seed-/Importdaten,
+   Unit- und Komponententests, echte PostgreSQL-Integration und End-to-End-Tests.
+   Ein PostgreSQL-Sidecar mit temporärem Volume stellt eine isolierte Testdatenbank bereit.
+   UI-Browsertests mocken die API; die DB-Tests prüfen Migration, Import, Scores und Speicherung.
+   Die Testberichte entstehen als JUnit unter
    `reports/` und laufen über `publishChecks`/`withChecks` als GitHub-Check zurück; der
    Playwright-Bericht wird als Artefakt gesichert.
-2. **Image bauen** im `kaniko`-Pod über den Library-Schritt `kaniko`. Gebaut wird
-   `docker/Dockerfile` mit dem Repository-Wurzelverzeichnis als Kontext, das Ergebnis landet
-   in `harbor.d39s.de/library/web-jeopardy`. Davor schreibt die Stufe Commit und Baudatum
+2. **Images bauen** über den Library-Schritt `kaniko`, jeweils in einem eigenen Pod.
+   `docker/Dockerfile` liefert `harbor.d39s.de/library/web-jeopardy`,
+   `docker/api.Dockerfile` liefert `harbor.d39s.de/library/web-jeopardy-api`.
+   Beide nutzen das Repository-Wurzelverzeichnis als Kontext und dieselbe Tag-Strategie.
+   Vor dem Web-Build schreibt die Stufe Commit und Baudatum
    nach `apps/web/.env.production` – im Kontext liegt kein `.git`, sonst bliebe die Fußzeile
    der Startseite ohne Commit.
 
@@ -98,24 +123,35 @@ npm run build:info            # Commit und Datum für die Fußzeile, siehe Versi
 docker compose up --build     # http://localhost:8080
 ```
 
-Das Image baut die Anwendung und liefert sie über nginx aus (rund 62 MB). Besonderheiten:
+Compose startet Weboberfläche über nginx, Node-Fragen-API, PostgreSQL 17 und lokales pgAdmin.
+Die vorhandenen Fragen werden beim ersten API-Start übernommen. Besonderheiten:
 
-- **Fragen ohne neues Image:** `content/topics` ist als Volume eingebunden. Geänderte
-  Fragenpools wirken nach einem Neuladen der Seite, ein Rebuild ist nicht nötig.
+- **Persistente Fragen:** PostgreSQL speichert Fragen in einem benannten Volume. Die API
+  liefert Themen und Pools über `/api/v1`; nginx leitet diese Anfragen weiter.
+- **Fragen ohne neues Image:** per API ändern oder JSON-Pools nach Prüfung mit
+  `docker compose exec api npm run db:import` übernehmen. Neustarts überschreiben nichts.
+- **JSON-Spielimport:** fertige Spiele werden weiterhin lokal im Browser importiert,
+  unabhängig von Datenbank und API.
 - **Verlaufsadressen:** unbekannte Pfade beantwortet `index.html`, `/game` funktioniert also
   auch beim direkten Aufruf.
 - **Zwischenspeicher:** gehashte Dateien in `/assets` werden dauerhaft gecacht,
-  `index.html`, `/topics/*` und `/config.json` bewusst nicht.
+  `index.html`, API-Antworten und `/config.json` bewusst nicht.
 - **Laufzeitkonfiguration:** Der Einstiegspunkt schreibt `config.json` aus Umgebungsvariablen
   (derzeit `JEOPARDY_WS_URL` als Platzhalter für den späteren Online-Modus), sodass dasselbe
   Image in mehreren Umgebungen läuft.
+- **API-Ziel im Frontend-Pod:** `JEOPARDY_API_URL` setzt beim Containerstart das nginx-Ziel,
+  standardmäßig `http://api:3001`. In Kubernetes etwa `http://jeopardy-api:3001` verwenden,
+  ohne abschließenden Slash oder `/api`. Browseranfragen bleiben auf `/api/v1` derselben Origin.
+- **Keine Fragen im Webimage:** Die JSON-Pools sind nur Seed-/Importquelle im API-Image und
+  Testdaten im Repository. Das Frontend lädt alle Fragen ausschließlich aus PostgreSQL via API.
 
 ## Projektstruktur
 
 ```
 apps/web/           Oberfläche (React, Vite, Tailwind)
+apps/api/           Fragen-API, PostgreSQL-Zugriff, Migrationen und Import
 packages/game-core/ Spiellogik ohne Framework-Bezug (Typen, Schemas, Reducer, Ziehung)
-content/topics/     Fragenpools als JSON, ein Pool je Themenkategorie
+content/topics/     JSON-Seed und Importquelle, Laufzeitdaten liegen in PostgreSQL
 docker/             Dockerfile, nginx-Konfiguration, Compose
 docs/               Konzept, Arbeitsplan, ADRs
 e2e/                End-to-End-Tests

@@ -18,6 +18,9 @@ reports/
 # Von npm run build:info erzeugt – gehört zum jeweiligen Build, nicht ins Repository.
 apps/web/.env.production
 
+# Lokale Datenbankzugänge und API-Schreibtoken.
+.env
+
 # Arbeitskopien und Werkzeugdaten
 .claude/
 
