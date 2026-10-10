@@ -121,13 +121,16 @@ Auf der Startseite führt **„Fragen bewerten“** zum unabhängigen Modus `/re
 Der Filter bleibt beim Bewerten erhalten; ein Wechsel lädt eine neue, verdeckte Frage.
 Er zieht zufällig eine Frage aus den gewählten Themen (jede Frage gleich wahrscheinlich), vermeidet
 die unmittelbar vorherige Frage und zeigt zunächst weder Antwort noch Schwierigkeit.
-Nach **„Antwort anzeigen“** erscheinen Lösung, Stufe 1–9, Score und vier Bewertungsbuttons.
+Nach **„Antwort anzeigen“** erscheinen die Lösung und drei nummerierte Bewertungsbuttons:
+„zu leicht“, „Schwierigkeit passt“, „zu schwer“. Die Zahlen zeigen die benachbarten bzw.
+die aktuelle gerundete Stufe (auf 1–9 begrenzt), nicht die Scoreänderung durch eine Stimme.
+Aufdecken und „Schwierigkeit passt“ befinden sich an derselben festen Position.
+Zusätzliche Score-/Bewertungsstatistiken und eine Enthaltungsoption werden nicht angezeigt.
 Eine erfolgreiche Bewertung lädt automatisch die nächste Frage.
 
 - **Schwierigkeit passt:** Score unverändert; Zustimmung wird gezählt.
 - **zu schwer:** Score steigt um 0,2.
 - **zu leicht:** Score sinkt um 0,2.
-- **nicht einschätzbar:** Score unverändert; Enthaltung wird gezählt.
 
 Scores bleiben zwischen 1 und 9. Die gerundete Stufe in `questions.level` fließt unmittelbar
 in neu geladene Fragenpools und neue Spiele ein. Bereits geladene Pools erst neu auswählen
@@ -140,7 +143,9 @@ Die Migration 002 ergänzt vorhandene Datenbanken automatisch.
 Die API bietet `GET /api/v1/review/random` (optional `topicId`, `excludeTopic` und `excludeId`) und
 `POST /api/v1/review/<themen-id>/<fragen-id>/votes` mit
 `{ "requestId": "<UUID>", "version": "<Version aus GET>", "verdict": "too-hard" }`.
-Erlaubte Werte sind `fits`, `too-hard`, `too-easy`, `unsure`. POST liefert Score, Stufe und
+Die Oberfläche sendet `fits`, `too-hard`, `too-easy`. Für API-Kompatibilität und bestehende
+Historie bleibt `unsure` unterstützt, ebenso der alte `unsure_votes`-Zähler.
+POST liefert Score, Stufe und
 Bewertungsanzahl. Wiederholungen mit identischer Request-ID werden nicht doppelt gezählt;
 veränderte Fragen oder widersprüchliche Wiederholungen ergeben 409.
 

@@ -17,7 +17,6 @@ export const de = {
     categoriesError:
       'Die Kategorien konnten nicht geladen werden. Fragen aus allen Kategorien bleiben verfügbar.',
     verdictHeading: 'Wie passt die Schwierigkeit?',
-    scoringDetails: 'So wird die Schwierigkeit angepasst',
     back: 'Zurück zum Spiel',
     reveal: 'Antwort anzeigen',
     answer: 'Antwort',
@@ -28,15 +27,12 @@ export const de = {
       'Die Bewertung konnte nicht gespeichert werden. Bitte erneut versuchen oder eine neue Frage laden.',
     retry: 'Neue Frage laden',
     saved: 'Bewertung gespeichert.',
-    difficulty: (level: number) => `Schwierigkeit: ${level} von 9`,
-    score: (score: number, votes: number) =>
-      `Schwierigkeitswert: ${score.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · Bewertungen: ${votes}`,
-    hint: '„Zu schwer“ erhöht den Wert um 0,2; „zu leicht“ senkt ihn um 0,2. Die gerundete Stufe gilt für neue Spiele.',
+    savedWithRating: (score: number, votes: number) =>
+      `Bewertung gespeichert. · Score: ${score.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} · Bewertungen: ${votes}`,
     verdicts: {
       fits: 'Schwierigkeit passt',
       'too-hard': 'zu schwer',
       'too-easy': 'zu leicht',
-      unsure: 'nicht einschätzbar',
     },
   },
 

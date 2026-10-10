@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { MAX_CLUE_LEVEL } from '@jeopardy/game-core';
 import type {
   DifficultyVerdict,
   DifficultyVote,
@@ -12,7 +13,14 @@ import { de } from '../../i18n/de';
 import { randomQuestion, voteQuestion } from './api';
 import { fetchTopicIndex } from '../../content/loader';
 
-const PRIMARY_VERDICTS: DifficultyVerdict[] = ['too-easy', 'fits', 'too-hard'];
+type ReviewVerdict = Exclude<DifficultyVerdict, 'unsure'>;
+const PRIMARY_VERDICTS: ReviewVerdict[] = ['too-easy', 'fits', 'too-hard'];
+
+/** Benachbarte Stufen zur schnellen Orientierung, nicht die Änderung pro Stimme. */
+function verdictLevel(score: number, verdict: ReviewVerdict): number {
+  const offset = verdict === 'too-easy' ? -1 : verdict === 'too-hard' ? 1 : 0;
+  return Math.min(MAX_CLUE_LEVEL, Math.max(1, Math.round(score) + offset));
+}
 
 export function ReviewPage() {
   const [question, setQuestion] = useState<ReviewQuestion | null>(null);
@@ -65,7 +73,7 @@ export function ReviewPage() {
     return () => controller.current?.abort();
   }, [load]);
 
-  async function vote(verdict: DifficultyVerdict) {
+  async function vote(verdict: ReviewVerdict) {
     if (!question || !revealed || busy.current) return;
     busy.current = true;
     setSaving(true);
@@ -77,7 +85,7 @@ export function ReviewPage() {
     }
     try {
       const result = await voteQuestion(question, pendingVote.current);
-      setFeedback(`${de.review.saved} ${de.review.score(result.score, result.votes)}`);
+      setFeedback(de.review.savedWithRating(result.score, result.votes));
       await load(question);
     } catch {
       setError(de.review.saveError);
@@ -146,7 +154,7 @@ export function ReviewPage() {
                   <Button
                     key={verdict}
                     size="lg"
-                    className="min-h-20 min-w-0 px-2 text-sm sm:text-lg"
+                    className="h-20 min-h-20 min-w-0 flex-col gap-1 px-2 py-2 text-xs sm:text-base"
                     variant={!revealed ? 'primary' : verdict === 'fits' ? 'success' : 'ghost'}
                     disabled={
                       saving ||
@@ -154,24 +162,19 @@ export function ReviewPage() {
                     }
                     onClick={() => (revealed ? void vote(verdict) : setRevealed(true))}
                   >
-                    {revealed ? de.review.verdicts[verdict] : de.review.reveal}
+                    {revealed ? (
+                      <>
+                        <span>{de.review.verdicts[verdict]}</span>{' '}
+                        <span className="text-2xl font-bold tabular-nums">
+                          {verdictLevel(question.score, verdict)}
+                        </span>
+                      </>
+                    ) : (
+                      de.review.reveal
+                    )}
                   </Button>
                 ),
               )}
-            </div>
-            <div className="flex min-h-11 items-center justify-center">
-              {revealed ? (
-                <Button
-                  className="text-sm"
-                  disabled={
-                    saving ||
-                    (pendingVote.current !== null && pendingVote.current.verdict !== 'unsure')
-                  }
-                  onClick={() => void vote('unsure')}
-                >
-                  {de.review.verdicts.unsure}
-                </Button>
-              ) : null}
             </div>
           </section>
           <p className="text-sm text-text-muted">
@@ -179,23 +182,13 @@ export function ReviewPage() {
           </p>
           <h2 className="text-2xl font-semibold leading-relaxed">{question.question}</h2>
           {revealed ? (
-            <>
-              <section className="flex flex-col gap-3 border-t border-border pt-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
-                  {de.review.answer}
-                </h3>
-                <p className="text-2xl font-semibold text-positive">{question.answer}</p>
-                {question.note ? <p className="text-text-muted">{question.note}</p> : null}
-                <p className="text-lg font-bold">{de.review.difficulty(question.level)}</p>
-                <p className="text-sm text-text-muted">
-                  {de.review.score(question.score, question.votes)}
-                </p>
-              </section>
-              <details className="text-sm text-text-muted">
-                <summary className="cursor-pointer">{de.review.scoringDetails}</summary>
-                <p className="mt-2">{de.review.hint}</p>
-              </details>
-            </>
+            <section className="flex flex-col gap-3 border-t border-border pt-6">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
+                {de.review.answer}
+              </h3>
+              <p className="text-2xl font-semibold text-positive">{question.answer}</p>
+              {question.note ? <p className="text-text-muted">{question.note}</p> : null}
+            </section>
           ) : null}
         </Card>
       ) : null}

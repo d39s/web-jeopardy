@@ -1,5 +1,11 @@
 # Fragen pflegen
 
+Agent-Aufträge zur Inhaltserstellung: [Anleitung für Kategorien, Spalten und Fragen](../docs/content-authoring-handoff.md).
+Neue Inhalte liefern Agents standardmäßig als ergänzende SQL-Dateien in `content/sql/`.
+Der [Repo-Skill](../.github/skills/create-jeopardy-questions/SKILL.md) enthält eine Vorlage;
+der Betreiber führt die Übernahme später selbst aus. Die folgenden Abschnitte beschreiben
+den **bestehenden JSON-Initialbestand** und den erhaltenen JSON-Spielimport.
+
 Jede Themenkategorie hat genau **einen Fragenpool**. Zur Laufzeit liegen Fragen und Rubriken
 in PostgreSQL und werden über die Fragen-API geladen. Die JSON-Dateien in `content/topics/`
 mit `index.json` bleiben als Initialbestand und bewusste Importquelle erhalten. Aus dem Pool
@@ -86,18 +92,18 @@ landet, und sind immer 100 bis 500.
 
 ## Regeln
 
-| Regel                                                | Warum                                                               |
-| ---------------------------------------------------- | ------------------------------------------------------------------- |
-| Mindestens 5 Rubriken je Pool                        | Fünf werden zu den Spalten des Spielfelds.                          |
-| Mindestens 5 Fragen je Rubrik                        | Weniger füllt keine Spalte; die Rubrik wird beim Ziehen übergangen. |
-| `level` ist 1 bis 9                                  | Absolute Skala, über die der Regler sein Fenster schiebt.           |
-| Alle `id`-Werte im Pool sind eindeutig               | Rubrik- und Frage-IDs landen im Brett im selben Namensraum.         |
-| Bewährtes Muster: `<rubrik>-<stufe>-<nummer>`        | Leicht zu lesen und automatisch eindeutig.                          |
-| Keine Frage zweimal, auch nicht sinngleich           | Sonst stünde sie irgendwann doppelt auf demselben Brett.            |
-| `question` und `answer` maximal 500 Zeichen          | Damit die Karte auf dem Beamer lesbar bleibt.                       |
-| `name` einer Rubrik maximal 40 Zeichen               | Der Spaltenkopf hat nur eine Spaltenbreite.                         |
-| `color` ist optional und nur aus der Palette erlaubt | Ohne Angabe entscheidet die Position im gezogenen Brett.            |
-| Keine zusätzlichen Felder                            | Tippfehler fallen so sofort auf.                                    |
+| Regel                                                | Warum                                                                  |
+| ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| Mindestens 5 Rubriken je Pool                        | Fünf werden zu den Spalten des Spielfelds.                             |
+| Mindestens 5 Fragen je Rubrik                        | Weniger füllt keine Spalte; die Rubrik wird beim Ziehen übergangen.    |
+| `level` ist 1 bis 9                                  | Absolute Skala, über die der Regler sein Fenster schiebt.              |
+| Alle `id`-Werte im Pool sind eindeutig               | Rubrik- und Frage-IDs landen im Brett im selben Namensraum.            |
+| Bewährtes Muster: `<rubrik>-<stufe>-<nummer>`        | Leicht zu lesen und automatisch eindeutig.                             |
+| Ähnliche Fragen und gleiche Antworten sind erlaubt   | Text-Einzigartigkeit ist keine Importbedingung; IDs bleiben eindeutig. |
+| `question` und `answer` maximal 500 Zeichen          | Damit die Karte auf dem Beamer lesbar bleibt.                          |
+| `name` einer Rubrik maximal 40 Zeichen               | Der Spaltenkopf hat nur eine Spaltenbreite.                            |
+| `color` ist optional und nur aus der Palette erlaubt | Ohne Angabe entscheidet die Position im gezogenen Brett.               |
+| Keine zusätzlichen Felder                            | Tippfehler fallen so sofort auf.                                       |
 
 Erlaubte Farben: `#2EC4B6`, `#FF7F50`, `#B388EB`, `#7AE582`, `#FFD166`.
 

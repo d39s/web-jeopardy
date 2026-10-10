@@ -160,22 +160,25 @@ describe('validierung der fragenpools', () => {
     expect(validateQuestionPool(pool).ok).toBe(false);
   });
 
-  it('meldet dieselbe frage in zwei rubriken', () => {
-    // Sonst stünde sie irgendwann zweimal auf demselben Brett.
+  it('akzeptiert dieselbe frage und lösung mit verschiedenen ids in zwei rubriken', () => {
     const pool = poolCopy();
     pool.rubrics[1]!.clues[0]!.question = pool.rubrics[0]!.clues[0]!.question;
-
-    const result = validateQuestionPool(pool);
-    if (result.ok) throw new Error('Der Pool hätte abgelehnt werden müssen.');
-    expect(formatIssues(result.issues)[0]).toMatch(/^rubrics\.1\.clues\.0\.question:/);
+    pool.rubrics[1]!.clues[0]!.answer = pool.rubrics[0]!.clues[0]!.answer;
+    expect(validateQuestionPool(pool).ok).toBe(true);
   });
 
-  it('übersieht eine dublette nicht wegen abweichender zeichensetzung', () => {
+  it('akzeptiert ähnliche texte mit abweichender zeichensetzung', () => {
     const pool = poolCopy();
     const original = pool.rubrics[0]!.clues[0]!.question;
     pool.rubrics[1]!.clues[0]!.question = `  ${original.toUpperCase().replace('?', '!')} `;
 
-    expect(validateQuestionPool(pool).ok).toBe(false);
+    expect(validateQuestionPool(pool).ok).toBe(true);
+  });
+
+  it('akzeptiert wiederholte lösungen innerhalb derselben rubrik', () => {
+    const pool = poolCopy();
+    pool.rubrics[0]!.clues[1]!.answer = pool.rubrics[0]!.clues[0]!.answer;
+    expect(validateQuestionPool(pool).ok).toBe(true);
   });
 
   it('lehnt unbekannte felder ab', () => {

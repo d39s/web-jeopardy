@@ -59,8 +59,15 @@ it('verbirgt Antwort und Schwierigkeit bis zum Klick und lädt nach Bewertung di
   expect(screen.queryByRole('button', { name: 'zu schwer' })).not.toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Antwort anzeigen' }));
   expect(screen.getByText(question.answer)).toBeVisible();
-  expect(screen.getByText('Schwierigkeit: 3 von 9')).toBeVisible();
-  await userEvent.click(screen.getByRole('button', { name: 'zu schwer' }));
+  expect(
+    screen.queryByText(/Schwierigkeit:|Schwierigkeitswert:|Bewertungen:/),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByText('So wird die Schwierigkeit angepasst')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'nicht einschätzbar' })).not.toBeInTheDocument();
+  expect(screen.getAllByRole('button')).toHaveLength(3);
+  expect(screen.getByRole('button', { name: 'zu leicht 2' })).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Schwierigkeit passt 3' })).toBeVisible();
+  await userEvent.click(screen.getByRole('button', { name: 'zu schwer 4' }));
   await screen.findByText(next.question);
   const [url, options] = fetch.mock.calls[1]!;
   expect(url).toBe('/api/v1/review/it/frage/votes');
@@ -69,7 +76,9 @@ it('verbirgt Antwort und Schwierigkeit bis zum Klick und lädt nach Bewertung di
     version: question.version,
   });
   expect(screen.queryByText(next.answer)).not.toBeInTheDocument();
-  expect(screen.getByRole('status')).toHaveTextContent('Bewertung gespeichert');
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Bewertung gespeichert. · Score: 3,2 · Bewertungen: 1',
+  );
   expect(fetch.mock.calls[2]![0]).toContain('excludeTopic=it&excludeId=frage');
 });
 
@@ -84,13 +93,14 @@ it('behält bei Speicherfehlern die Frage und verwendet beim Wiederholen dieselb
   mount();
   await screen.findByText(question.question);
   await userEvent.click(screen.getByRole('button', { name: 'Antwort anzeigen' }));
-  await userEvent.click(screen.getByRole('button', { name: 'nicht einschätzbar' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Schwierigkeit passt 3' }));
   await screen.findByRole('alert');
   expect(screen.getByText(question.answer)).toBeVisible();
-  expect(screen.getByRole('button', { name: 'zu leicht' })).toBeDisabled();
-  await userEvent.click(screen.getByRole('button', { name: 'nicht einschätzbar' }));
+  expect(screen.getByRole('button', { name: 'zu leicht 2' })).toBeDisabled();
+  await userEvent.click(screen.getByRole('button', { name: 'Schwierigkeit passt 3' }));
   await screen.findByText(next.question);
   expect(fetch.mock.calls[1]![1].body).toBe(fetch.mock.calls[2]![1].body);
+  expect(JSON.parse(fetch.mock.calls[2]![1].body).verdict).toBe('fits');
 });
 
 it('zeigt Ladefehler und erlaubt einen erneuten Versuch', async () => {
@@ -120,16 +130,39 @@ it('lädt nur Fragen der gewählten Kategorie und behält den Filter nach der Be
   await screen.findByText(next.question);
   expect(fetch.mock.calls[1]![0]).toContain('topicId=it');
   await userEvent.click(screen.getByRole('button', { name: 'Antwort anzeigen' }));
-  expect(
-    screen
-      .getAllByRole('button')
-      .filter((button) =>
-        ['zu leicht', 'Schwierigkeit passt', 'zu schwer'].includes(button.textContent ?? ''),
-      )
-      .map((button) => button.textContent),
-  ).toEqual(['zu leicht', 'Schwierigkeit passt', 'zu schwer']);
-  await userEvent.click(screen.getByRole('button', { name: 'Schwierigkeit passt' }));
+  const buttons = screen.getAllByRole('button', {
+    name: /^(zu leicht|Schwierigkeit passt|zu schwer) \d$/,
+  });
+  expect(buttons[0]).toHaveAccessibleName('zu leicht 2');
+  expect(buttons[1]).toHaveAccessibleName('Schwierigkeit passt 3');
+  expect(buttons[2]).toHaveAccessibleName('zu schwer 4');
+  await userEvent.click(screen.getByRole('button', { name: 'Schwierigkeit passt 3' }));
   await screen.findByText(question.question);
   expect(fetch.mock.calls[3]![0]).toContain('topicId=it');
   expect(screen.getByLabelText('Kategorie für die Bewertung')).toHaveValue('it');
 });
+
+it.each([
+  [3.4, 3, 2, 4],
+  [3.5, 4, 3, 5],
+  [1, 1, 1, 2],
+  [9, 9, 8, 9],
+])(
+  'zeigt für Score %s gerundete benachbarte Stufen innerhalb der Grenzen',
+  async (score, current, lower, higher) => {
+    mockRequests(
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ ...question, score, level: current }),
+      }),
+    );
+    mount();
+    await screen.findByText(question.question);
+    expect(screen.queryByRole('button', { name: /Schwierigkeit passt/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Antwort anzeigen' }));
+    expect(screen.getByRole('button', { name: `Schwierigkeit passt ${current}` })).toBeVisible();
+    expect(screen.getByRole('button', { name: `zu leicht ${lower}` })).toBeVisible();
+    expect(screen.getByRole('button', { name: `zu schwer ${higher}` })).toBeVisible();
+    expect(screen.queryByText(/von 9/)).not.toBeInTheDocument();
+  },
+);

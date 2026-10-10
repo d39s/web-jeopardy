@@ -7,8 +7,14 @@ vorgesehen; die Auslieferung erfolgt als Docker-Container.
 - [Technisches Konzept](docs/technisches-konzept.md) – Architektur, Datenmodell, Design, Betrieb
 - [Arbeitsplan & Subtasks](docs/arbeitsplan.md) – Aufgabenschnitt, Commit-Regeln, Umsetzungsstand
 - [Fragen pflegen](content/README.md) – Aufbau der Fragenpools, Schwierigkeit, Import
+- [Inhalte für Agents erstellen](docs/content-authoring-handoff.md) – Kategorien,
+  Spalten und Fragen als ergänzende SQL-Dateien, Tabellen und Qualitätsregeln
+- [Agent-Skill: create-jeopardy-questions](.github/skills/create-jeopardy-questions/SKILL.md) –
+  wiederverwendbarer Workflow und SQL-Vorlage zur manuellen Übernahme
 - [Fragen-Datenbank und API](docs/fragen-datenbank.md) – PostgreSQL, lokale Einrichtung,
   Zugriff weiterer Anwendungen, Import und Backup
+- [Kubernetes-Deployment-Übergabe](docs/kubernetes-deployment-handoff.md) – Images,
+  Konfiguration, Datenbank, Sicherheit und Abnahme für den Deployment-Agenten
 - Architekturentscheidungen: [Schnittstellen-Vertrag](docs/adr/0001-schnittstellen-vertrag.md) ·
   [Technologie-Stack](docs/adr/0002-technologie-stack.md) ·
   [Transport-Naht](docs/adr/0003-transport-naht.md) ·
@@ -55,8 +61,9 @@ vergleichbar. Details zum Vorrat stehen in [content/README.md](content/README.md
 
 Über **„Fragen bewerten“** auf der Startseite lässt sich die Schwierigkeit zufälliger
 Fragen kalibrieren: erst Frage, dann Antwort und Bewertung. „Zu schwer“ erhöht den
-Schwierigkeitswert um 0,2, „zu leicht“ senkt ihn um 0,2; Zustimmung und Enthaltung werden
-gezählt. PostgreSQL speichert Score und Historie. Neue Spiele nutzen die gerundete Stufe;
+Schwierigkeitswert um 0,2, „zu leicht“ senkt ihn um 0,2; „Schwierigkeit passt“ zählt eine
+Zustimmung ohne Scoreänderung. Die drei Buttons zeigen die gerundete aktuelle und die
+benachbarten Stufen. PostgreSQL speichert Score und Historie. Neue Spiele nutzen die gerundete Stufe;
 laufende und importierte JSON-Spiele bleiben unverändert.
 Details: [Schwierigkeitsbewertung](docs/fragen-datenbank.md#schwierigkeitsbewertung).
 

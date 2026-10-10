@@ -190,48 +190,13 @@ export const questionPoolSchema = questionPoolShape.superRefine((pool, ctx) => {
     seenIds.add(id);
   };
 
-  const seenQuestions = new Map<string, string>();
-  const seenAnswers = new Map<string, string>();
-
-  /** Vergleicht tolerant: Groß- und Kleinschreibung und Zeichensetzung zählen nicht. */
-  const normalize = (value: string) =>
-    value
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}]+/gu, ' ')
-      .trim();
-
+  // Textähnlichkeit ist keine strukturelle Einschränkung: unabhängig erstellte
+  // Lieferungen dürfen dieselbe Frage oder Lösung unter unterschiedlichen IDs enthalten.
   pool.rubrics.forEach((rubric, rubricIndex) => {
     register(rubric.id, ['rubrics', rubricIndex, 'id']);
 
     rubric.clues.forEach((clue, clueIndex) => {
       register(clue.id, ['rubrics', rubricIndex, 'clues', clueIndex, 'id']);
-
-      // Dieselbe Frage zweimal im Vorrat hieße: irgendwann steht sie doppelt
-      // auf dem Brett. Verglichen wird tolerant, damit Tippvarianten auffallen.
-      const questionKey = normalize(clue.question);
-      const sameQuestion = seenQuestions.get(questionKey);
-      if (sameQuestion !== undefined) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['rubrics', rubricIndex, 'clues', clueIndex, 'question'],
-          message: `Gleiche Frage wie "${sameQuestion}".`,
-        });
-      }
-      seenQuestions.set(questionKey, clue.id);
-
-      // Auch dieselbe Lösung darf im Pool nur einmal vorkommen: Sonst kann
-      // dieselbe Antwort zweimal auf einem Brett stehen – in zwei Spalten oder
-      // sogar in zwei Zeilen derselben Spalte.
-      const answerKey = normalize(clue.answer);
-      const sameAnswer = seenAnswers.get(answerKey);
-      if (sameAnswer !== undefined) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['rubrics', rubricIndex, 'clues', clueIndex, 'answer'],
-          message: `Gleiche Lösung wie "${sameAnswer}".`,
-        });
-      }
-      seenAnswers.set(answerKey, clue.id);
     });
   });
 });

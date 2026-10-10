@@ -54,6 +54,31 @@ describe('themenindex laden', () => {
 });
 
 describe('fragenvorrat laden', () => {
+  it('lädt einen pool mit gleichen fragen und antworten unter verschiedenen ids', async () => {
+    const original = samplePool.rubrics[0]!.clues[0]!;
+    const pool = {
+      ...samplePool,
+      rubrics: samplePool.rubrics.map((rubric, index) =>
+        index === 1
+          ? {
+              ...rubric,
+              clues: rubric.clues.map((clue, clueIndex) =>
+                clueIndex === 0
+                  ? {
+                      ...clue,
+                      question: original.question,
+                      answer: original.answer,
+                    }
+                  : clue,
+              ),
+            }
+          : rubric,
+      ),
+    };
+    mockFetch({ json: async () => pool });
+    expect((await fetchPool(pool.id, pool.title)).ok).toBe(true);
+  });
+
   it('liefert einen gültigen vorrat', async () => {
     mockFetch({ json: () => Promise.resolve(samplePool) });
 
