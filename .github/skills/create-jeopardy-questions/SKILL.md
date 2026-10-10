@@ -54,6 +54,8 @@ Testdatenbank ist erlaubt; andernfalls Grenzen der Prüfung im Abschlussbericht 
 
 - Stabile IDs mit 1–64 Zeichen, nur kleine ASCII-Buchstaben, Ziffern und Bindestriche;
   Regex `^[a-z0-9][a-z0-9-]*$`. Rubrik- und Frage-IDs sind **gemeinsam pro Kategorie eindeutig**.
+- ASCII gilt **nur für IDs**. Titel, Fragen, Antworten, Notizen, SQL-Kommentare und Bericht
+  mit echten Umlauten und ß schreiben (`für`, `Größe`), **nie** `fuer`, `ueber`, `Groesse`.
 - Neue Fragen z. B. `<rubrik>-<lieferungskennung>-<nummer>`, maximale ID-Länge beachten.
   Ohne Bestandskenntnis eine einmalig erzeugte zufällige Lieferungskennung verwenden
   (z. B. UUID ohne Bindestriche, ggf. Rubrikprefix kürzen), dann für Wiederholungen beibehalten.
