@@ -36,6 +36,7 @@ export async function migrate(db: pg.Pool): Promise<void> {
       '001-question-library.sql',
       '002-difficulty-ratings.sql',
       '003-admin-log.sql',
+      '004-question-reports.sql',
     ];
     for (const [index, file] of migrations.entries()) {
       const version = index + 1;

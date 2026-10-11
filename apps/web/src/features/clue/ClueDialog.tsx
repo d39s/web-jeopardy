@@ -1,4 +1,5 @@
 import {
+  isDrawnDefinition,
   resolveCategoryColor,
   selectAnsweringTeams,
   selectOpenClue,
@@ -9,6 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { de } from '../../i18n/de';
 import { cn } from '../../lib/cn';
 import { useDispatch, useGameState } from '../../state/GameProvider';
+import { ReportQuestion } from '../report/ReportQuestion';
 import { ClueTimer } from './ClueTimer';
 import { SettleButtons } from './SettleButtons';
 import { VetoButtons } from './VetoButtons';
@@ -61,6 +63,10 @@ export function ClueDialog() {
 
   const close = () => dispatch({ type: 'clue/close' });
 
+  // Nur Fragen aus der Fragenbibliothek lassen sich melden, keine hochgeladenen Sets.
+  const reportTopicId =
+    state.definition && isDrawnDefinition(state.definition) ? state.definition.category : null;
+
   return (
     <Modal open={open !== null} onClose={close} labelledBy={TITLE_ID}>
       {open ? (
@@ -106,9 +112,19 @@ export function ClueDialog() {
           {state.answerRevealed ? (
             <div className={cn('flex flex-col', gap)}>
               <section className="rounded-card border border-border border-l-4 border-l-cat-1 bg-surface-hi px-5 py-4">
-                <h3 className="text-sm uppercase tracking-wide text-text-muted">
-                  {de.clue.answerHeading}
-                </h3>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm uppercase tracking-wide text-text-muted">
+                    {de.clue.answerHeading}
+                  </h3>
+                  {reportTopicId ? (
+                    <ReportQuestion
+                      key={open.clue.id}
+                      topicId={reportTopicId}
+                      questionId={open.clue.id}
+                      source="game"
+                    />
+                  ) : null}
+                </div>
                 <p className="mt-1 text-[clamp(1.3rem,min(2.8vw,4.6vh),2.1rem)] font-semibold text-balance">
                   {open.clue.answer}
                 </p>

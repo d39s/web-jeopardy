@@ -3,6 +3,7 @@ import { samplePool } from '@jeopardy/game-core';
 import { buildApp } from './app';
 import type { ContentRepository } from './repository';
 import type { ReviewRepository } from './review-repository';
+import type { ReportRepository } from './report-repository';
 
 function mockRepository(): ContentRepository {
   return {
@@ -65,6 +66,38 @@ describe('Fragen-API', () => {
     expect((await app.inject({ ...request, payload })).statusCode).toBe(409);
     vi.mocked(reviews.random).mockResolvedValue(null);
     expect((await app.inject('/api/v1/review/random')).statusCode).toBe(404);
+  });
+
+  it('nimmt Meldungen mit optionalem Kommentar an', async () => {
+    const reports: ReportRepository = {
+      report: vi.fn().mockResolvedValue({ status: 'ok' }),
+    };
+    const { app } = setup({ reports });
+    const request = { method: 'POST' as const, url: '/api/v1/questions/it/frage/reports' };
+    const payload = {
+      requestId: '00000000-0000-4000-8000-000000000002',
+      source: 'game',
+      comment: '  Antwort ist falsch  ',
+    };
+    expect((await app.inject({ ...request, payload })).statusCode).toBe(204);
+    expect(reports.report).toHaveBeenCalledWith('it', 'frage', {
+      ...payload,
+      comment: 'Antwort ist falsch',
+    });
+    for (const invalid of [
+      { ...payload, source: 'admin' },
+      { ...payload, comment: 'x'.repeat(501) },
+      { ...payload, requestId: 'x' },
+      { ...payload, extra: true },
+    ]) {
+      expect((await app.inject({ ...request, payload: invalid })).statusCode).toBe(400);
+    }
+    expect(
+      (await app.inject({ ...request, url: '/api/v1/questions/it/frage_x/reports', payload }))
+        .statusCode,
+    ).toBe(400);
+    vi.mocked(reports.report).mockResolvedValue({ status: 'missing' });
+    expect((await app.inject({ ...request, payload })).statusCode).toBe(404);
   });
 
   it('liefert Index und Pool im bestehenden Datenformat', async () => {

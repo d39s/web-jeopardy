@@ -27,6 +27,7 @@ export const de = {
       'Die Bewertung konnte nicht gespeichert werden. Bitte erneut versuchen oder eine neue Frage laden.',
     retry: 'Neue Frage laden',
     saved: 'Bewertung gespeichert.',
+    reported: 'Frage gemeldet – danke! Sie wird nicht mehr zur Bewertung angeboten.',
     savedWithRating: (score: number, votes: number) =>
       `Bewertung gespeichert. · Score: ${score.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} · Bewertungen: ${votes}`,
     verdicts: {
@@ -34,6 +35,19 @@ export const de = {
       'too-hard': 'zu schwer',
       'too-easy': 'zu leicht',
     },
+  },
+
+  report: {
+    button: 'Frage melden',
+    heading: 'Frage melden?',
+    text: 'Die Frage wird zur Prüfung markiert und bis dahin in keinem neuen Spiel mehr gestellt.',
+    comment: 'Kommentar (freiwillig)',
+    commentPlaceholder: 'Was stimmt nicht? Zum Beispiel falsche oder veraltete Antwort.',
+    confirm: 'Melden',
+    sending: 'Wird gemeldet …',
+    cancel: 'Abbrechen',
+    error: 'Die Meldung konnte nicht gesendet werden. Bitte erneut versuchen.',
+    done: 'Frage gemeldet – danke!',
   },
 
   /** Fußzeile der Startseite – welcher Stand gerade ausgeliefert wird. */
@@ -295,7 +309,7 @@ export const de = {
   admin: {
     heading: 'Admin',
     navLabel: 'Admin-Bereiche',
-    nav: { questions: 'Fragen', sql: 'SQL einspielen', log: 'Protokoll' },
+    nav: { questions: 'Fragen', reports: 'Meldungen', sql: 'SQL einspielen', log: 'Protokoll' },
     signedInAs: (user: string) => `Angemeldet als ${user}`,
     backToGame: 'Zum Spiel',
     loading: 'Wird geladen …',
@@ -333,6 +347,8 @@ export const de = {
         actions: 'Aktionen',
       },
       levelHint: 'Ausgangsstufe → aktuelle Spielstufe',
+      reported: (count: number) => (count === 1 ? '1 Meldung' : `${count} Meldungen`),
+      reportedHint: 'Gemeldet – kommt bis zur Prüfung in kein neues Spiel.',
       range: (from: number, to: number, total: number) => `${from}–${to} von ${total}`,
       previous: 'Zurück',
       next: 'Weiter',
@@ -365,6 +381,29 @@ export const de = {
       confirmDelete: 'Wirklich löschen',
       deleteHint:
         'Löschen lässt sich nicht rückgängig machen; das Protokoll behält den letzten Stand.',
+    },
+
+    reports: {
+      heading: 'Gemeldete Fragen',
+      intro:
+        'Gemeldete Fragen kommen in kein neues Spiel und nicht in den Bewertungsmodus, bis die Meldung aufgehoben ist.',
+      empty: 'Keine offenen Meldungen.',
+      summary: (questions: number, reports: number) =>
+        `${questions} ${questions === 1 ? 'Frage' : 'Fragen'} · ${reports} ${reports === 1 ? 'Meldung' : 'Meldungen'}`,
+      answer: 'Antwort',
+      note: 'Notiz',
+      missing: 'Die Frage gibt es nicht mehr – sie wurde gelöscht oder per SQL ersetzt.',
+      reportsHeading: (count: number) => (count === 1 ? '1 Meldung' : `${count} Meldungen`),
+      sources: { game: 'im Spiel', review: 'beim Bewerten' },
+      noComment: 'ohne Kommentar',
+      reportedVersion: 'Gemeldeter Stand',
+      edit: 'Bearbeiten',
+      editLabel: (id: string) => `Frage ${id} bearbeiten`,
+      resolve: 'Meldung aufheben',
+      resolveLabel: (id: string) => `Meldung zu ${id} aufheben`,
+      resolving: 'Wird aufgehoben …',
+      resolveHint: 'Danach wird die Frage wieder für neue Spiele verwendet.',
+      resolved: (id: string) => `Meldung zu ${id} aufgehoben.`,
     },
 
     sql: {
@@ -413,6 +452,7 @@ export const de = {
         'question.create': 'Frage angelegt',
         'question.update': 'Frage geändert',
         'question.delete': 'Frage gelöscht',
+        'question.unflag': 'Meldung aufgehoben',
         'sql.execute': 'SQL ausgeführt',
       } as Record<string, string>,
       details: 'Details',

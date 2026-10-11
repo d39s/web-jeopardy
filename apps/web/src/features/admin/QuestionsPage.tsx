@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CLUE_LEVELS } from '@jeopardy/game-core';
 import type { AdminQuestion, AdminQuestionList, AdminTopic } from '@jeopardy/game-core';
 import { Button } from '../../components/ui/Button';
@@ -184,6 +185,15 @@ export function QuestionsPage() {
                       <td className="max-w-md p-3">
                         <p>{question.question}</p>
                         <p className="mt-1 font-mono text-xs text-text-muted">{question.id}</p>
+                        {question.openReports > 0 ? (
+                          <Link
+                            to="/admin/reports"
+                            title={t.reportedHint}
+                            className="mt-1 inline-block text-xs font-semibold text-negative underline underline-offset-4"
+                          >
+                            {t.reported(question.openReports)}
+                          </Link>
+                        ) : null}
                       </td>
                       <td className="max-w-xs p-3">
                         <p>{question.answer}</p>

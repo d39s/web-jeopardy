@@ -25,6 +25,7 @@ const question: AdminQuestion = {
   level: 4,
   score: 3.6,
   votes: { fits: 1, tooHard: 3, tooEasy: 0, unsure: 0 },
+  openReports: 0,
   version: 'a'.repeat(64),
 };
 const dryRun: SqlRunResult = {
@@ -215,4 +216,71 @@ it('zeigt Skriptfehler mit Zeilenangabe', async () => {
   await user.type(await screen.findByLabelText('SQL-Skript'), 'COMMIT;');
   await user.click(screen.getByRole('button', { name: 'Testlauf' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Zeile 3, Spalte 1');
+});
+
+it('zeigt gemeldete Fragen mit Kommentaren und hebt die Meldung auf', async () => {
+  const user = userEvent.setup();
+  const reported = { ...question, question: 'Was macht DNS?', openReports: 2 };
+  const entry = {
+    topicId: 'it',
+    questionId: 'dns',
+    topicTitle: 'IT',
+    question: reported,
+    reports: [
+      {
+        id: 8,
+        createdAt: '2026-10-11T08:00:00.000Z',
+        source: 'game',
+        comment: 'Antwort ist unvollständig',
+        question: reported.question,
+        answer: reported.answer,
+      },
+      {
+        id: 3,
+        createdAt: '2026-10-10T08:00:00.000Z',
+        source: 'review',
+        question: 'Was ist DNS?',
+        answer: reported.answer,
+      },
+    ],
+  };
+  let open = true;
+  const fetch = mockApi((path, init) => {
+    if (path === 'reports') return { body: { questions: open ? [entry] : [] } };
+    if (path === 'reports/it/dns/resolve' && init.method === 'POST') {
+      open = false;
+      return { status: 204 };
+    }
+    return undefined;
+  });
+  mount('/admin/reports');
+
+  expect(await screen.findByText('Was macht DNS?')).toBeInTheDocument();
+  expect(screen.getByText('1 Frage · 2 Meldungen')).toBeInTheDocument();
+  expect(screen.getByText('Antwort ist unvollständig')).toBeInTheDocument();
+  expect(screen.getByText('ohne Kommentar')).toBeInTheDocument();
+  expect(screen.getByText(/beim Bewerten/)).toBeInTheDocument();
+  // Nur die ältere Meldung bezieht sich auf einen anderen Stand der Frage.
+  expect(screen.getAllByText(/Gemeldeter Stand/)).toHaveLength(1);
+  expect(screen.getByText(/Gemeldeter Stand: Was ist DNS\?/)).toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: 'Meldung zu dns aufheben' }));
+  expect(await screen.findByText('Keine offenen Meldungen.')).toBeInTheDocument();
+  expect(screen.getByRole('status')).toHaveTextContent('Meldung zu dns aufgehoben.');
+  const post = fetch.mock.calls.find(([, init]) => init?.method === 'POST')!;
+  expect(JSON.parse(post[1]!.body as string)).toEqual({ throughId: 8 });
+});
+
+it('markiert gemeldete Fragen in der Fragenliste', async () => {
+  mockApi((path) =>
+    path.startsWith('questions')
+      ? { body: { total: 1, questions: [{ ...question, openReports: 2 }] } }
+      : undefined,
+  );
+  mount();
+  const row = (await screen.findByText('Was ist DNS?')).closest('tr')!;
+  expect(within(row).getByRole('link', { name: '2 Meldungen' })).toHaveAttribute(
+    'href',
+    '/admin/reports',
+  );
 });

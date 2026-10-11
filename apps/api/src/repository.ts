@@ -1,6 +1,8 @@
+import { CLUES_PER_CATEGORY } from '@jeopardy/game-core';
 import type { QuestionPool, TopicIndex } from '@jeopardy/game-core';
 import type { Pool, PoolClient } from 'pg';
 import { transaction } from './database';
+import { NOT_REPORTED } from './report-repository';
 
 export interface ContentRepository {
   health(): Promise<void>;
@@ -69,8 +71,16 @@ export async function writePool(client: PoolClient, pool: QuestionPool): Promise
   }
 }
 
-/** Liest einen Pool; mit einem Transaktions-Client auch den noch nicht festgeschriebenen Stand. */
-export async function readPool(db: Pool | PoolClient, id: string): Promise<QuestionPool | null> {
+/**
+ * Liest einen Pool; mit einem Transaktions-Client auch den noch nicht festgeschriebenen Stand.
+ * `playable` liefert den Stand für neue Spiele: ohne gemeldete Fragen und ohne Rubriken, die
+ * dadurch keine volle Spalte mehr füllen.
+ */
+export async function readPool(
+  db: Pool | PoolClient,
+  id: string,
+  { playable = false } = {},
+): Promise<QuestionPool | null> {
   // Eine SQL-Anweisung liefert einen konsistenten Snapshot, auch während eines Imports.
   const { rows } = await db.query<{ pool: QuestionPool }>(
     `SELECT jsonb_strip_nulls(jsonb_build_object(
@@ -82,12 +92,20 @@ export async function readPool(db: Pool | PoolClient, id: string): Promise<Quest
           'id', q.id, 'level', q.level, 'question', q.question,
           'answer', q.answer, 'note', q.note
         ) ORDER BY q.position) FROM questions q
-        WHERE q.topic_id = r.topic_id AND q.rubric_id = r.id)
+        WHERE q.topic_id = r.topic_id AND q.rubric_id = r.id AND (NOT $2 OR ${NOT_REPORTED}))
       ) ORDER BY r.position) FROM rubrics r WHERE r.topic_id = t.id)
     )) AS pool FROM topics t WHERE t.id = $1`,
-    [id],
+    [id, playable],
   );
-  return rows[0]?.pool ?? null;
+  const pool = rows[0]?.pool ?? null;
+  if (!pool || !playable) return pool;
+  // jsonb_strip_nulls entfernt leere Listen ganz.
+  return {
+    ...pool,
+    rubrics: (pool.rubrics ?? []).filter(
+      (rubric) => (rubric.clues?.length ?? 0) >= CLUES_PER_CATEGORY,
+    ),
+  };
 }
 
 export function postgresRepository(db: Pool): ContentRepository {
@@ -111,7 +129,7 @@ export function postgresRepository(db: Pool): ContentRepository {
         })),
       };
     },
-    pool: (id) => readPool(db, id),
+    pool: (id) => readPool(db, id, { playable: true }),
     async save(pool) {
       await transaction(db, async (client) => {
         await client.query('SELECT pg_advisory_xact_lock(391002)');

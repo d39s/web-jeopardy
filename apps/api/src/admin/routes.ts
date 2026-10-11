@@ -4,6 +4,7 @@ import {
   adminQuestionCreateSchema,
   adminQuestionDeleteSchema,
   adminQuestionUpdateSchema,
+  adminReportResolveSchema,
   idSchema,
   sqlRunRequestSchema,
 } from '@jeopardy/game-core';
@@ -112,6 +113,12 @@ export function registerAdmin(
         const { topicId, id } = questionParams.parse(request.params);
         const { version } = adminQuestionDeleteSchema.parse(request.query);
         return send(reply, await repository.deleteQuestion(actor(request), topicId, id, version));
+      });
+      admin.get('/reports', async () => ({ questions: await repository.reports() }));
+      admin.post('/reports/:topicId/:id/resolve', async (request, reply) => {
+        const { topicId, id } = questionParams.parse(request.params);
+        const { throughId } = adminReportResolveSchema.parse(request.body);
+        return send(reply, await repository.resolveReports(actor(request), topicId, id, throughId));
       });
       admin.post('/sql/dry-run', async (request) =>
         repository.runSql(actor(request), sqlRunRequestSchema.parse(request.body), false),

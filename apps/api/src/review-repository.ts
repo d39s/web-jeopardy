@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { DifficultyRating, DifficultyVote, ReviewQuestion } from '@jeopardy/game-core';
 import type { Pool } from 'pg';
 import { transaction } from './database';
+import { NOT_REPORTED } from './report-repository';
 
 interface QuestionRow {
   topic_id: string;
@@ -55,7 +56,7 @@ export function postgresReviewRepository(db: Pool): ReviewRepository {
         `SELECT q.*, t.title AS topic_title, r.name AS rubric_name
          FROM questions q JOIN topics t ON t.id = q.topic_id
          JOIN rubrics r ON r.topic_id = q.topic_id AND r.id = q.rubric_id
-         WHERE ($3::text IS NULL OR q.topic_id = $3)
+         WHERE ($3::text IS NULL OR q.topic_id = $3) AND ${NOT_REPORTED}
          ORDER BY CASE WHEN q.topic_id = $1 AND q.id = $2 THEN 1 ELSE 0 END, random()
          LIMIT 1`,
         [excludeTopic ?? null, excludeId ?? null, topicId ?? null],

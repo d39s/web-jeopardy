@@ -17,6 +17,7 @@ const question = {
   level: 3,
   score: 3,
   votes: { fits: 0, tooHard: 0, tooEasy: 0, unsure: 0 },
+  openReports: 0,
   version: 'a'.repeat(64),
 };
 
@@ -28,6 +29,8 @@ function mockAdmin(): AdminRepository {
     updateQuestion: vi.fn().mockResolvedValue({ status: 'stale' }),
     deleteQuestion: vi.fn().mockResolvedValue({ status: 'ok' }),
     runSql: vi.fn().mockResolvedValue({ ok: true }),
+    reports: vi.fn().mockResolvedValue([]),
+    resolveReports: vi.fn().mockResolvedValue({ status: 'ok', question }),
     log: vi.fn().mockResolvedValue([]),
     logEntry: vi.fn().mockResolvedValue(null),
   };
@@ -199,6 +202,39 @@ describe('Admin-API', () => {
       payload: { sql: '' },
     });
     expect(empty.statusCode).toBe(400);
+  });
+
+  it('listet Meldungen und hebt sie bis zur gesehenen Meldung auf', async () => {
+    const { app, repository } = setup();
+    expect((await app.inject({ url: '/api/v1/admin/reports', headers: user })).json()).toEqual({
+      questions: [],
+    });
+    const url = '/api/v1/admin/reports/it/dns/resolve';
+    const resolved = await app.inject({
+      method: 'POST',
+      url,
+      headers: user,
+      payload: { throughId: 12 },
+    });
+    expect(resolved.statusCode).toBe(200);
+    expect(repository.resolveReports).toHaveBeenCalledWith('dominic', 'it', 'dns', 12);
+    vi.mocked(repository.resolveReports).mockResolvedValueOnce({
+      status: 'conflict',
+      message: 'keine offenen Meldungen',
+    });
+    const again = await app.inject({
+      method: 'POST',
+      url,
+      headers: user,
+      payload: { throughId: 12 },
+    });
+    expect(again.statusCode).toBe(409);
+    for (const payload of [{}, { throughId: 0 }, { throughId: 1, extra: true }]) {
+      expect((await app.inject({ method: 'POST', url, headers: user, payload })).statusCode).toBe(
+        400,
+      );
+    }
+    expect((await app.inject({ url: '/api/v1/admin/reports' })).statusCode).toBe(401);
   });
 
   it('liefert das Protokoll seitenweise und einzelne Einträge', async () => {

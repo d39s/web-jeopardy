@@ -4,11 +4,12 @@ Unter `/admin` lassen sich Fragen pflegen und SQL-Lieferungen (z. B. aus `conten
 einspielen. Die Anwendung hat keine eigene Benutzerverwaltung: Die Anmeldung übernimmt
 **Authentik per Forward Auth am Ingress**, die API wertet nur die weitergereichten Header aus.
 
-| Bereich        | Pfad         | Inhalt                                                                  |
-| -------------- | ------------ | ----------------------------------------------------------------------- |
-| Fragen         | `/admin`     | Suchen, filtern, anlegen, bearbeiten, verschieben, löschen              |
-| SQL einspielen | `/admin/sql` | Skript hochladen oder einfügen, Testlauf mit Rollback, dann Ausführen   |
-| Protokoll      | `/admin/log` | Wer hat wann welche Frage oder welches Skript geändert, inklusive Stand |
+| Bereich        | Pfad             | Inhalt                                                                  |
+| -------------- | ---------------- | ----------------------------------------------------------------------- |
+| Fragen         | `/admin`         | Suchen, filtern, anlegen, bearbeiten, verschieben, löschen              |
+| Meldungen      | `/admin/reports` | Von Spielern gemeldete Fragen prüfen, bearbeiten, Meldung aufheben      |
+| SQL einspielen | `/admin/sql`     | Skript hochladen oder einfügen, Testlauf mit Rollback, dann Ausführen   |
+| Protokoll      | `/admin/log`     | Wer hat wann welche Frage oder welches Skript geändert, inklusive Stand |
 
 Der Admin-Code wird als eigenes Bündel geladen; Spieler laden ihn nicht mit. Der Code selbst
 ist nicht geheim – geschützt sind die Daten hinter `/api/v1/admin`.
@@ -140,6 +141,22 @@ Annotationen mit der Authentik-Dokumentation der eingesetzten Version abgleichen
 - Neue Fragen ohne ID erhalten `<rubrik>-<8 Hex-Zeichen>`. IDs von Rubriken und Fragen
   dürfen sich innerhalb eines Themas nicht überschneiden.
 
+## Meldungen
+
+Spieler können eine Frage nach dem Aufdecken melden, optional mit Kommentar (siehe
+[Fragen-Datenbank](fragen-datenbank.md#fragen-melden)). Eine gemeldete Frage kommt in kein neues
+Spiel und nicht in den Bewertungsmodus, bis die Meldung hier aufgehoben ist.
+
+- Die Übersicht gruppiert offene Meldungen je Frage, neueste zuerst, mit Zeitpunkt, Herkunft
+  (Spiel/Bewertung) und Kommentar. Weicht der gemeldete Stand vom aktuellen ab, wird er
+  mit angezeigt.
+- **Bearbeiten** öffnet denselben Dialog wie unter „Fragen“. Speichern hebt die Meldung
+  **nicht** auf; das geschieht bewusst getrennt mit **Meldung aufheben**.
+- Aufheben erfasst nur Meldungen bis zur neuesten angezeigten; inzwischen eingegangene bleiben
+  offen. Es wird als `question.unflag` protokolliert.
+- Löschen einer Frage hebt ihre offenen Meldungen mit auf (im Protokoll unter `resolvedReports`).
+- In der Fragenliste tragen gemeldete Fragen einen Hinweis mit Link zur Übersicht.
+
 ## SQL einspielen
 
 1. Datei wählen oder SQL einfügen, **Testlauf** starten. Das Skript läuft vollständig in
@@ -168,6 +185,8 @@ Alle Pfade unter `/api/v1/admin`, JSON, Schemas in `packages/game-core/src/admin
 | POST    | `/topics/<topicId>/questions`              | Frage anlegen, 201                                     |
 | PUT     | `/topics/<topicId>/questions/<id>`         | Frage ändern (mit `version`), 409 bei fremder Änderung |
 | DELETE  | `/topics/<topicId>/questions/<id>?version` | Frage löschen, 204                                     |
+| GET     | `/reports`                                 | Offene Meldungen je Frage, neueste zuerst              |
+| POST    | `/reports/<topicId>/<id>/resolve`          | Meldungen bis `throughId` aufheben, 409 wenn keine     |
 | POST    | `/sql/dry-run`                             | Skript testen, immer Rollback                          |
 | POST    | `/sql/execute`                             | Skript ausführen und protokollieren                    |
 | GET     | `/log?limit&before`                        | Protokoll, neueste zuerst, ohne SQL-Text               |

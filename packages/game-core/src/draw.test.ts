@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { drawBoard, fittingRubrics } from './draw';
-import { samplePool } from './fixtures';
+import { drawBoard, fittingRubrics, isDrawnDefinition } from './draw';
+import { sampleDefinition, samplePool } from './fixtures';
 import { validateGameDefinition } from './schema';
 import { CATEGORY_COUNT, CLUES_PER_CATEGORY, DIFFICULTY_BANDS, POINT_STEPS } from './types';
 import type { ClueLevel, Difficulty, GameDefinition, QuestionPool } from './types';
@@ -215,5 +215,11 @@ describe('passende rubriken zählen', () => {
     };
 
     expect(fittingRubrics(pool, 3).map((rubric) => rubric.id)).not.toContain('zu-duenn');
+  });
+
+  it('erkennt gezogene bretter an ihrer id', () => {
+    expect(isDrawnDefinition(draw(3, 4711))).toBe(true);
+    expect(isDrawnDefinition(sampleDefinition)).toBe(false);
+    expect(isDrawnDefinition({ ...draw(3, 4711), category: 'anderes-thema' })).toBe(false);
   });
 });

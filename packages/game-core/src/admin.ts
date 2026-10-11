@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { questionReportSourceSchema } from './report';
 import { idSchema } from './schema';
 import { MAX_CLUE_LEVEL } from './types';
 
@@ -50,6 +51,8 @@ export const adminQuestionSchema = z.object({
     tooEasy: z.number().int().nonnegative(),
     unsure: z.number().int().nonnegative(),
   }),
+  /** Offene Meldungen; solange es welche gibt, kommt die Frage in keinem neuen Spiel vor. */
+  openReports: z.number().int().nonnegative(),
   /** Inhaltsstand für Änderungen: verhindert das stille Überschreiben fremder Bearbeitungen. */
   version: versionSchema,
 });
@@ -86,6 +89,37 @@ export const adminQuestionUpdateSchema = z.strictObject({
 export type AdminQuestionUpdate = z.infer<typeof adminQuestionUpdateSchema>;
 
 export const adminQuestionDeleteSchema = z.strictObject({ version: versionSchema });
+
+export const adminReportSchema = z.object({
+  id: z.number().int().positive(),
+  createdAt: z.string(),
+  source: questionReportSourceSchema,
+  comment: z.string().optional(),
+  /** Frage und Antwort zum Zeitpunkt der Meldung. */
+  question: z.string(),
+  answer: z.string(),
+});
+export type AdminReport = z.infer<typeof adminReportSchema>;
+
+export const adminReportedQuestionSchema = z.object({
+  topicId: z.string(),
+  questionId: z.string(),
+  topicTitle: z.string().optional(),
+  /** Fehlt, wenn die Frage inzwischen gelöscht oder per SQL ersetzt wurde. */
+  question: adminQuestionSchema.optional(),
+  /** Offene Meldungen, neueste zuerst. */
+  reports: z.array(adminReportSchema).min(1),
+});
+export type AdminReportedQuestion = z.infer<typeof adminReportedQuestionSchema>;
+
+export const adminReportListSchema = z.object({ questions: z.array(adminReportedQuestionSchema) });
+export type AdminReportList = z.infer<typeof adminReportListSchema>;
+
+export const adminReportResolveSchema = z.strictObject({
+  /** Neueste gesehene Meldung; später eingegangene bleiben offen. */
+  throughId: z.number().int().positive(),
+});
+export type AdminReportResolve = z.infer<typeof adminReportResolveSchema>;
 
 /** Entspricht dem Body-Limit der API. */
 export const MAX_SQL_LENGTH = 10 * 1024 * 1024 - 1024;

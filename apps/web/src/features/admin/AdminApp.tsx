@@ -9,6 +9,7 @@ import type { AdminApiError } from './api';
 import { errorMessage, ErrorNotice } from './fields';
 import { LogPage } from './LogPage';
 import { QuestionsPage } from './QuestionsPage';
+import { ReportsPage } from './ReportsPage';
 import { SqlPage } from './SqlPage';
 
 type State =
@@ -18,6 +19,7 @@ type State =
 
 const navItems = [
   { to: '/admin', label: de.admin.nav.questions, end: true },
+  { to: '/admin/reports', label: de.admin.nav.reports, end: false },
   { to: '/admin/sql', label: de.admin.nav.sql, end: false },
   { to: '/admin/log', label: de.admin.nav.log, end: false },
 ];
@@ -98,6 +100,7 @@ export function AdminApp() {
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6">
         <Routes>
           <Route index element={<QuestionsPage />} />
+          <Route path="reports" element={<ReportsPage />} />
           <Route path="sql" element={<SqlPage />} />
           <Route path="log" element={<LogPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
