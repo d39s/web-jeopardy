@@ -108,7 +108,9 @@ Testdatenbank ist erlaubt; andernfalls Grenzen der Prüfung im Abschlussbericht 
 - `npm run validate:content` prüft **nur JSON-Seed-Dateien**, keine SQL-Lieferung.
 - Ergänzungen zu bestehenden Kategorien können ohne DB-Abzug nicht vollständig gegen
   deren aktuellen Gesamtpool getestet werden. Das melden, nicht die Erstellung blockieren.
-- SQL kann später im pgAdmin Query Tool vollständig ausgeführt werden. Ohne Importauftrag
+- SQL kann später im Admin-Backend (`/admin/sql`, Testlauf mit Rollback, dann Ausführen) oder im
+  pgAdmin Query Tool vollständig ausgeführt werden. Eigenes `BEGIN`/`COMMIT` nur am Anfang und
+  Ende; weitere Transaktionssteuerung lehnt das Admin-Backend ab. Ohne Importauftrag
   nur Dateien liefern, keine DB-Verbindung zur produktiven Anwendung herstellen.
 
 Ausführlicher Tabellenvertrag und Lieferregeln: [Agent-Anleitung](../../../docs/content-authoring-handoff.md).

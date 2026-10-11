@@ -98,6 +98,9 @@ Für direkten Zugriff einen eigenen Benutzer mit `SELECT` auf `topics`, `rubrics
 | GET     | `/api/v1/pools/<themen-id>.json` | Bestehendes `QuestionPool`-Format, `schemaVersion: 1` |
 | PUT     | `/api/v1/pools/<themen-id>.json` | Validierten vollständigen Pool anlegen/ersetzen, 204  |
 
+Fragenpflege, SQL-Lieferungen und Protokoll liegen unter `/api/v1/admin` und sind nur mit
+`ADMIN_AUTH` aktiv; siehe [Admin-Backend](admin-backend.md).
+
 Der Index behält aus Kompatibilitätsgründen das Feld `file`; dieses bezeichnet jetzt die
 Ressource `<id>.json`, keine Datei auf dem Webserver. Die Web-App lädt anhand der Themen-ID.
 Die API liefert Antworten einschließlich Lösungen – sie ist für Moderation und Fragenpflege,
