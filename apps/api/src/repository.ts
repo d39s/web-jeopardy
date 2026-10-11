@@ -69,6 +69,27 @@ export async function writePool(client: PoolClient, pool: QuestionPool): Promise
   }
 }
 
+/** Liest einen Pool; mit einem Transaktions-Client auch den noch nicht festgeschriebenen Stand. */
+export async function readPool(db: Pool | PoolClient, id: string): Promise<QuestionPool | null> {
+  // Eine SQL-Anweisung liefert einen konsistenten Snapshot, auch während eines Imports.
+  const { rows } = await db.query<{ pool: QuestionPool }>(
+    `SELECT jsonb_strip_nulls(jsonb_build_object(
+      'schemaVersion', 1, 'id', t.id, 'title', t.title,
+      'description', t.description, 'author', t.author, 'locale', t.locale,
+      'rubrics', (SELECT jsonb_agg(jsonb_build_object(
+        'id', r.id, 'name', r.name, 'color', r.color,
+        'clues', (SELECT jsonb_agg(jsonb_build_object(
+          'id', q.id, 'level', q.level, 'question', q.question,
+          'answer', q.answer, 'note', q.note
+        ) ORDER BY q.position) FROM questions q
+        WHERE q.topic_id = r.topic_id AND q.rubric_id = r.id)
+      ) ORDER BY r.position) FROM rubrics r WHERE r.topic_id = t.id)
+    )) AS pool FROM topics t WHERE t.id = $1`,
+    [id],
+  );
+  return rows[0]?.pool ?? null;
+}
+
 export function postgresRepository(db: Pool): ContentRepository {
   return {
     async health() {
@@ -90,25 +111,7 @@ export function postgresRepository(db: Pool): ContentRepository {
         })),
       };
     },
-    async pool(id) {
-      // Eine SQL-Anweisung liefert einen konsistenten Snapshot, auch während eines Imports.
-      const { rows } = await db.query<{ pool: QuestionPool }>(
-        `SELECT jsonb_strip_nulls(jsonb_build_object(
-          'schemaVersion', 1, 'id', t.id, 'title', t.title,
-          'description', t.description, 'author', t.author, 'locale', t.locale,
-          'rubrics', (SELECT jsonb_agg(jsonb_build_object(
-            'id', r.id, 'name', r.name, 'color', r.color,
-            'clues', (SELECT jsonb_agg(jsonb_build_object(
-              'id', q.id, 'level', q.level, 'question', q.question,
-              'answer', q.answer, 'note', q.note
-            ) ORDER BY q.position) FROM questions q
-            WHERE q.topic_id = r.topic_id AND q.rubric_id = r.id)
-          ) ORDER BY r.position) FROM rubrics r WHERE r.topic_id = t.id)
-        )) AS pool FROM topics t WHERE t.id = $1`,
-        [id],
-      );
-      return rows[0]?.pool ?? null;
-    },
+    pool: (id) => readPool(db, id),
     async save(pool) {
       await transaction(db, async (client) => {
         await client.query('SELECT pg_advisory_xact_lock(391002)');

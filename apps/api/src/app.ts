@@ -5,6 +5,9 @@ import cors from '@fastify/cors';
 import { difficultyVoteSchema, formatIssues, validateQuestionPool } from '@jeopardy/game-core';
 import type { ContentRepository } from './repository';
 import type { ReviewRepository } from './review-repository';
+import type { AdminAuth } from './admin/auth';
+import type { AdminRepository } from './admin/admin-repository';
+import { registerAdmin } from './admin/routes';
 
 export function buildApp(
   repository: ContentRepository,
@@ -13,6 +16,7 @@ export function buildApp(
     writeToken?: string;
     corsOrigins?: string[];
     reviews?: ReviewRepository;
+    admin?: { auth: AdminAuth; repository: AdminRepository };
   } = {},
 ) {
   const app = Fastify({ logger: options.logger ?? false, bodyLimit: 10 * 1024 * 1024 });
@@ -33,6 +37,10 @@ export function buildApp(
     return { status: 'ok' };
   });
   app.get('/api/v1/topics/index.json', async () => repository.index());
+  // Ohne ADMIN_AUTH gibt es den Admin-Bereich nicht (404), statt ihn ungeschützt anzubieten.
+  if (options.admin && options.admin.auth.mode !== 'off') {
+    registerAdmin(app, options.admin.auth, options.admin.repository);
+  }
   if (options.reviews) {
     const reviews = options.reviews;
     app.get<{ Querystring: { excludeTopic?: string; excludeId?: string; topicId?: string } }>(
