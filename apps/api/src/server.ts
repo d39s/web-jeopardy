@@ -3,6 +3,7 @@ import { createDatabase, migrate } from './database';
 import { importContent } from './import';
 import { postgresRepository } from './repository';
 import { postgresReviewRepository } from './review-repository';
+import { postgresReportRepository } from './report-repository';
 import { adminAuthFromEnv } from './admin/auth';
 import { postgresAdminRepository } from './admin/admin-repository';
 
@@ -14,6 +15,7 @@ if (adminAuth.mode === 'dev')
 const app = buildApp(postgresRepository(db), {
   logger: true,
   reviews: postgresReviewRepository(db),
+  reports: postgresReportRepository(db),
   admin: { auth: adminAuth, repository: postgresAdminRepository(db) },
   writeToken: process.env.CONTENT_WRITE_TOKEN,
   corsOrigins: process.env.CORS_ORIGINS?.split(',')

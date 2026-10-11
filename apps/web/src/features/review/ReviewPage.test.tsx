@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -64,7 +64,9 @@ it('verbirgt Antwort und Schwierigkeit bis zum Klick und lädt nach Bewertung di
   ).not.toBeInTheDocument();
   expect(screen.queryByText('So wird die Schwierigkeit angepasst')).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'nicht einschätzbar' })).not.toBeInTheDocument();
-  expect(screen.getAllByRole('button')).toHaveLength(3);
+  // Drei Stimmen und das Melden, keine weitere Wahl.
+  expect(screen.getAllByRole('button')).toHaveLength(4);
+  expect(screen.getByRole('button', { name: 'Frage melden' })).toBeVisible();
   expect(screen.getByRole('button', { name: 'zu leicht 2' })).toBeVisible();
   expect(screen.getByRole('button', { name: 'Schwierigkeit passt 3' })).toBeVisible();
   await userEvent.click(screen.getByRole('button', { name: 'zu schwer 4' }));
@@ -166,3 +168,34 @@ it.each([
     expect(screen.queryByText(/von 9/)).not.toBeInTheDocument();
   },
 );
+
+it('meldet eine Frage nach Bestätigung mit Kommentar und lädt die nächste', async () => {
+  const user = userEvent.setup();
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce({ ok: true, json: async () => question })
+    .mockResolvedValueOnce({ ok: false, status: 503, json: async () => ({}) })
+    .mockResolvedValueOnce({ ok: true, status: 204 })
+    .mockResolvedValueOnce({ ok: true, json: async () => next });
+  mockRequests(fetch);
+  mount();
+  await screen.findByText(question.question);
+  expect(screen.queryByRole('button', { name: 'Frage melden' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Antwort anzeigen' }));
+  await user.click(screen.getByRole('button', { name: 'Frage melden' }));
+
+  const dialog = screen.getByRole('dialog', { name: 'Frage melden?' });
+  await user.type(within(dialog).getByLabelText('Kommentar (freiwillig)'), ' Antwort falsch ');
+  await user.click(within(dialog).getByRole('button', { name: 'Melden' }));
+  expect(await within(dialog).findByRole('alert')).toHaveTextContent('nicht gesendet');
+  await user.click(within(dialog).getByRole('button', { name: 'Melden' }));
+
+  await screen.findByText(next.question);
+  expect(screen.getByRole('status')).toHaveTextContent('Frage gemeldet');
+  const [url, options] = fetch.mock.calls[2]!;
+  expect(url).toBe('/api/v1/questions/it/frage/reports');
+  expect(JSON.parse(options.body)).toMatchObject({ source: 'review', comment: 'Antwort falsch' });
+  // Der Wiederholversuch ist dieselbe Meldung.
+  expect(fetch.mock.calls[1]![1].body).toBe(options.body);
+  expect(fetch.mock.calls[3]![0]).toContain('excludeTopic=it&excludeId=frage');
+});

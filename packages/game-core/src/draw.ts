@@ -187,3 +187,15 @@ export function drawBoard({ pool, level, seed }: DrawRequest): DrawResult {
     },
   };
 }
+
+/**
+ * Ob ein Brett aus einem Pool der Fragenbibliothek gezogen wurde. Nur dann
+ * gibt es seine Fragen in der Datenbank – ein hochgeladenes Fragenset lässt
+ * sich nicht melden. Die ID trägt dafür das Muster aus `drawBoard`.
+ */
+export function isDrawnDefinition(definition: GameDefinition): boolean {
+  const prefix = `${definition.category}-${definition.difficulty}-`;
+  return (
+    definition.id.startsWith(prefix) && /^[0-9a-z]{1,7}$/.test(definition.id.slice(prefix.length))
+  );
+}

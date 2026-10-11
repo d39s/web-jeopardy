@@ -2,9 +2,15 @@ import { timingSafeEqual } from 'node:crypto';
 import Fastify from 'fastify';
 import type { FastifyError } from 'fastify';
 import cors from '@fastify/cors';
-import { difficultyVoteSchema, formatIssues, validateQuestionPool } from '@jeopardy/game-core';
+import {
+  difficultyVoteSchema,
+  formatIssues,
+  questionReportRequestSchema,
+  validateQuestionPool,
+} from '@jeopardy/game-core';
 import type { ContentRepository } from './repository';
 import type { ReviewRepository } from './review-repository';
+import type { ReportRepository } from './report-repository';
 import type { AdminAuth } from './admin/auth';
 import type { AdminRepository } from './admin/admin-repository';
 import { registerAdmin } from './admin/routes';
@@ -16,6 +22,7 @@ export function buildApp(
     writeToken?: string;
     corsOrigins?: string[];
     reviews?: ReviewRepository;
+    reports?: ReportRepository;
     admin?: { auth: AdminAuth; repository: AdminRepository };
   } = {},
 ) {
@@ -78,6 +85,25 @@ export function buildApp(
             .code(409)
             .send({ error: 'Frage oder Bewertung wurde geändert. Bitte neu laden.' });
         return result.rating;
+      },
+    );
+  }
+  if (options.reports) {
+    const reports = options.reports;
+    // Meldungen sind anonym wie Bewertungen; erst der Admin-Bereich hebt sie wieder auf.
+    app.post<{ Params: { topicId: string; id: string }; Body: unknown }>(
+      '/api/v1/questions/:topicId/:id/reports',
+      async (request, reply) => {
+        const { topicId, id } = request.params;
+        if (![topicId, id].every((value) => /^[a-z0-9][a-z0-9-]{0,63}$/i.test(value))) {
+          return reply.code(400).send({ error: 'Ungültige Fragen-ID.' });
+        }
+        const parsed = questionReportRequestSchema.safeParse(request.body);
+        if (!parsed.success) return reply.code(400).send({ error: 'Ungültige Meldung.' });
+        const result = await reports.report(topicId, id, parsed.data);
+        if (result.status === 'missing')
+          return reply.code(404).send({ error: 'Frage nicht gefunden.' });
+        return reply.code(204).send();
       },
     );
   }

@@ -4,6 +4,7 @@ import {
   adminLogSchema,
   adminQuestionListSchema,
   adminQuestionSchema,
+  adminReportListSchema,
   adminTopicSchema,
   sqlRunResultSchema,
 } from '@jeopardy/game-core';
@@ -117,6 +118,13 @@ export const adminApi = {
       `topics/${encodeURIComponent(question.topicId)}/questions/${encodeURIComponent(question.id)}?version=${question.version}`,
       null,
       { method: 'DELETE' },
+    ),
+  reports: (signal?: AbortSignal) => request('reports', adminReportListSchema, { signal }),
+  resolveReports: (topicId: string, questionId: string, throughId: number) =>
+    request(
+      `reports/${encodeURIComponent(topicId)}/${encodeURIComponent(questionId)}/resolve`,
+      null,
+      json('POST', { throughId }),
     ),
   runSql: (input: SqlRunRequest, commit: boolean) =>
     request(commit ? 'sql/execute' : 'sql/dry-run', sqlRunResultSchema, json('POST', input)),

@@ -1,8 +1,8 @@
-import { gameReducer, sampleDefinition } from '@jeopardy/game-core';
+import { drawBoard, gameReducer, sampleDefinition, samplePool } from '@jeopardy/game-core';
 import type { GameDefinition, GameState } from '@jeopardy/game-core';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { openClue, renderWithGame, startedState } from '../../test/renderWithGame';
 import { ClueDialog } from './ClueDialog';
 
@@ -251,5 +251,58 @@ describe('wertung', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' }));
     expect(screen.getByText(/Nicht mit dem Switch verwechseln/)).toBeInTheDocument();
+  });
+
+  describe('frage melden', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    function drawnState(): { state: GameState; clueId: string } {
+      const drawn = drawBoard({ pool: samplePool, level: 3, seed: 7 });
+      if (!drawn.ok) throw new Error('Ziehung fehlgeschlagen');
+      const clueId = drawn.definition.categories[0]!.clues[0]!.id;
+      return { state: openClue(startedState(2, drawn.definition), clueId), clueId };
+    }
+
+    it('bietet das melden erst nach dem aufdecken an', async () => {
+      const { state } = drawnState();
+      renderWithGame(<ClueDialog />, state);
+
+      expect(screen.queryByRole('button', { name: 'Frage melden' })).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Kein Veto – Antwort aufdecken' }));
+      expect(screen.getByRole('button', { name: 'Frage melden' })).toBeVisible();
+    });
+
+    it('meldet erst nach bestätigung und ohne kommentar', async () => {
+      const fetch = vi.fn().mockResolvedValue({ ok: true, status: 204 });
+      vi.stubGlobal('fetch', fetch);
+      const { state, clueId } = drawnState();
+      const { transport } = renderWithGame(
+        <ClueDialog />,
+        gameReducer(state, { type: 'clue/revealAnswer' }),
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: 'Frage melden' }));
+      const confirm = screen.getByRole('dialog', { name: 'Frage melden?' });
+      await userEvent.click(within(confirm).getByRole('button', { name: 'Abbrechen' }));
+      expect(fetch).not.toHaveBeenCalled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Frage melden' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Melden' }));
+      expect(await screen.findByText('Frage gemeldet – danke!')).toBeVisible();
+      const [url, options] = fetch.mock.calls[0]!;
+      expect(url).toBe(`/api/v1/questions/${samplePool.id}/${clueId}/reports`);
+      expect(JSON.parse(options.body)).toEqual({
+        requestId: expect.any(String),
+        source: 'game',
+      });
+      // Melden wertet nicht und schließt die Frage nicht.
+      expect(transport.getState().openClueId).toBe(clueId);
+      expect(transport.getState().events).toHaveLength(0);
+    });
+
+    it('bietet bei hochgeladenen fragensets kein melden an', () => {
+      renderWithGame(<ClueDialog />, revealedState());
+      expect(screen.queryByRole('button', { name: 'Frage melden' })).not.toBeInTheDocument();
+    });
   });
 });

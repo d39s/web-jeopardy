@@ -7,6 +7,7 @@ import type {
   AdminQuestionCreate,
   AdminQuestionList,
   AdminQuestionUpdate,
+  AdminReportedQuestion,
   AdminTopic,
   SqlRunRequest,
   SqlRunResult,
@@ -35,6 +36,7 @@ interface QuestionRow {
   too_hard_votes: number;
   too_easy_votes: number;
   unsure_votes: number;
+  open_reports: number;
 }
 
 export interface QuestionFilter {
@@ -73,6 +75,13 @@ export interface AdminRepository {
     version: string,
   ): Promise<MutationResult>;
   runSql(actor: string, request: SqlRunRequest, commit: boolean): Promise<SqlRunResult>;
+  reports(): Promise<AdminReportedQuestion[]>;
+  resolveReports(
+    actor: string,
+    topicId: string,
+    id: string,
+    throughId: number,
+  ): Promise<MutationResult>;
   log(limit: number, beforeId?: number): Promise<AdminLogEntry[]>;
   logEntry(id: number): Promise<AdminLogEntry | null>;
 }
@@ -103,12 +112,15 @@ function toQuestion(row: QuestionRow): AdminQuestion {
       tooEasy: row.too_easy_votes,
       unsure: row.unsure_votes,
     },
+    openReports: row.open_reports,
     version: editVersion(row),
   };
 }
 
-const QUESTION_SELECT = `SELECT q.*, r.name AS rubric_name FROM questions q
-  JOIN rubrics r ON r.topic_id = q.topic_id AND r.id = q.rubric_id`;
+const QUESTION_SELECT = `SELECT q.*, r.name AS rubric_name,
+    (SELECT COUNT(*) FROM question_reports qr WHERE qr.topic_id = q.topic_id
+      AND qr.question_id = q.id AND qr.resolved_at IS NULL)::int AS open_reports
+  FROM questions q JOIN rubrics r ON r.topic_id = q.topic_id AND r.id = q.rubric_id`;
 
 async function findQuestion(
   client: PoolClient,
@@ -172,9 +184,29 @@ async function mutate(
   }
 }
 
-/** Datensatz fürs Protokoll, ohne den nur angezeigten Rubriknamen. */
+/** Datensatz fürs Protokoll, ohne die nur angezeigten Zusatzspalten. */
 function snapshotValue(row: QuestionRow) {
-  return Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'rubric_name'));
+  return Object.fromEntries(
+    Object.entries(row).filter(([key]) => key !== 'rubric_name' && key !== 'open_reports'),
+  );
+}
+
+/** Hebt offene Meldungen bis einschließlich `throughId` auf und liefert deren IDs. */
+async function resolveOpenReports(
+  client: PoolClient,
+  actor: string,
+  topicId: string,
+  id: string,
+  throughId?: number,
+): Promise<number[]> {
+  const { rows } = await client.query<{ id: string }>(
+    `UPDATE question_reports SET resolved_at = now(), resolved_by = $3
+     WHERE topic_id = $1 AND question_id = $2 AND resolved_at IS NULL
+       AND ($4::bigint IS NULL OR id <= $4)
+     RETURNING id`,
+    [topicId, id, actor, throughId ?? null],
+  );
+  return rows.map((row) => Number(row.id)).sort((a, b) => a - b);
 }
 
 function cell(value: unknown): string | null {
@@ -212,6 +244,8 @@ async function contentSnapshot(client: PoolClient) {
 }
 
 const MAX_RESULT_STATEMENTS = 200;
+/** Obergrenze der Übersicht; ältere offene Meldungen erscheinen nach dem Aufheben neuerer. */
+const MAX_OPEN_REPORTS = 1000;
 const MAX_RESULT_ROWS = 20;
 
 export function postgresAdminRepository(db: Pool): AdminRepository {
@@ -371,8 +405,11 @@ export function postgresAdminRepository(db: Pool): AdminRepository {
         if (!row) return { status: 'missing' };
         if (editVersion(row) !== version) return { status: 'stale' };
         await client.query('DELETE FROM questions WHERE topic_id = $1 AND id = $2', [topicId, id]);
+        // Eine gelöschte Frage braucht keine Prüfung mehr; die Meldungen gelten als erledigt.
+        const reports = await resolveOpenReports(client, actor, topicId, id);
         await writeLog(client, actor, 'question.delete', `${topicId}/${id}`, {
           before: snapshotValue(row),
+          ...(reports.length > 0 ? { resolvedReports: reports } : {}),
         });
         return { status: 'ok' };
       });
@@ -491,6 +528,61 @@ export function postgresAdminRepository(db: Pool): AdminRepository {
       }
     },
 
+    async reports() {
+      const { rows } = await db.query<ReportRow>(
+        `SELECT qr.id, qr.topic_id, qr.question_id, qr.source, qr.comment, qr.question,
+           qr.answer, qr.created_at, t.title AS topic_title
+         FROM question_reports qr LEFT JOIN topics t ON t.id = qr.topic_id
+         WHERE qr.resolved_at IS NULL ORDER BY qr.id DESC LIMIT $1`,
+        [MAX_OPEN_REPORTS],
+      );
+      const questions = await db.query<QuestionRow>(
+        `${QUESTION_SELECT} WHERE (q.topic_id, q.id) IN
+           (SELECT topic_id, question_id FROM question_reports WHERE resolved_at IS NULL)`,
+      );
+      const current = new Map(questions.rows.map((row) => [`${row.topic_id}/${row.id}`, row]));
+      // Gruppiert je Frage; die Reihenfolge folgt der neuesten Meldung.
+      const grouped = new Map<string, AdminReportedQuestion>();
+      for (const row of rows) {
+        const key = `${row.topic_id}/${row.question_id}`;
+        let entry = grouped.get(key);
+        if (!entry) {
+          const question = current.get(key);
+          entry = {
+            topicId: row.topic_id,
+            questionId: row.question_id,
+            ...(row.topic_title === null ? {} : { topicTitle: row.topic_title }),
+            ...(question ? { question: toQuestion(question) } : {}),
+            reports: [],
+          };
+          grouped.set(key, entry);
+        }
+        entry.reports.push({
+          id: Number(row.id),
+          createdAt: row.created_at.toISOString(),
+          source: row.source,
+          ...(row.comment === null ? {} : { comment: row.comment }),
+          question: row.question,
+          answer: row.answer,
+        });
+      }
+      return [...grouped.values()];
+    },
+
+    async resolveReports(actor, topicId, id, throughId) {
+      return transaction(db, async (client): Promise<MutationResult> => {
+        const reports = await resolveOpenReports(client, actor, topicId, id, throughId);
+        if (reports.length === 0)
+          return {
+            status: 'conflict',
+            message: 'Für diese Frage gibt es keine offenen Meldungen.',
+          };
+        await writeLog(client, actor, 'question.unflag', `${topicId}/${id}`, { reports });
+        const question = await findQuestion(client, topicId, id);
+        return { status: 'ok', ...(question ? { question: toQuestion(question) } : {}) };
+      });
+    },
+
     async log(limit, beforeId) {
       const { rows } = await db.query<LogRow>(
         `SELECT id, created_at, actor, action, target, detail - 'sql' AS detail FROM admin_log
@@ -505,6 +597,18 @@ export function postgresAdminRepository(db: Pool): AdminRepository {
       return rows[0] ? toLogEntry(rows[0]) : null;
     },
   };
+}
+
+interface ReportRow {
+  id: string;
+  topic_id: string;
+  question_id: string;
+  source: 'game' | 'review';
+  comment: string | null;
+  question: string;
+  answer: string;
+  created_at: Date;
+  topic_title: string | null;
 }
 
 interface LogRow {

@@ -80,6 +80,8 @@ npm run dev:api` ausführen. Der API-Start migriert und initialisiert ebenfalls 
 - `rubrics`: Rubriken pro Thema; zusammengesetzter Schlüssel `(topic_id, id)`.
 - `questions`: Stufe 1–9, Frage, Antwort und optionale Moderationsnotiz;
   Schlüssel `(topic_id, id)`, Fremdschlüssel zur Rubrik.
+- `question_reports`: Meldungen von Spielern mit Kommentar und gemeldetem Stand; offene
+  Meldungen nehmen eine Frage aus neuen Spielen (siehe unten).
 - `schema_migrations` und `content_imports`: Migrationsstand und Seed-Markierung.
 
 Rubrik- und Fragenreihenfolge bleiben erhalten, damit die bestehende Ziehung reproduzierbar
@@ -91,12 +93,12 @@ Datenformate, keine Abhängigkeit vom internen SQL-Modell) oder direkt PostgreSQ
 Für direkten Zugriff einen eigenen Benutzer mit `SELECT` auf `topics`, `rubrics` und
 `questions` anlegen; die Spiel-Zugangsdaten nicht in einem Browser hinterlegen.
 
-| Methode | Adresse                          | Antwort                                               |
-| ------- | -------------------------------- | ----------------------------------------------------- |
-| GET     | `/api/v1/health`                 | DB-Erreichbarkeit, `{ "status": "ok" }`               |
-| GET     | `/api/v1/topics/index.json`      | Bestehendes `TopicIndex`-Format, `schemaVersion: 2`   |
-| GET     | `/api/v1/pools/<themen-id>.json` | Bestehendes `QuestionPool`-Format, `schemaVersion: 1` |
-| PUT     | `/api/v1/pools/<themen-id>.json` | Validierten vollständigen Pool anlegen/ersetzen, 204  |
+| Methode | Adresse                          | Antwort                                                          |
+| ------- | -------------------------------- | ---------------------------------------------------------------- |
+| GET     | `/api/v1/health`                 | DB-Erreichbarkeit, `{ "status": "ok" }`                          |
+| GET     | `/api/v1/topics/index.json`      | Bestehendes `TopicIndex`-Format, `schemaVersion: 2`              |
+| GET     | `/api/v1/pools/<themen-id>.json` | Spielbarer Pool im `QuestionPool`-Format (ohne gemeldete Fragen) |
+| PUT     | `/api/v1/pools/<themen-id>.json` | Validierten vollständigen Pool anlegen/ersetzen, 204             |
 
 Fragenpflege, SQL-Lieferungen und Protokoll liegen unter `/api/v1/admin` und sind nur mit
 `ADMIN_AUTH` aktiv; siehe [Admin-Backend](admin-backend.md).
@@ -160,6 +162,32 @@ aber zunächst nur in der Oberfläche verborgen; dies ist kein Prüfungsschutz.
 Ein erneuter Import erhält Bewertungen bei unveränderten IDs, Fragen, Antworten und
 ursprünglicher Stufe. Änderungen an diesen Inhalten setzen den aktuellen Score und die
 Zähler dieser Frage zurück; historische Bewertungen bleiben für die Nachvollziehbarkeit.
+
+## Fragen melden
+
+Nach dem Aufdecken der Antwort lässt sich eine Frage über **„Frage melden“** melden – im
+Fragedialog des Spiels und im Bewertungsmodus. Ein Bestätigungsdialog bietet ein freiwilliges
+Kommentarfeld (bis 500 Zeichen). Bei hochgeladenen JSON-Fragensets gibt es den Knopf nicht,
+weil deren Fragen nicht in der Datenbank stehen.
+
+`POST /api/v1/questions/<themen-id>/<fragen-id>/reports` mit
+`{ "requestId": "<UUID>", "source": "game" | "review", "comment": "…" }` liefert 204, bei
+unbekannter Frage 404. Wiederholungen mit derselben Request-ID legen keine zweite Meldung an.
+
+Solange eine Frage offene Meldungen hat, gilt:
+
+- `GET /api/v1/pools/<id>.json` liefert sie nicht mehr aus. Rubriken, die dadurch unter fünf
+  Fragen fallen, entfallen für neue Spiele ganz. Bleiben weniger als fünf Rubriken übrig,
+  lässt sich aus dem Thema vorübergehend kein Spiel starten.
+- Der Bewertungsmodus bietet sie nicht mehr an.
+- Laufende Spiele ändern sich nicht. Ein geteilter Link mit Ziehungsnummer ergibt
+  gegebenenfalls ein anderes Brett.
+
+Die Meldung wird im Admin-Bereich unter **„Meldungen“** aufgehoben
+(siehe [Admin-Backend](admin-backend.md)). Meldungen hängen nicht per Fremdschlüssel an der
+Frage und überstehen deshalb einen erneuten Poolimport. Wie die Bewertungen ist der Endpunkt
+anonym; für öffentlichen Betrieb Rate-Limits vorsehen, sonst kann jemand gezielt viele
+Fragen aus dem Spiel nehmen.
 
 ## Fragen pflegen und erneut importieren
 

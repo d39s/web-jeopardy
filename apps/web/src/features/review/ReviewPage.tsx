@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { de } from '../../i18n/de';
 import { randomQuestion, voteQuestion } from './api';
+import { ReportQuestion } from '../report/ReportQuestion';
 import { fetchTopicIndex } from '../../content/loader';
 
 type ReviewVerdict = Exclude<DifficultyVerdict, 'unsure'>;
@@ -183,9 +184,21 @@ export function ReviewPage() {
           <h2 className="text-2xl font-semibold leading-relaxed">{question.question}</h2>
           {revealed ? (
             <section className="flex flex-col gap-3 border-t border-border pt-6">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
-                {de.review.answer}
-              </h3>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
+                  {de.review.answer}
+                </h3>
+                <ReportQuestion
+                  key={`${question.topicId}/${question.id}`}
+                  topicId={question.topicId}
+                  questionId={question.id}
+                  source="review"
+                  onReported={() => {
+                    setFeedback(de.review.reported);
+                    void load(question);
+                  }}
+                />
+              </div>
               <p className="text-2xl font-semibold text-positive">{question.answer}</p>
               {question.note ? <p className="text-text-muted">{question.note}</p> : null}
             </section>
