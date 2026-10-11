@@ -10,7 +10,7 @@ import {
 } from './types';
 import type { GameDefinition, GameState, QuestionPool, TopicIndex } from './types';
 
-const idSchema = z
+export const idSchema = z
   .string()
   .trim()
   .min(1)
