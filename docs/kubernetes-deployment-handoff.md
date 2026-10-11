@@ -42,7 +42,9 @@ Die API ist zustandslos außer PostgreSQL. Pro API-Pod sind maximal zehn DB-Verb
 konfiguriert; das bei späterer Skalierung berücksichtigen.
 
 Ingress vorzugsweise nur auf den Web-Service routen. nginx übernimmt `/api/` ohne
-Pfadumschreibung. `/`, `/game` und `/review` müssen direkt und nach Neuladen funktionieren.
+Pfadumschreibung. `/`, `/game`, `/review` und `/admin` müssen direkt und nach Neuladen funktionieren.
+`/admin` und `/api/v1/admin` zusätzlich per Authentik Forward Auth schützen, siehe
+[Admin-Backend](admin-backend.md#authentik-im-cluster).
 Deployment an der Root-URL `/` vorsehen; Betrieb unter einem Unterpfad ist nicht vorbereitet.
 API und DB nicht zusätzlich per NodePort/LoadBalancer öffentlich freigeben.
 
@@ -71,15 +73,17 @@ neu starten; die aktuelle Konfiguration nutzt keine dynamische DNS-Neuauflösung
 
 ### API-Pod
 
-| Variable              | Wert / Bedeutung                                                                              |
-| --------------------- | --------------------------------------------------------------------------------------------- |
-| `HOST`                | **`0.0.0.0` setzen**; Code-Default ist `127.0.0.1` und wäre nur im Pod erreichbar             |
-| `PORT`                | `3001`                                                                                        |
-| `DATABASE_URL`        | **Aus Secret:** `postgresql://<USER>:<URL_ENCODED_PASSWORD>@<DB_HOST>:5432/<DB_NAME>`         |
-| `SEED_CONTENT`        | `true` für Erstbefüllung einer neuen DB; `false` zum Überspringen des Seeds                   |
-| `CONTENT_DIR`         | Optional `/app/content/topics`; Seed-Dateien sind bereits im API-Image enthalten              |
-| `CONTENT_WRITE_TOKEN` | Optional aus Secret; leer/nicht gesetzt deaktiviert vollständige Pool-Ersetzung               |
-| `CORS_ORIGINS`        | Leer lassen für Web/nginx-Same-Origin; andere Browser-Origins explizit kommagetrennt erlauben |
+| Variable              | Wert / Bedeutung                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| `HOST`                | **`0.0.0.0` setzen**; Code-Default ist `127.0.0.1` und wäre nur im Pod erreichbar                 |
+| `PORT`                | `3001`                                                                                            |
+| `DATABASE_URL`        | **Aus Secret:** `postgresql://<USER>:<URL_ENCODED_PASSWORD>@<DB_HOST>:5432/<DB_NAME>`             |
+| `SEED_CONTENT`        | `true` für Erstbefüllung einer neuen DB; `false` zum Überspringen des Seeds                       |
+| `CONTENT_DIR`         | Optional `/app/content/topics`; Seed-Dateien sind bereits im API-Image enthalten                  |
+| `CONTENT_WRITE_TOKEN` | Optional aus Secret; leer/nicht gesetzt deaktiviert vollständige Pool-Ersetzung                   |
+| `CORS_ORIGINS`        | Leer lassen für Web/nginx-Same-Origin; andere Browser-Origins explizit kommagetrennt erlauben     |
+| `ADMIN_AUTH`          | `forward-auth`, sobald der Ingress `/admin` und `/api/v1/admin` mit Authentik schützt; sonst leer |
+| `ADMIN_GROUPS`        | Optional, z. B. `jeopardy-admins`: zusätzlich geprüfte Authentik-Gruppe(n), kommagetrennt         |
 
 `SEED_CONTENT` muss zum Abschalten exakt als String `"false"` gesetzt werden.
 Passwörter in der DB-URL percent-encodieren. Falls die Datenbank TLS voraussetzt, passende
@@ -95,7 +99,7 @@ nicht-geheime Einstellungen per ConfigMap/Deployment. Registry-Credentials separ
 - Das Webimage enthält **keine Fragenpools** und benötigt keinen Content-Mount oder PVC.
 - Das API-Image enthält JSON-Dateien nur als Seed-/Importquelle. Im Cluster ist dafür kein
   HostPath-Mount erforderlich; `/app/content/topics` nicht versehentlich leer übermounten.
-- Jeder API-Start führt automatisch versionierte Migrationen aus (derzeit 001 und 002),
+- Jeder API-Start führt automatisch versionierte Migrationen aus (derzeit 001 bis 003),
   anschließend optional den einmaligen Seed. Erst danach wird der HTTP-Port geöffnet.
 - Migrationen und Initialimport sind transaktional mit PostgreSQL-Advisory-Locks geschützt.
   Dennoch Erststart/Upgrade kontrolliert mit einer API-Replik durchführen.
@@ -104,7 +108,7 @@ nicht-geheime Einstellungen per ConfigMap/Deployment. Registry-Credentials separ
 - Ein vorhandener Seed-Marker oder bereits vorhandene Themen verhindern Neubefüllung.
   Neustarts/Image-Updates überschreiben keine gepflegten Fragen.
 - DB-Tabellen: `topics`, `rubrics`, `questions`, `difficulty_votes`, `content_imports`,
-  `schema_migrations`.
+  `admin_log`, `schema_migrations`.
 
 Für eine neue einzelne PostgreSQL-17-Instanz: PVC unter `/var/lib/postgresql/data`,
 gegebenenfalls `PGDATA=/var/lib/postgresql/data/pgdata` wegen vorbefülltem Mount-Verzeichnis.
@@ -160,6 +164,10 @@ Die Anwendung hat **keine eigene Benutzeranmeldung**.
 - Themen-/Pool-GETs und Zufallsfragen liefern auch Musterlösungen.
 - `POST /api/v1/review/<topicId>/<id>/votes` verändert Ratings derzeit **ohne Authentifizierung**.
 - Nur `PUT /api/v1/pools/<id>.json` ist mit `CONTENT_WRITE_TOKEN` abgesichert.
+- `/api/v1/admin` (Fragen pflegen, **beliebiges SQL ausführen**) vertraut bei
+  `ADMIN_AUTH=forward-auth` den `X-authentik-*`-Headern. Ohne Forward Auth am Ingress für genau
+  diesen Pfad könnte jeder die Header selbst setzen. Prüfung nach dem Rollout und Beispiele in
+  [Admin-Backend](admin-backend.md#sicherheit).
 - CORS ist keine Zugriffskontrolle; die Same-Origin-Proxyroute ist von außen erreichbar.
 
 Für öffentlich erreichbaren Betrieb daher Authentifizierung am Ingress/vorgelagerten Proxy
@@ -168,8 +176,9 @@ Review-Schreibpfade schützen und Rate-Limits vorsehen; die `/review`-Seite alle
 reicht nicht. Secrets niemals in ausgelieferte Frontend-Dateien übernehmen.
 
 **pgAdmin nicht aus dem lokalen Compose ungeprüft übernehmen:** Dort ist Login standardmäßig
-deaktiviert. Kein öffentliches pgAdmin ohne Authentifizierung deployen. Administration
-vorzugsweise über freigegebenen internen Dienst bzw. kontrolliertes Port-Forwarding.
+deaktiviert. Kein öffentliches pgAdmin ohne Authentifizierung deployen. Fragenpflege und
+SQL-Lieferungen laufen über das Admin-Backend; pgAdmin höchstens über kontrolliertes
+Port-Forwarding.
 
 `docker/jenkins-test-pod.yaml` ist ausschließlich eine flüchtige **CI-Testdatenbank** mit
 `emptyDir` und Testpasswort, ausdrücklich keine Vorlage für eine produktive PostgreSQL-Instanz.

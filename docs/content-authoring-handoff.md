@@ -2,7 +2,8 @@
 
 Stand: 10.10.2026. Neue Kategorien, Spalten und Fragen werden standardmäßig als
 **ergänzende PostgreSQL-SQL-Dateien** geliefert. Der Betreiber prüft und importiert sie
-später selbst, z. B. im pgAdmin Query Tool. Keine zusätzliche Importanwendung erforderlich.
+später selbst, z. B. im Admin-Backend unter `/admin/sql` (Testlauf, dann Ausführen) oder im
+pgAdmin Query Tool. Keine zusätzliche Importanwendung erforderlich.
 
 ## Repo-Skill
 
@@ -135,7 +136,8 @@ Eltern/Gesamtpools fehlen, nur die Lieferung prüfen und diese Testgrenze im Ber
 `npm run validate:content` prüft **nur JSON-Seed-Dateien**, nicht SQL-Lieferungen.
 Ohne Test-DB nur tatsächlich durchgeführte Prüfungen nennen; keinen Import behaupten.
 
-Später führt der Betreiber nach Prüfung und Backup die **gesamte Datei** in pgAdmin aus.
+Später führt der Betreiber nach Prüfung und Backup die **gesamte Datei** im Admin-Backend
+(`/admin/sql`) oder in pgAdmin aus.
 Bei Fehler `ROLLBACK` ausführen bzw. abgebrochene Transaktion beenden, nicht nur Fragmente
 erneut starten. Bei psql `ON_ERROR_STOP` verwenden. Keine Produktionstests/automatischen
 SQL-Imports im API-Start einrichten.

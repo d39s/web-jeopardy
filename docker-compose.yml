@@ -56,6 +56,8 @@ services:
       CONTENT_DIR: /app/content/topics
       CONTENT_WRITE_TOKEN: ${CONTENT_WRITE_TOKEN:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      ADMIN_AUTH: ${ADMIN_AUTH:-off}
+      ADMIN_GROUPS: ${ADMIN_GROUPS:-}
     volumes:
       - ./content/topics:/app/content/topics:ro
     depends_on:

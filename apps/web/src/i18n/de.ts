@@ -292,6 +292,134 @@ export const de = {
     clueWinner: (name: string) => `${name} richtig`,
   },
 
+  admin: {
+    heading: 'Admin',
+    navLabel: 'Admin-Bereiche',
+    nav: { questions: 'Fragen', sql: 'SQL einspielen', log: 'Protokoll' },
+    signedInAs: (user: string) => `Angemeldet als ${user}`,
+    backToGame: 'Zum Spiel',
+    loading: 'Wird geladen …',
+    notEnabled:
+      'Der Admin-Bereich ist nicht aktiviert. Die API braucht dafür ADMIN_AUTH (forward-auth oder lokal dev).',
+    noAccess: 'Keine Berechtigung für den Admin-Bereich. Bitte mit einem Admin-Konto anmelden.',
+    signIn: 'Erneut anmelden',
+    errors: {
+      network: 'Die Admin-API ist nicht erreichbar.',
+      session: 'Unerwartete Antwort der API – vermutlich ist die Anmeldung abgelaufen.',
+      http: (status: number) => `Anfrage fehlgeschlagen (HTTP ${status}).`,
+    },
+    issuesHeading: 'Probleme im Fragenpool:',
+
+    questions: {
+      heading: 'Fragen verwalten',
+      topic: 'Thema',
+      rubric: 'Rubrik',
+      allRubrics: 'Alle Rubriken',
+      search: 'Suche in ID, Frage, Antwort und Notiz',
+      level: 'Stufe',
+      allLevels: 'Alle Stufen',
+      noTopics: 'Es sind noch keine Themen vorhanden. Neue Inhalte lassen sich per SQL einspielen.',
+      empty: 'Keine Fragen gefunden.',
+      create: 'Neue Frage',
+      edit: 'Bearbeiten',
+      editLabel: (id: string) => `Frage ${id} bearbeiten`,
+      columns: {
+        rubric: 'Rubrik',
+        question: 'Frage',
+        answer: 'Antwort',
+        level: 'Stufe',
+        score: 'Score',
+        votes: 'Bewertungen',
+        actions: 'Aktionen',
+      },
+      levelHint: 'Ausgangsstufe → aktuelle Spielstufe',
+      range: (from: number, to: number, total: number) => `${from}–${to} von ${total}`,
+      previous: 'Zurück',
+      next: 'Weiter',
+      topicSummary: (rubrics: number, questions: number) =>
+        `${rubrics} Rubriken · ${questions} Fragen`,
+    },
+
+    question: {
+      createHeading: 'Neue Frage',
+      editHeading: 'Frage bearbeiten',
+      id: 'ID',
+      idHint:
+        'Leer lassen für eine automatisch vergebene ID. Kleinbuchstaben, Ziffern, Bindestriche.',
+      rubric: 'Rubrik',
+      level: 'Ausgangsstufe (1 leicht – 9 schwer)',
+      question: 'Frage',
+      answer: 'Antwort',
+      note: 'Notiz für die Moderation',
+      noteHint: 'Akzeptierte Varianten oder Hinweise; optional.',
+      rating: (score: number, votes: number) =>
+        `Aktueller Score ${score.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} aus ${votes} Bewertungen`,
+      votes: (fits: number, tooHard: number, tooEasy: number) =>
+        `passt ${fits} · zu schwer ${tooHard} · zu leicht ${tooEasy}`,
+      resetRating: 'Score und Bewertungen auf die Ausgangsstufe zurücksetzen',
+      resetHint: 'Eine geänderte Ausgangsstufe setzt Score und Bewertungen immer zurück.',
+      save: 'Speichern',
+      saving: 'Wird gespeichert …',
+      cancel: 'Abbrechen',
+      delete: 'Löschen',
+      confirmDelete: 'Wirklich löschen',
+      deleteHint:
+        'Löschen lässt sich nicht rückgängig machen; das Protokoll behält den letzten Stand.',
+    },
+
+    sql: {
+      heading: 'SQL einspielen',
+      intro:
+        'Der Testlauf führt das Skript in einer Transaktion aus und rollt sie danach zurück. Erst nach einem erfolgreichen Testlauf desselben Skripts lässt es sich ausführen.',
+      file: 'SQL-Datei wählen',
+      script: 'SQL-Skript',
+      scriptHint:
+        'Ein eigenes BEGIN am Anfang und COMMIT am Ende sind erlaubt; weitere Transaktionssteuerung nicht.',
+      filename: (name: string) => `Datei: ${name}`,
+      dryRun: 'Testlauf',
+      dryRunning: 'Testlauf läuft …',
+      execute: 'Ausführen',
+      executing: 'Wird ausgeführt …',
+      executeHint: 'Ausführen wird nach einem erfolgreichen Testlauf möglich.',
+      confirmHeading: 'Skript ausführen?',
+      confirmText: (questions: number, topics: number) =>
+        `Das Skript wird dauerhaft in die Datenbank geschrieben. Danach gibt es ${questions} Fragen in ${topics} Themen.`,
+      confirm: 'Jetzt ausführen',
+      cancel: 'Abbrechen',
+      dryRunOk: 'Testlauf erfolgreich – es wurde nichts gespeichert.',
+      committed: 'Skript ausgeführt und gespeichert.',
+      failed: 'Das Skript ist fehlgeschlagen; es wurde nichts gespeichert.',
+      blocked: 'Das Skript würde Fragenpools unspielbar machen und wird nicht ausgeführt.',
+      location: (line: number, column?: number) =>
+        column ? `Zeile ${line}, Spalte ${column}` : `Zeile ${line}`,
+      duration: (ms: number) => `${ms.toLocaleString('de-DE')} ms`,
+      countsHeading: 'Bestand',
+      countsColumns: { what: 'Inhalt', before: 'Vorher', after: 'Nachher' },
+      countLabels: { topics: 'Themen', rubrics: 'Rubriken', questions: 'Fragen' },
+      topicsHeading: 'Geänderte Themen',
+      topicChange: (before: number, after: number) => `${before} → ${after}`,
+      statementsHeading: (count: number) => `Anweisungen (${count})`,
+      rowCount: (count: number | null) =>
+        count === null ? '–' : count === 1 ? '1 Zeile' : `${count} Zeilen`,
+      noticesHeading: 'Hinweise der Datenbank',
+      issuesHeading: (topicId: string) => `Neue Probleme in ${topicId}`,
+    },
+
+    log: {
+      heading: 'Protokoll',
+      empty: 'Noch keine Admin-Änderungen.',
+      more: 'Ältere laden',
+      actions: {
+        'question.create': 'Frage angelegt',
+        'question.update': 'Frage geändert',
+        'question.delete': 'Frage gelöscht',
+        'sql.execute': 'SQL ausgeführt',
+      } as Record<string, string>,
+      details: 'Details',
+      showSql: 'SQL anzeigen',
+    },
+  },
+
   errors: {
     poolLoad: (title: string) => `Der Fragenvorrat "${title}" konnte nicht geladen werden.`,
     drawFailed: 'Aus diesem Vorrat lässt sich derzeit kein vollständiges Spielfeld ziehen.',

@@ -32,7 +32,11 @@ export async function migrate(db: pg.Pool): Promise<void> {
     await client.query(`CREATE TABLE IF NOT EXISTS schema_migrations (
       version integer PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now()
     )`);
-    const migrations = ['001-question-library.sql', '002-difficulty-ratings.sql'];
+    const migrations = [
+      '001-question-library.sql',
+      '002-difficulty-ratings.sql',
+      '003-admin-log.sql',
+    ];
     for (const [index, file] of migrations.entries()) {
       const version = index + 1;
       const applied = await client.query(

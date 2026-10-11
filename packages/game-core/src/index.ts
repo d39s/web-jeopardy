@@ -9,3 +9,4 @@ export * from './selectors';
 export * from './fixtures';
 export * from './review';
 export * from './setup';
+export * from './admin';

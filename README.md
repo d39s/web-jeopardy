@@ -13,6 +13,8 @@ vorgesehen; die Auslieferung erfolgt als Docker-Container.
   wiederverwendbarer Workflow und SQL-Vorlage zur manuellen Übernahme
 - [Fragen-Datenbank und API](docs/fragen-datenbank.md) – PostgreSQL, lokale Einrichtung,
   Zugriff weiterer Anwendungen, Import und Backup
+- [Admin-Backend](docs/admin-backend.md) – Fragen pflegen, SQL-Lieferungen mit Testlauf
+  einspielen, Protokoll und Anmeldung über Authentik
 - [Kubernetes-Deployment-Übergabe](docs/kubernetes-deployment-handoff.md) – Images,
   Konfiguration, Datenbank, Sicherheit und Abnahme für den Deployment-Agenten
 - Architekturentscheidungen: [Schnittstellen-Vertrag](docs/adr/0001-schnittstellen-vertrag.md) ·
@@ -66,6 +68,13 @@ Zustimmung ohne Scoreänderung. Die drei Buttons zeigen die gerundete aktuelle u
 benachbarten Stufen. PostgreSQL speichert Score und Historie. Neue Spiele nutzen die gerundete Stufe;
 laufende und importierte JSON-Spiele bleiben unverändert.
 Details: [Schwierigkeitsbewertung](docs/fragen-datenbank.md#schwierigkeitsbewertung).
+
+## Admin-Backend
+
+Unter `/admin` lassen sich Fragen suchen, bearbeiten, anlegen und löschen sowie SQL-Lieferungen
+aus `content/sql/` einspielen – erst als Testlauf mit Rollback, dann dauerhaft. Jede Änderung
+landet mit Benutzer im Protokoll. Die Anmeldung übernimmt Authentik am Ingress; lokal genügt
+`ADMIN_AUTH=dev npm run dev:api`. Details: [Admin-Backend](docs/admin-backend.md).
 
 ## Schnellstart
 
